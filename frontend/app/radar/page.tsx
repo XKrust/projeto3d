@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { apiGet, apiPost, BackendOfflineError } from "@/lib/api";
 import { BackendOffline } from "@/components/BackendOffline";
 import { Filters } from "@/components/radar/Filters";
+import { RadarHero } from "@/components/radar/RadarHero";
 import { TopicCard } from "@/components/radar/TopicCard";
 import { Button } from "@/components/ui/button";
 import type { CollectResponse, RadarMeta, Topic } from "@/lib/radar-types";
@@ -27,7 +28,7 @@ function buildRadarQuery(searchParams: URLSearchParams): string {
 function Loading() {
   return (
     <div className="flex flex-1 items-center justify-center p-8">
-      <p className="text-muted-foreground">Carregando...</p>
+      <p className="text-muted-foreground">Carregando…</p>
     </div>
   );
 }
@@ -90,33 +91,65 @@ function RadarContent() {
     }
   }
 
+  const country = searchParams.get("country") || "BR";
+  const [leader, ...rest] = topics ?? [];
+
   return (
-    <div className="flex flex-1 flex-col gap-6 p-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-semibold">Radar</h1>
-        <div className="flex flex-col items-end gap-1">
-          <Button onClick={handleCollect} disabled={collecting}>
-            Coletar agora
+    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-14 px-4 sm:px-8">
+      {leader ? (
+        <RadarHero topic={leader} country={country} />
+      ) : (
+        <section className="flex flex-col gap-4 py-8">
+          <h1 className="text-[length:var(--text-display)] font-bold">
+            O radar ainda está vazio.
+          </h1>
+          <p className="max-w-[60ch] text-[length:var(--text-md)] text-muted-foreground">
+            Nenhum tópico ainda. Clique em &#8220;Coletar agora&#8221; ou
+            configure suas chaves em Configurações.
+          </p>
+        </section>
+      )}
+
+      <section
+        aria-label="Filtros e coleta"
+        className="flex flex-col gap-4 rounded-[var(--radius-card)] bg-card p-3 sm:flex-row sm:items-center sm:justify-between sm:p-4"
+      >
+        {meta && <Filters meta={meta} />}
+        <div className="flex flex-col items-start gap-1 sm:items-end">
+          <Button
+            onClick={handleCollect}
+            disabled={collecting}
+            className="h-9 rounded-full px-5"
+          >
+            {collecting ? "Iniciando…" : "Coletar agora"}
           </Button>
           {collectMessage && (
-            <p className="text-sm text-muted-foreground">{collectMessage}</p>
+            <p role="status" className="text-sm text-muted-foreground">
+              {collectMessage}
+            </p>
           )}
         </div>
-      </div>
+      </section>
 
-      {meta && <Filters meta={meta} />}
-
-      {!topics || topics.length === 0 ? (
-        <p className="text-muted-foreground">
-          Nenhum tópico ainda. Clique em &#8220;Coletar agora&#8221; ou
-          configure suas chaves em Configurações.
-        </p>
-      ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {topics.map((topic) => (
-            <TopicCard key={topic.topic_id} topic={topic} />
-          ))}
-        </div>
+      {rest.length > 0 && (
+        <section aria-labelledby="ranking-titulo" className="flex flex-col gap-4">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2
+              id="ranking-titulo"
+              className="text-[length:var(--text-xl)] font-bold"
+            >
+              Na fila do radar
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Nota de oportunidade (estimativa), da maior para a menor
+            </p>
+          </div>
+          <ol className="flex flex-col border-b border-border">
+            {rest.map((topic, index) => (
+              <TopicCard key={topic.topic_id} topic={topic} rank={index + 2} />
+            ))}
+          </ol>
+        </section>
       )}
     </div>
   );

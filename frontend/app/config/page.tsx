@@ -19,7 +19,7 @@ import type {
 function Loading() {
   return (
     <div className="flex flex-1 items-center justify-center p-8">
-      <p className="text-muted-foreground">Carregando...</p>
+      <p className="text-muted-foreground">Carregando…</p>
     </div>
   );
 }
@@ -109,8 +109,15 @@ export default function ConfigPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-8 p-6">
-      <h1 className="text-2xl font-semibold">Configurações</h1>
+    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-[var(--space-2xl)] px-4 sm:px-8">
+      <header className="flex flex-col gap-3">
+        <h1 className="text-[length:var(--text-display)] font-bold">Configurações</h1>
+        <p className="max-w-[58ch] text-[length:var(--text-md)] leading-snug text-muted-foreground">
+          Veja se as fontes de dados estão respondendo, cole suas chaves e
+          ajuste como o radar calcula a nota. Tudo fica salvo só no seu
+          computador.
+        </p>
+      </header>
 
       {sources && (
         <SourcesHealth
@@ -120,7 +127,7 @@ export default function ConfigPage() {
         />
       )}
 
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-[var(--space-2xl)]">
         <ApiKeys
           apiKeys={form.api_keys}
           onChange={(key, value) =>
@@ -139,13 +146,13 @@ export default function ConfigPage() {
           onWeightsChange={(weights: Weights) => updateForm({ weights })}
         />
 
-        <div className="flex items-center gap-2">
-          <Button onClick={handleSave} disabled={saving}>
-            Salvar
+        <div className="sticky bottom-4 z-10 flex items-center gap-3 self-start rounded-full border border-border bg-[var(--color-glass)] p-1.5 pr-4 shadow-[var(--shadow-float)] backdrop-blur-md">
+          <Button onClick={handleSave} disabled={saving} className="h-9 rounded-full px-6">
+            {saving ? "Salvando…" : "Salvar"}
           </Button>
-          {saveMessage && (
-            <p className="text-sm text-muted-foreground">{saveMessage}</p>
-          )}
+          <p role="status" className="text-sm text-muted-foreground">
+            {saveMessage ?? "Chaves e preferências"}
+          </p>
         </div>
       </div>
 

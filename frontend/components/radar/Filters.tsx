@@ -37,13 +37,30 @@ export function Filters({ meta }: { meta: RadarMeta }) {
     router.push(query ? `${pathname}?${query}` : pathname);
   }
 
+  // Mapas valor → rótulo: fazem o campo mostrar "Brasil" em vez de "BR".
+  const countryItems = Object.fromEntries(
+    meta.countries.map((code) => [code, COUNTRY_LABELS[code] ?? code])
+  );
+  const platformItems = {
+    [ALL_VALUE]: "Todas as plataformas",
+    ...Object.fromEntries(meta.platforms.map((item) => [item.slug, item.name])),
+  };
+  const marketItems = {
+    [ALL_VALUE]: "Todos os mercados",
+    ...Object.fromEntries(meta.markets.map((slug) => [slug, MARKET_LABELS[slug] ?? slug])),
+  };
+  const categoryItems = {
+    [ALL_VALUE]: "Todas as categorias",
+    ...Object.fromEntries(meta.categories.map((slug) => [slug, CATEGORY_LABELS[slug] ?? slug])),
+  };
+
   const europeCodes = new Set(meta.country_groups?.Europa ?? []);
   const mainCountries = meta.countries.filter((code) => !europeCodes.has(code));
   const europeCountries = meta.countries.filter((code) => europeCodes.has(code));
 
   return (
-    <div className="flex flex-wrap gap-3">
-      <Select value={country} onValueChange={(value) => setParam("country", String(value))}>
+    <div className="flex flex-wrap gap-2">
+      <Select items={countryItems} value={country} onValueChange={(value) => setParam("country", String(value))}>
         <SelectTrigger aria-label="País">
           <SelectValue placeholder="País" />
         </SelectTrigger>
@@ -66,7 +83,7 @@ export function Filters({ meta }: { meta: RadarMeta }) {
         </SelectContent>
       </Select>
 
-      <Select value={platform} onValueChange={(value) => setParam("platform", String(value))}>
+      <Select items={platformItems} value={platform} onValueChange={(value) => setParam("platform", String(value))}>
         <SelectTrigger aria-label="Plataforma">
           <SelectValue placeholder="Plataforma" />
         </SelectTrigger>
@@ -80,7 +97,7 @@ export function Filters({ meta }: { meta: RadarMeta }) {
         </SelectContent>
       </Select>
 
-      <Select value={market} onValueChange={(value) => setParam("market", String(value))}>
+      <Select items={marketItems} value={market} onValueChange={(value) => setParam("market", String(value))}>
         <SelectTrigger aria-label="Mercado">
           <SelectValue placeholder="Mercado" />
         </SelectTrigger>
@@ -94,7 +111,7 @@ export function Filters({ meta }: { meta: RadarMeta }) {
         </SelectContent>
       </Select>
 
-      <Select value={category} onValueChange={(value) => setParam("category", String(value))}>
+      <Select items={categoryItems} value={category} onValueChange={(value) => setParam("category", String(value))}>
         <SelectTrigger aria-label="Categoria">
           <SelectValue placeholder="Categoria" />
         </SelectTrigger>

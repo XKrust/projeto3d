@@ -32,11 +32,18 @@ export const ARROW_SYMBOLS: Record<string, string> = {
   flat: "→",
 };
 
-export const SALE_CHANCE_STYLES: Record<string, string> = {
-  Alta: "bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-300",
-  Média:
-    "bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300",
-  Baixa: "bg-gray-200 text-gray-700 dark:bg-gray-700/50 dark:text-gray-300",
+// Cor do ponto ao lado da chance de venda (tokens de sinal em app/tokens.css).
+// O texto ("Alta"/"Média"/"Baixa") sempre acompanha a cor.
+export const SALE_CHANCE_DOT: Record<string, string> = {
+  Alta: "bg-[var(--color-signal-up)]",
+  Média: "bg-[var(--color-signal-mid)]",
+  Baixa: "bg-[var(--color-neutral)]",
+};
+
+export const ARROW_LABELS: Record<string, string> = {
+  up: "subindo",
+  down: "caindo",
+  flat: "estável",
 };
 
 export function formatPeakLabel(daysToPeak: number): string {
@@ -59,3 +66,14 @@ export function formatMedianPrice(medianPriceUsd: number | null): string {
   }).format(medianPriceUsd);
   return `Preço mediano: US$ ${formatted}`;
 }
+
+// País com a preposição certa, para frases como "a maior oportunidade no Brasil".
+export const COUNTRY_IN: Record<string, string> = {
+  BR: "no Brasil",
+  US: "nos EUA",
+  JP: "no Japão",
+  GB: "no Reino Unido",
+  DE: "na Alemanha",
+  FR: "na França",
+  ES: "na Espanha",
+};

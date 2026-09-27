@@ -1,67 +1,75 @@
 import { ImageOff } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SaleChance } from "@/components/radar/SaleChance";
 import { Sparkline } from "@/components/radar/Sparkline";
 import {
+  ARROW_LABELS,
   ARROW_SYMBOLS,
   CATEGORY_LABELS,
-  SALE_CHANCE_STYLES,
   formatMedianPrice,
   formatPeakLabel,
 } from "@/lib/radar-labels";
 import type { Topic } from "@/lib/radar-types";
 
-export function TopicCard({ topic }: { topic: Topic }) {
+// Uma linha do ranking, do nº 2 em diante (o nº 1 fica no destaque do topo).
+export function TopicCard({ topic, rank }: { topic: Topic; rank: number }) {
   const arrow = ARROW_SYMBOLS[topic.momentum_arrow] ?? "→";
+  const arrowLabel = ARROW_LABELS[topic.momentum_arrow] ?? "estável";
   const categoryLabel = CATEGORY_LABELS[topic.category] ?? topic.category;
-  const saleChanceClass = SALE_CHANCE_STYLES[topic.sale_chance] ?? "";
+  const score = Math.round(topic.opportunity);
 
   return (
-    <Card>
-      <CardHeader className="flex-row items-center gap-3">
-        {topic.image_url ? (
-          // eslint-disable-next-line @next/next/no-img-element -- thumbnails vêm de domínios arbitrários
-          <img
-            src={topic.image_url}
-            alt={topic.name}
-            className="size-12 shrink-0 rounded-md object-cover"
-          />
-        ) : (
-          <div className="flex size-12 shrink-0 items-center justify-center rounded-md bg-muted">
-            <ImageOff className="size-5 text-muted-foreground" aria-hidden="true" />
-          </div>
-        )}
-        <div className="flex flex-1 flex-col gap-1">
-          <CardTitle>{topic.name}</CardTitle>
-          <Badge variant="secondary" className="w-fit">
-            {categoryLabel}
-          </Badge>
+    <li className="group grid grid-cols-[2rem_3rem_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-3 border-t border-border py-5 transition-colors duration-150 hover:bg-card/60 sm:gap-x-4 lg:grid-cols-[2.5rem_3.25rem_minmax(0,1fr)_5.5rem_7.5rem_minmax(0,15rem)] lg:px-2">
+      <span className="tnum self-start pt-1 text-sm text-muted-foreground">
+        {String(rank).padStart(2, "0")}
+      </span>
+
+      {topic.image_url ? (
+        // eslint-disable-next-line @next/next/no-img-element -- miniaturas vêm de domínios arbitrários
+        <img
+          src={topic.image_url}
+          alt=""
+          className="size-12 rounded-lg object-cover lg:size-13"
+        />
+      ) : (
+        <div className="flex size-12 items-center justify-center rounded-lg bg-muted lg:size-13">
+          <ImageOff className="size-5 text-muted-foreground" aria-hidden="true" />
         </div>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-2">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl font-semibold">
-            {Math.round(topic.opportunity)}
-          </span>
-          <span className="text-lg text-muted-foreground" aria-hidden="true">
+      )}
+
+      <div className="flex min-w-0 flex-col gap-1">
+        <h3 className="text-[length:var(--text-md)] font-semibold tracking-[-0.015em] text-foreground">
+          {topic.name}
+        </h3>
+        <p className="text-sm text-muted-foreground">
+          {categoryLabel}
+          {topic.reason && <span className="hidden sm:inline"> · {topic.reason}</span>}
+        </p>
+      </div>
+
+      <p className="flex flex-col items-end leading-none lg:items-start">
+        <span className="tnum font-heading text-[length:var(--text-xl)] font-bold tracking-[-0.03em] text-foreground">
+          {score}
+        </span>
+        <span className="mt-1 whitespace-nowrap text-xs text-muted-foreground">
+          <span aria-hidden="true" className="text-primary">
             {arrow}
-          </span>
-          <Badge className={saleChanceClass}>
-            {topic.sale_chance} (estimativa)
-          </Badge>
-        </div>
-        <Sparkline data={topic.sparkline} />
-        <p className="text-sm text-muted-foreground">
-          {formatPeakLabel(topic.days_to_peak)}
-        </p>
-        <p className="text-sm text-muted-foreground">
-          Melhor em: {topic.best_platform.name}
-        </p>
-        <p className="text-sm text-muted-foreground">
-          {formatMedianPrice(topic.median_price_usd)}
-        </p>
-        {topic.reason && <p className="text-sm">{topic.reason}</p>}
-      </CardContent>
-    </Card>
+          </span>{" "}
+          {arrowLabel}
+        </span>
+      </p>
+
+      <div className="col-span-4 lg:col-span-1">
+        <Sparkline data={topic.sparkline} height={36} />
+      </div>
+
+      <ul className="col-span-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-muted-foreground lg:col-span-1 lg:flex-col lg:items-start lg:gap-1">
+        <li className="text-foreground">{formatPeakLabel(topic.days_to_peak)}</li>
+        <li>Melhor em: {topic.best_platform.name}</li>
+        <li className="tnum">{formatMedianPrice(topic.median_price_usd)}</li>
+        <li>
+          <SaleChance chance={topic.sale_chance} />
+        </li>
+      </ul>
+    </li>
   );
 }

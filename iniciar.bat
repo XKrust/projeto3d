@@ -70,7 +70,16 @@ if not exist "frontend\node_modules" (
     popd
 )
 
-if not exist "frontend\.next\BUILD_ID" (
+rem Recompila quando nao ha build ou quando algum arquivo do site e mais novo que ele
+rem (senao uma atualizacao do visual nunca apareceria).
+set "PRECISA_BUILD=0"
+if not exist "frontend\.next\BUILD_ID" set "PRECISA_BUILD=1"
+if "%PRECISA_BUILD%"=="0" (
+    powershell -NoProfile -Command "$b=(Get-Item 'frontend\.next\BUILD_ID').LastWriteTime; $n=Get-ChildItem 'frontend\app','frontend\components','frontend\lib','frontend\package.json' -Recurse -File | Sort-Object LastWriteTime -Descending | Select-Object -First 1; if ($n.LastWriteTime -gt $b) { exit 1 } else { exit 0 }"
+    if errorlevel 1 set "PRECISA_BUILD=1"
+)
+
+if "%PRECISA_BUILD%"=="1" (
     echo Compilando o frontend ^(pode demorar alguns minutos^)...
     pushd frontend
     call npm run build

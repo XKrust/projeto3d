@@ -15,3 +15,4 @@
 | 2026-09-27 | CGTrader via API oficial (`api.cgtrader.com`, com chave), não scraping | O site responde com desafio anti-robô (202 vazio) e o robots.txt proíbe `/search*` e `*/api/internal/*` |
 | 2026-09-27 | No grupo `platforms` da demanda, cada fonte vira percentil entre os tópicos antes de somar | Com 9 fontes de escalas muito diferentes, somar valores brutos deixava a fonte de maior escala (ex.: favoritos do BOOTH) decidir sozinha |
 | 2026-09-27 | MakerWorld fica fora da Etapa 1b | Todas as rotas úteis estão atrás de desafio Cloudflare, e não burlamos proteção anti-robô |
+| 2026-09-27 | Redesign do frontend com a skill hallmark: tema escuro atmosférico, laranja "oficina 3D", Bricolage Grotesque + Geist, sistema travado em `design.md` | Pedido de visual nível Awwwards. O público modela em apps escuros (Blender), e um sistema único impede que cada tela nova invente o próprio visual |

@@ -71,7 +71,13 @@ export function PlatformsTable({
 
   return (
     <section className="flex flex-col gap-2">
-      <h2 className="text-lg font-semibold">Plataformas</h2>
+      <div className="flex flex-col gap-2">
+        <h2 className="text-[length:var(--text-xl)] font-bold">Plataformas</h2>
+        <p className="max-w-[62ch] text-muted-foreground">
+          Taxa cobrada por venda e força de cada loja em cada país, de 0 a 1.
+          São estimativas iniciais — ajuste com o que você vê nas suas vendas.
+        </p>
+      </div>
       <Table>
         <TableHeader>
           <TableRow>

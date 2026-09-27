@@ -35,7 +35,13 @@ export function Preferences({
 
   return (
     <section className="flex flex-col gap-4">
-      <h2 className="text-lg font-semibold">Preferências</h2>
+      <div className="flex flex-col gap-2">
+        <h2 className="text-[length:var(--text-xl)] font-bold">Preferências</h2>
+        <p className="max-w-[62ch] text-muted-foreground">
+          Os países que o radar acompanha e quanto tempo você leva para
+          modelar: a nota mira o dia em que o modelo fica pronto, não o de hoje.
+        </p>
+      </div>
 
       <fieldset className="flex flex-col gap-2">
         <legend className="text-sm font-medium">Países</legend>

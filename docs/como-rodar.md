@@ -65,11 +65,10 @@ precisa do `install`):
 cd frontend && npx playwright install chromium && npx playwright test
 ```
 
-Depois de atualizar o código do frontend (ou trocar de branch), apague `frontend/.next` antes
-de rodar `iniciar.bat` de novo — senão ele reaproveita o build antigo (`iniciar.bat` só roda
-`npm run build` quando não existe `frontend/.next/BUILD_ID`, o arquivo que só existe depois de
-um `next build` bem-sucedido — então ter rodado só `npm run dev` antes não conta como build
-pronto, e o `iniciar.bat` builda mesmo assim):
+Depois de atualizar o código do frontend (ou trocar de branch), não precisa fazer nada: o
+`iniciar.bat` compara a data do último build (`frontend/.next/BUILD_ID`) com a do arquivo mais
+novo em `frontend/app`, `frontend/components`, `frontend/lib` e `frontend/package.json`, e roda
+`npm run build` de novo se algum for mais novo. Para forçar um build do zero:
 
 ```
 rmdir /s /q frontend\.next
@@ -77,7 +76,7 @@ rmdir /s /q frontend\.next
 
 ### Smoke test de ponta a ponta (servidores reais)
 
-`frontend/tests/e2e/smoke.spec.ts` abre as 5 telas e confere que `/config` lista as 6 fontes,
+`frontend/tests/e2e/smoke.spec.ts` abre as 5 telas e confere que `/config` lista as 12 fontes,
 mas contra o backend e o frontend **de verdade** (sem mockar a API) — por isso fica fora da
 suíte padrão e só roda com a variável `RADAR_SMOKE=1`. Com o Radar 3D já rodando (por
 `iniciar.bat` ou pelos dois comandos acima):
@@ -92,7 +91,8 @@ cd frontend && RADAR_SMOKE=1 npx playwright test tests/e2e/smoke.spec.ts
 
 - `iniciar.bat`: se a porta 3000 já estiver ouvindo, só abre o navegador. Senão, confere
   Node.js e `uv` (instala o `uv` sozinho se faltar), roda `uv sync` no backend, `npm install`
-  se faltar `frontend/node_modules` e `npm run build` se faltar `frontend/.next/BUILD_ID`, sobe
+  se faltar `frontend/node_modules` e `npm run build` se faltar `frontend/.next/BUILD_ID` ou se o
+  código do site for mais novo que ele, sobe
   o backend (`:8000`) minimizado com a saída redirecionada para `data\backend.log` e espera ele
   responder em `/api/health` (até 60 s) **antes** de subir o frontend — se o backend cair na
   inicialização, a janela minimizada fecha sozinha e levaria o erro junto, por isso a checagem

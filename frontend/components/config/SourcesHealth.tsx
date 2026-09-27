@@ -20,8 +20,14 @@ export function SourcesHealth({
   collectingSource: string | null;
 }) {
   return (
-    <section className="flex flex-col gap-2">
-      <h2 className="text-lg font-semibold">Saúde das fontes</h2>
+    <section className="flex flex-col gap-4">
+      <div className="flex flex-col gap-2">
+        <h2 className="text-[length:var(--text-xl)] font-bold">Saúde das fontes</h2>
+        <p className="max-w-[62ch] text-muted-foreground">
+          🟢 respondeu na última coleta · 🟡 falta a chave · 🔴 deu erro. Uma
+          fonte com problema nunca derruba as outras.
+        </p>
+      </div>
       <Table>
         <TableHeader>
           <TableRow>
@@ -38,7 +44,7 @@ export function SourcesHealth({
               SOURCE_STATUS_META[source.status] ?? SOURCE_STATUS_META.never;
             return (
               <TableRow key={source.name}>
-                <TableCell>{source.label}</TableCell>
+                <TableCell className="font-medium text-foreground">{source.label}</TableCell>
                 <TableCell>
                   <div className="flex flex-col gap-1">
                     <span>
@@ -52,11 +58,12 @@ export function SourcesHealth({
                   </div>
                 </TableCell>
                 <TableCell>{formatRelativeTime(source.last_run)}</TableCell>
-                <TableCell>{source.items_last_run}</TableCell>
+                <TableCell className="tnum">{source.items_last_run}</TableCell>
                 <TableCell>
                   <Button
                     size="sm"
                     variant="outline"
+                    className="rounded-full px-3"
                     onClick={() => onCollect(source.name)}
                     disabled={collectingSource === source.name}
                   >
