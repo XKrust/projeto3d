@@ -73,7 +73,8 @@ Regras gerais:
 | Sketchfab | API | opcional | 1 |
 | Cults3D | API | sim | 1 |
 | Printables | scraping | não | 1 |
-| Thingiverse, MyMiniFactory, Etsy | API | sim | 1b |
+| Etsy | API | sim (keystring + shared secret) | 1b |
+| Thingiverse, MyMiniFactory | API | sim | 1b |
 | BOOTH (Japão) | scraping | não | 1b |
 | ArtStation | JSON não oficial (tratado como scraping) | não | 1b |
 | MakerWorld, CGTrader | scraping | não | 1b |
@@ -410,6 +411,36 @@ isso o coletor segue as regras de scraping: robots.txt e espera de 3 a 5 s.
 - **Fixtures** (chamadas reais de 27/09/2026): `tests/fixtures/artstation/trending.json` (5
   primeiros artworks), `marketplace_search.json` (`q=dragon`, `total_count: 5983`) e
   `robots.txt`.
+
+## Etsy
+
+`backend/app/collectors/etsy.py` (`EtsyCollector`: `name="etsy"`, `label="Etsy"`, `kind="api"`,
+`platform="etsy"`, `needs_key=("etsy_keystring", "etsy_shared_secret")`, país `GLOBAL`,
+60 minutos). Implementa `Collector` e `count_listings`.
+
+**⚠️ Não validado com chave real — validar e regravar as fixtures assim que houver uma.**
+
+- **Autenticação:** header `x-api-key: <keystring>:<shared_secret>`. O formato foi confirmado
+  na doc oficial (`https://developers.etsy.com/documentation/essentials/authentication`) e
+  pela resposta real da API a uma chave inválida (403, "incorrect shared secret for API
+  key"), em 27/09/2026. As duas partes ficam na página "Your Apps"
+  (`https://www.etsy.com/developers/your-apps`).
+- **Tendências:** `GET https://openapi.etsy.com/v3/application/listings/active` com
+  `keywords=<termo>`, `sort_on=score` e `limit=100`, para cada termo de
+  `KEYWORDS = ("3d printed", "3d print", "stl file")`. Anúncios repetidos entre termos são
+  deduplicados por `listing_id`.
+- **Campos** (schema `ShopListing`):
+  - `external_id=str(listing_id)`, `title`, `url`, `tags`;
+  - `likes=num_favorers`, `views` (pode faltar e vira `None`), `metric = num_favorers + views/100`
+    (views ausentes contam como 0);
+  - `price_usd = amount/divisor` **só quando `currency_code == "USD"`**; qualquer outra moeda
+    fica `None`, sem conversão de câmbio (Etapa 3).
+- **Contagem:** o mesmo endpoint com `keywords="<termo> 3d"` e `limit=1` → `count`. O " 3d"
+  restringe a contagem a anúncios de impressão 3D, em vez de tudo que o Etsy vende sobre o
+  termo.
+- **Fixtures** montadas à mão no formato documentado: `tests/fixtures/etsy/active_a.json` (3
+  anúncios, um em EUR e um sem `views`), `active_b.json` (3 anúncios, um repetido de
+  `active_a`, um em GBP) e `count.json` (`count: 4821`).
 
 ## Como adicionar um coletor
 

@@ -1,0 +1,69 @@
+{
+ "count": 3,
+ "results": [
+  {
+   "listing_id": 1501234569,
+   "user_id": 1501235569,
+   "shop_id": 1501236569,
+   "title": "Flexi Axolotl Print",
+   "description": "Arquivo STL / peça impressa em 3D.",
+   "state": "active",
+   "url": "https://www.etsy.com/listing/1501234569/flexi-axolotl-print",
+   "num_favorers": 1204,
+   "is_digital": true,
+   "tags": [
+    "axolotl",
+    "flexi",
+    "fidget"
+   ],
+   "price": {
+    "amount": 899,
+    "divisor": 100,
+    "currency_code": "USD"
+   }
+  },
+  {
+   "listing_id": 1501234570,
+   "user_id": 1501235570,
+   "shop_id": 1501236570,
+   "title": "Pokemon Planter STL",
+   "description": "Arquivo STL / peça impressa em 3D.",
+   "state": "active",
+   "url": "https://www.etsy.com/listing/1501234570/pokemon-planter-stl",
+   "num_favorers": 96,
+   "is_digital": true,
+   "tags": [
+    "planter",
+    "pokemon"
+   ],
+   "price": {
+    "amount": 450,
+    "divisor": 100,
+    "currency_code": "USD"
+   },
+   "views": 2100
+  },
+  {
+   "listing_id": 1501234571,
+   "user_id": 1501235571,
+   "shop_id": 1501236571,
+   "title": "D&D Mini Pack",
+   "description": "Arquivo STL / peça impressa em 3D.",
+   "state": "active",
+   "url": "https://www.etsy.com/listing/1501234571/d&d-mini-pack",
+   "num_favorers": 57,
+   "is_digital": true,
+   "tags": [
+    "dnd",
+    "miniature",
+    "tabletop"
+   ],
+   "price": {
+    "amount": 1500,
+    "divisor": 100,
+    "currency_code": "GBP"
+   },
+   "views": 900
+  }
+ ]
+}

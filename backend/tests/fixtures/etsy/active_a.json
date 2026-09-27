@@ -1,0 +1,71 @@
+{
+ "count": 3,
+ "results": [
+  {
+   "listing_id": 1501234567,
+   "user_id": 1501235567,
+   "shop_id": 1501236567,
+   "title": "Articulated Dragon STL",
+   "description": "Arquivo STL / peça impressa em 3D.",
+   "state": "active",
+   "url": "https://www.etsy.com/listing/1501234567/articulated-dragon-stl",
+   "num_favorers": 842,
+   "is_digital": true,
+   "tags": [
+    "dragon",
+    "articulated",
+    "stl",
+    "3d print"
+   ],
+   "price": {
+    "amount": 1250,
+    "divisor": 100,
+    "currency_code": "USD"
+   },
+   "views": 15300
+  },
+  {
+   "listing_id": 1501234568,
+   "user_id": 1501235568,
+   "shop_id": 1501236568,
+   "title": "Frieren Figure 3D Printed",
+   "description": "Arquivo STL / peça impressa em 3D.",
+   "state": "active",
+   "url": "https://www.etsy.com/listing/1501234568/frieren-figure-3d-printed",
+   "num_favorers": 311,
+   "is_digital": true,
+   "tags": [
+    "frieren",
+    "anime",
+    "figure"
+   ],
+   "price": {
+    "amount": 3900,
+    "divisor": 100,
+    "currency_code": "EUR"
+   },
+   "views": 4200
+  },
+  {
+   "listing_id": 1501234569,
+   "user_id": 1501235569,
+   "shop_id": 1501236569,
+   "title": "Flexi Axolotl Print",
+   "description": "Arquivo STL / peça impressa em 3D.",
+   "state": "active",
+   "url": "https://www.etsy.com/listing/1501234569/flexi-axolotl-print",
+   "num_favorers": 1204,
+   "is_digital": true,
+   "tags": [
+    "axolotl",
+    "flexi",
+    "fidget"
+   ],
+   "price": {
+    "amount": 899,
+    "divisor": 100,
+    "currency_code": "USD"
+   }
+  }
+ ]
+}

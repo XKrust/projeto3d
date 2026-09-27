@@ -48,6 +48,16 @@ export const KEY_GUIDES: Record<string, KeyGuide> = {
     ],
     url: "https://cults3d.com/en/api/keys",
   },
+  etsy: {
+    titulo: "Etsy",
+    passos: [
+      "Acesse etsy.com/developers/your-apps com sua conta do Etsy.",
+      "Clique em “Create a New App”, dê um nome qualquer e descreva o uso como pessoal.",
+      "O Etsy pode levar alguns dias para aprovar o app. Enquanto isso, a fonte fica “sem chave”.",
+      "Na página do app, copie o “Keystring” e o “Shared secret”; os dois são necessários.",
+    ],
+    url: "https://www.etsy.com/developers/your-apps",
+  },
   gemini: {
     titulo: "Gemini",
     passos: [

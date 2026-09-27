@@ -27,6 +27,13 @@ const API_KEY_GROUPS: ApiKeyGroup[] = [
       { key: "cults3d_key", label: "Chave da API do Cults3D" },
     ],
   },
+  {
+    service: "etsy",
+    fields: [
+      { key: "etsy_keystring", label: "Keystring do Etsy" },
+      { key: "etsy_shared_secret", label: "Shared secret do Etsy" },
+    ],
+  },
   { service: "gemini", fields: [{ key: "gemini", label: "Chave da API do Gemini" }] },
 ];
 

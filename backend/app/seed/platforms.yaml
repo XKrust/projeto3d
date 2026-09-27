@@ -72,3 +72,17 @@
     ES: 0.5
     JP: 0.4
   notes: ""
+
+- slug: etsy
+  name: Etsy
+  markets: [print, digital]
+  fee_pct: null
+  strength:
+    BR: 0.3
+    US: 0.9
+    GB: 0.8
+    DE: 0.6
+    FR: 0.5
+    ES: 0.4
+    JP: 0.2
+  notes: ""

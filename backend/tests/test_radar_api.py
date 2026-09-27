@@ -101,7 +101,7 @@ def test_meta_lists_constants_and_platforms(client, platforms):
     assert "toys_memes" in body["categories"]
     assert body["markets"] == ["print", "digital"]
     slugs = {p["slug"] for p in body["platforms"]}
-    assert slugs == {"cults3d", "sketchfab", "printables", "booth", "artstation"}
+    assert slugs == {"cults3d", "sketchfab", "printables", "booth", "artstation", "etsy"}
     assert body["last_updated"] is None
 
 

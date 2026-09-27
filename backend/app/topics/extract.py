@@ -57,7 +57,7 @@ _SEED_DIR = Path(__file__).resolve().parent.parent / "seed"
 _ENTITIES_FILE = _SEED_DIR / "entities.yaml"
 
 TRENDS_SOURCE = "google_trends"
-PLATFORM_SOURCES = frozenset({"sketchfab", "cults3d", "printables", "booth", "artstation"})
+PLATFORM_SOURCES = frozenset({"sketchfab", "cults3d", "printables", "booth", "artstation", "etsy"})
 
 _CANDIDATE_MIN_ITEMS = 3
 _CANDIDATE_MIN_SOURCES = 2

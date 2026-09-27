@@ -19,6 +19,8 @@ DEFAULTS: dict = {
         "sketchfab": "",
         "cults3d_user": "",
         "cults3d_key": "",
+        "etsy_keystring": "",
+        "etsy_shared_secret": "",
         "gemini": "",
     },
     "countries": ["BR", "US", "GB", "DE", "FR", "ES", "JP"],
