@@ -257,6 +257,63 @@ e autenticação básica (`usuário:chave`, `settings["api_keys"]["cults3d_user"
   os nomes de campo exatos (em especial `identifier` vs. algum `id` opaco, e `cents` vs. `value`
   em `price`), e regravar as fixtures com a resposta real.
 
+## Robots.txt (`app/collectors/robots.py`)
+
+`is_allowed(robots_txt: str, url: str, user_agent: str) -> bool`, via `urllib.robotparser`
+(`RobotFileParser.parse` + `can_fetch`). Usada pelos coletores de scraping (kind `"scrape"`)
+para checar, uma vez por execução, se a página que vão buscar é permitida pelo robots.txt da
+fonte.
+
+**Achado documentado:** `urllib.robotparser` decide pela **primeira regra que casa, na ordem
+em que aparece no arquivo** — ele não implementa a convenção "regra mais específica vence"
+que o Google e a maioria dos crawlers modernos usam. O robots.txt real do Printables (ver
+abaixo) tem `Allow: /` **antes** de `Disallow: /world/`; como `Allow: /` já casa com qualquer
+caminho, `is_allowed` (com esse parser) devolve `True` inclusive para URLs em `/world/`. Isso
+é uma particularidade do parser padrão do Python com este arquivo real, não um bug do nosso
+código — `tests/test_robots.py` caracteriza esse comportamento explicitamente
+(`test_real_printables_robots_allows_everything_due_to_rule_order`) para não ser redescoberto
+por engano depois. O teste do caminho "bloqueado" de `is_allowed` usa por isso um robots.txt
+genérico (`Disallow: /private/` como única regra), não o real do Printables.
+
+## Printables — BLOQUEADO (Tarefa 9, ver `task-9-report.md`)
+
+**Não implementado.** `app/collectors/printables.py`, `tests/test_printables.py` e as fixtures
+`tests/fixtures/printables/{trending.html,search.html}` **não foram criados** nesta etapa.
+
+- **Robots.txt confirmado por chamada real** (`curl -A "Radar3D/0.1 (uso pessoal)"
+  https://www.printables.com/robots.txt`, 26/09/2026), salvo em
+  `backend/tests/fixtures/printables/robots.txt`:
+  ```
+  User-agent: *
+  Allow: /
+  Disallow: /world/
+
+  Sitemap: https://www.printables.com/sitemap.xml
+  ```
+  (ver a seção acima sobre a particularidade do `urllib.robotparser` com este arquivo).
+- **Todo o restante do site está atrás de um desafio Cloudflare** ("Just a moment...", página
+  de challenge JS) que bloqueia acesso automatizado, tanto por HTTP simples quanto por
+  Chromium headless via Playwright:
+  - `curl` com o User-Agent do projeto em `/`, `/model`, `/en/model`, `/model?ordering=...` e
+    `/search/models?q=dragon` devolveu **403** com o HTML do desafio Cloudflare em todos os
+    casos.
+  - Um Chromium headless real (Playwright, `page.goto(..., wait_until="load")`, sem nenhuma
+    técnica de evasão de bot-detection) navegou até `https://www.printables.com/` e ficou preso
+    na página "Just a moment..." por mais de 40 segundos de espera (6 checagens de 5 em 5s),
+    sem nunca resolver o desafio e chegar ao conteúdo real.
+  - Por isso não foi possível nem confirmar a URL real da página de tendências/busca, nem
+    gravar fixtures HTML reais — e as regras da Tarefa 9 e das restrições globais proíbem
+    inventar HTML de fixture ou adivinhar seletores/URLs sem confirmação real. Tentar contornar
+    a proteção anti-bot da Cloudflare (fingerprint spoofing, `navigator.webdriver`, etc.) está
+    fora do escopo aceitável deste projeto.
+- **Consequência:** `PrintablesCollector` não está em `ALL_COLLECTORS`; a fonte "Printables"
+  continua listada na tabela de Fontes acima como pendente. `is_allowed`/`robots.py` (que não
+  dependem de acessar a página em si) foram implementados e testados normalmente.
+- **Próximo passo sugerido:** obter uma gravação manual da página (ex.: HTML exportado por uma
+  pessoa navegando de verdade, ou uma sessão de navegador não automatizada) para servir de
+  fixture real, ou revisitar esta fonte mais adiante (Etapa 1b), caso surja uma forma legítima
+  de acessá-la (ex.: uma API pública).
+
 ## Como adicionar um coletor
 
 O passo a passo é documentado junto com a implementação da Etapa 1.
