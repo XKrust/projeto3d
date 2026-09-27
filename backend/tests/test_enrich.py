@@ -279,6 +279,64 @@ def test_enrich_topics_generic_provider_error_returns_zero_without_raising(sessi
     assert enrich_topics(session, provider, DAY) == (0, 0)
 
 
+def test_enrich_topics_rejects_response_with_wrong_top_level_types(session):
+    """`merges` deve ser uma lista e `reasons` um objeto; um formato de nivel
+    superior errado invalida a resposta inteira (sem levantar excecao) e nao
+    marca o dia, para tentar de novo num proximo ciclo."""
+    topic = _topic(session, "Tema")
+    _signal(session, topic, 10)
+    provider = FakeProvider(response={"merges": {}, "reasons": ["texto"]})
+
+    assert enrich_topics(session, provider, DAY) == (0, 0)
+
+    # nao marcou o dia: uma chamada seguinte no mesmo dia tenta de novo
+    provider.response = {"merges": [], "reasons": {}}
+    enrich_topics(session, provider, DAY)
+    assert provider.calls == 2
+
+
+def test_enrich_topics_skips_non_dict_merge_entries(session):
+    """Uma entrada de `merges` que nao e um objeto (ex.: uma string solta) e so
+    descartada; nao invalida a resposta inteira nem levanta excecao."""
+    topic = _topic(session, "Tema")
+    _signal(session, topic, 10)
+    provider = FakeProvider(response={"merges": ["fern-frieren"]})
+
+    merged, reasons = enrich_topics(session, provider, DAY)
+
+    assert (merged, reasons) == (0, 0)
+    # resposta "vazia" apos filtrar o lixo e valida: nao e um erro, o dia e marcado
+    enrich_topics(session, provider, DAY)
+    assert provider.calls == 1
+
+
+def test_enrich_topics_skips_malformed_merge_entry_and_applies_the_valid_one(session):
+    fern = _topic(session, "Fern")
+    frieren = _topic(session, "Fern Frieren")
+    tema = _topic(session, "Tema")
+    _signal(session, fern, 5)
+    _signal(session, frieren, 7)
+    _signal(session, tema, 3)
+    provider = FakeProvider(
+        response={
+            "merges": [
+                {"keep": "fern-frieren", "merge": ["fern"]},
+                {"keep": 5, "merge": ["fern"]},  # keep nao e string
+                {"keep": "tema"},  # merge ausente
+                "oops",  # nem e um objeto
+            ],
+            "reasons": {"tema": "motivo valido", "desconhecido": 123},
+        }
+    )
+
+    merged, reasons_written = enrich_topics(session, provider, DAY)
+
+    assert (merged, reasons_written) == (1, 1)
+    assert {t.slug for t in session.exec(select(Topic)).all()} == {"fern-frieren", "tema"}
+    session.refresh(tema)
+    assert tema.reason == "motivo valido"
+
+
 def test_enrich_topics_ignores_merge_of_entity_topic(session):
     """Uma entidade (`seed/entities.yaml`) nunca pode ser o lado removido de uma
     fusao: ela seria re-semeada como topico separado no proximo `extract_topics`."""

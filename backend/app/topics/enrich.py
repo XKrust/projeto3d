@@ -155,6 +155,24 @@ def _example_titles(session: Session, topic_id: int, limit: int = EXAMPLE_TITLES
     return list(rows)
 
 
+def _valid_merge_entries(raw: object) -> list[dict] | None:
+    """`None` quando `raw` (o valor de `"merges"`) nao tem o formato de nivel
+    superior esperado (uma lista) — resposta inteira invalida. Uma lista valida
+    tem cada entrada malformada (nao-dict) descartada individualmente, sem
+    invalidar a resposta inteira."""
+    if not isinstance(raw, list):
+        return None
+    return [entry for entry in raw if isinstance(entry, dict)]
+
+
+def _valid_reasons(raw: object) -> dict | None:
+    """`None` quando `raw` (o valor de `"reasons"`) nao tem o formato de nivel
+    superior esperado (um dict) — resposta inteira invalida."""
+    if not isinstance(raw, dict):
+        return None
+    return raw
+
+
 def _build_prompt(session: Session, topics: list[Topic]) -> str:
     payload = [
         {"slug": topic.slug, "nome": topic.name, "titulos": _example_titles(session, topic.id)}
@@ -194,17 +212,29 @@ def enrich_topics(session: Session, provider: TextProvider, day: date, top_n: in
         logger.error("Resposta do provedor de IA nao e um objeto JSON; enriquecimento adiado")
         return (0, 0)
 
+    merge_entries = _valid_merge_entries(response.get("merges", []))
+    reasons = _valid_reasons(response.get("reasons", {}))
+    if merge_entries is None or reasons is None:
+        logger.error(
+            "Resposta do provedor de IA tem formato invalido ('merges' deve ser uma lista, "
+            "'reasons' um objeto); enriquecimento adiado"
+        )
+        return (0, 0)
+
     entity_slugs = _entity_slugs()
     slug_to_topic = {topic.slug: topic for topic in topics}
 
     merged = 0
-    for merge_entry in response.get("merges") or []:
+    for merge_entry in merge_entries:
         keep_slug = merge_entry.get("keep")
+        merge_slugs = merge_entry.get("merge")
+        if not isinstance(keep_slug, str) or not isinstance(merge_slugs, list):
+            continue
         keep_topic = slug_to_topic.get(keep_slug)
         if keep_topic is None:
             continue
-        for merge_slug in merge_entry.get("merge") or []:
-            if merge_slug == keep_slug or merge_slug in entity_slugs:
+        for merge_slug in merge_slugs:
+            if not isinstance(merge_slug, str) or merge_slug == keep_slug or merge_slug in entity_slugs:
                 continue
             merge_topic = slug_to_topic.get(merge_slug)
             if merge_topic is None:
@@ -214,9 +244,11 @@ def enrich_topics(session: Session, provider: TextProvider, day: date, top_n: in
             merged += 1
 
     reasons_written = 0
-    for slug, reason_text in (response.get("reasons") or {}).items():
+    for slug, reason_text in reasons.items():
+        if not isinstance(slug, str) or not isinstance(reason_text, str):
+            continue
         topic = slug_to_topic.get(slug)
-        if topic is None or not isinstance(reason_text, str):
+        if topic is None:
             continue
         topic.reason = reason_text[:REASON_MAX_LEN]
         topic.reason_day = day
