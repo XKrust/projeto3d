@@ -59,7 +59,7 @@ def test_every_event_has_at_least_5_ideas():
 
 
 def test_idea_signal_matches_keywords_last_30_days(session):
-    _item(session, title="Articulated Skull keychain", metric=40)
+    _item(session, title="Skull bust", metric=40)
     _item(session, title="caveira mexicana decorativa", metric=10)
     _item(session, title="Skull lamp", metric=99, day=DAY - timedelta(days=45))  # velho demais
     _item(session, title="skullcandy headphones", metric=500)  # não é a palavra "skull"
@@ -67,14 +67,62 @@ def test_idea_signal_matches_keywords_last_30_days(session):
 
     update_seasonal_signals(session, DAY)
 
-    row = session.exec(
-        select(SeasonalIdeaSignal).where(SeasonalIdeaSignal.idea == "Caveira", SeasonalIdeaSignal.country == "BR")
-    ).one()
-    assert row.signal == 50
-    jp = session.exec(
-        select(SeasonalIdeaSignal).where(SeasonalIdeaSignal.idea == "Caveira", SeasonalIdeaSignal.country == "JP")
-    ).one()
-    assert jp.signal == 1050
+    # Cada fonte vira percentil entre as ideias que ela cita; só a Caveira aparece, então
+    # cada fonte vale 50. No JP, o Google Trends do país soma mais 50.
+    assert _signal_of(session, "Caveira", "BR") == 50
+    assert _signal_of(session, "Caveira", "JP") == 100
+
+
+def _signal_of(session, idea, country):
+    return session.exec(
+        select(SeasonalIdeaSignal).where(SeasonalIdeaSignal.idea == idea, SeasonalIdeaSignal.country == country)
+    ).one().signal
+
+
+def test_viral_video_does_not_decide_alone(session):
+    # Cada fonte mede numa escala (views, favoritos): vira percentil antes de somar.
+    _item(session, title="skull bust", source="sketchfab", metric=100)
+    _item(session, title="ghost bust", source="sketchfab", metric=10)
+    _item(session, title="skull edit", source="youtube", metric=10)
+    _item(session, title="witch hat", source="youtube", metric=10_000_000)
+
+    update_seasonal_signals(session, DAY)
+
+    caveira = _signal_of(session, "Caveira", "BR")
+    bruxa = _signal_of(session, "Bruxa", "BR")
+    assert caveira == 100  # 75 no sketchfab + 25 no youtube
+    assert bruxa == 75
+    assert caveira > bruxa
+
+
+def test_release_sources_do_not_count_as_demand(session):
+    # Títulos de estreia (AniList, TMDB, IGDB) não são procura por modelo.
+    _item(session, title="Skull Island", source="tmdb", metric=1000)
+    _item(session, title="Skull Knight", source="anilist", metric=1000)
+    _item(session, title="Skull and Bones", source="igdb", metric=1000)
+
+    update_seasonal_signals(session, DAY)
+
+    assert _signal_of(session, "Caveira", "BR") == 0
+
+
+GENERIC_KEYWORDS = {"santa", "turkey", "football", "heart", "mask", "lamp", "星", "竹"}
+
+
+def test_no_idea_uses_generic_keywords():
+    for event in load_events():
+        for idea in event_ideas(event):
+            assert not GENERIC_KEYWORDS & set(idea["keywords"]), (event["slug"], idea["name"])
+
+
+def test_santa_monica_does_not_count_as_santa_claus(session):
+    _item(session, title="Santa Monica pier model", metric=500)
+    _item(session, title="Istanbul Turkey city skyline", metric=500)
+
+    update_seasonal_signals(session, DAY)
+
+    assert _signal_of(session, "Papai Noel", "BR") == 0
+    assert _signal_of(session, "Peru", "US") == 0
 
 
 def test_update_seasonal_signals_runs_once_per_day(session):
@@ -86,7 +134,8 @@ def test_update_seasonal_signals_runs_once_per_day(session):
     row = session.exec(
         select(SeasonalIdeaSignal).where(SeasonalIdeaSignal.idea == "Caveira", SeasonalIdeaSignal.country == "BR")
     ).one()
-    assert row.signal == 10
+    assert row.signal == 50  # a 2ª rodada no mesmo dia não gravou nada
+    assert len(session.exec(select(SeasonalIdeaSignal).where(SeasonalIdeaSignal.idea == "Caveira")).all()) == 7
 
 
 def test_update_seasonal_listings_only_upcoming_events(session, monkeypatch):
@@ -153,6 +202,20 @@ def test_unmeasured_ideas_have_no_chance(session):
     assert all(m["sale_chance"] is None and m["opportunity"] is None for m in models)
     # sem dados: ordem do YAML
     assert [m["name"] for m in models] == [i["name"] for i in event_ideas(_event("halloween"))][:5]
+
+
+def test_only_listing_counts_without_demand_get_no_grade(session):
+    # Sem procura medida em nenhuma ideia, a contagem de anúncios sozinha não dá nota.
+    _listing(session, "skull", 900)
+    _listing(session, "pumpkin", 5)
+
+    models = top_models(session, _event("halloween"), "BR", DAY, date(2026, 10, 31),
+                        lead_days=21, modeling_days=7, weights=WEIGHTS, names={"cults3d": "Cults3D"})
+
+    skull = next(m for m in models if m["name"] == "Caveira")
+    assert skull["measured"] is True
+    assert skull["competition"] == {"Cults3D": 900}
+    assert all(m["opportunity"] is None and m["sale_chance"] is None for m in models)
 
 
 def test_upcoming_events_themes_are_idea_names():

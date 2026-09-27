@@ -2,8 +2,11 @@
 
 Rodam 1x por dia dentro do pipeline:
 - `update_seasonal_signals`: para cada ideia e país ativo, soma o `metric` dos itens dos
-  últimos 30 dias cujo título+tags cita alguma keyword da ideia. Entram as fontes de
-  plataforma (qualquer país) e as demais fontes do próprio país (ou GLOBAL).
+  últimos 30 dias cujo título+tags cita alguma keyword da ideia, fonte por fonte. Entram
+  as fontes de plataforma (qualquer país) e as demais fontes do próprio país (ou GLOBAL);
+  fontes de estreia (AniList, TMDB, IGDB) não contam como procura. Cada fonte vira
+  percentil entre as ideias que ela cita antes de somar (como no radar), para um vídeo
+  viral ou uma fonte de escala grande não decidir sozinha.
 - `update_seasonal_listings`: conta anúncios do termo de busca (`query`) das ideias das
   datas próximas (começar a modelar nos próximos 60 dias, ou atrasadas com o evento ainda
   por vir), no máximo 20 termos, com os mesmos contadores da saturação do radar.
@@ -11,6 +14,7 @@ Rodam 1x por dia dentro do pipeline:
 
 import json
 import logging
+from collections import defaultdict
 from datetime import date, timedelta
 
 from sqlmodel import Session, select
@@ -20,6 +24,7 @@ from app.constants import GLOBAL
 from app.daily import claim_daily
 from app.hype.seasonal import event_ideas, load_events, upcoming_events
 from app.models import RawItem, SeasonalIdeaSignal, SeasonalListing
+from app.scoring import formulas
 from app.settings_store import get_settings
 from app.topics.normalize import matches_phrase, normalize
 
@@ -29,6 +34,8 @@ SIGNAL_DAYS = 30
 LISTING_WINDOW_DAYS = 60
 MAX_TERMS = 20
 MAX_CONSECUTIVE_FAILURES = 3
+# Fontes de estreias: o título do lançamento não é procura por modelo 3D.
+RELEASE_SOURCES = frozenset({"anilist", "tmdb", "igdb"})
 
 
 def _all_ideas() -> list[dict]:
@@ -49,25 +56,40 @@ def update_seasonal_signals(session: Session, day: date) -> int:
 
     countries = get_settings(session).get("countries", [])
     start = day - timedelta(days=SIGNAL_DAYS - 1)
-    items = session.exec(select(RawItem).where(RawItem.day >= start, RawItem.day <= day)).all()
+    items = session.exec(
+        select(RawItem).where(
+            RawItem.day >= start, RawItem.day <= day, RawItem.source.not_in(RELEASE_SOURCES)
+        )
+    ).all()
     haystacks = [
         (normalize(" ".join([item.title, *json.loads(item.tags_json or "[]")])), item)
         for item in items
     ]
+    ideas = _all_ideas()
+    matched: dict[str, list[RawItem]] = {}
+    for idea in ideas:
+        keywords = [normalize(k) for k in idea.get("keywords", []) if k]
+        matched[idea["name"]] = [
+            item for text, item in haystacks if any(matches_phrase(text, k) for k in keywords)
+        ]
 
     written = 0
-    for idea in _all_ideas():
-        keywords = [normalize(k) for k in idea.get("keywords", []) if k]
-        matched = [item for text, item in haystacks if any(matches_phrase(text, k) for k in keywords)]
-        platform_total = sum(i.metric for i in matched if i.source in PLATFORM_SOURCES)
-        for country in countries:
-            local = sum(
-                i.metric
-                for i in matched
-                if i.source not in PLATFORM_SOURCES and i.country in (country, GLOBAL)
-            )
+    for country in countries:
+        # fonte → ideia → soma do metric dos itens que valem para o país
+        by_source: dict[str, dict[str, float]] = defaultdict(lambda: defaultdict(float))
+        for name, idea_items in matched.items():
+            for item in idea_items:
+                if item.source in PLATFORM_SOURCES or item.country in (country, GLOBAL):
+                    by_source[item.source][name] += item.metric
+        signal: dict[str, float] = defaultdict(float)
+        for by_idea in by_source.values():
+            for name, rank in formulas.percentile_ranks(dict(by_idea)).items():
+                signal[name] += rank
+        for idea in ideas:
             session.add(
-                SeasonalIdeaSignal(idea=idea["name"], country=country, day=day, signal=platform_total + local)
+                SeasonalIdeaSignal(
+                    idea=idea["name"], country=country, day=day, signal=round(signal[idea["name"]], 4)
+                )
             )
             written += 1
     session.commit()

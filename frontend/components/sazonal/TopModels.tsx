@@ -32,7 +32,9 @@ export function TopModels({
                 chance {model.sale_chance} (estimativa)
               </span>
             ) : (
-              <span className="text-xs text-muted-foreground">sem dados ainda</span>
+              <span className="text-xs text-muted-foreground">
+                {model.measured ? "sem procura medida" : "sem dados ainda"}
+              </span>
             )}
           </li>
         ))}

@@ -3,7 +3,8 @@
 # idea_sets: conjuntos de ideias de modelo, reutilizados por várias datas.
 #   Cada ideia: name (como aparece na tela, PT), query (termo de busca nas lojas, em
 #   inglês) e keywords (o que conta como "fala dessa ideia" nos itens coletados; EN, PT e
-#   JP quando faz sentido).
+#   JP quando faz sentido). Keyword é frase específica ("santa claus", "heart shaped"),
+#   nunca palavra solta que aparece em qualquer título ("santa", "heart", "星").
 #
 # events: cada data.
 #   countries: códigos (app.constants.COUNTRIES) ou [ALL].
@@ -27,7 +28,7 @@ idea_sets:
   natal:
     - {name: Enfeite de árvore, query: christmas ornament, keywords: [christmas ornament, ornament, bauble, enfeite de natal]}
     - {name: Presépio, query: nativity, keywords: [nativity, presepio, presépio]}
-    - {name: Papai Noel, query: santa claus, keywords: [santa claus, santa, papai noel]}
+    - {name: Papai Noel, query: santa claus, keywords: [santa claus, father christmas, papai noel]}
     - {name: Árvore de Natal, query: christmas tree, keywords: [christmas tree, arvore de natal]}
     - {name: Floco de neve, query: snowflake, keywords: [snowflake, floco de neve]}
     - {name: Rena, query: reindeer, keywords: [reindeer, rena]}
@@ -50,11 +51,11 @@ idea_sets:
     - {name: Chaveiro, query: keychain, keywords: [keychain, chaveiro]}
 
   namorados:
-    - {name: Coração, query: heart, keywords: [heart, coracao, coração]}
+    - {name: Coração, query: heart, keywords: [heart shaped, heart box, heart decor, valentine heart, coracao decorativo]}
     - {name: Casal, query: couple figure, keywords: [couple, casal]}
     - {name: Litofania, query: lithophane, keywords: [lithophane, litofania]}
     - {name: Rosa, query: rose flower, keywords: [rose, rosa]}
-    - {name: Luminária, query: lamp, keywords: [lamp, luminaria, luminária]}
+    - {name: Luminária, query: lamp, keywords: [desk lamp, table lamp, night light, lamp shade, luminaria]}
     - {name: Nome personalizado, query: name sign, keywords: [name sign, nome personalizado]}
 
   criancas:
@@ -69,27 +70,27 @@ idea_sets:
     - {name: Vaso, query: vase, keywords: [vase, vaso]}
     - {name: Porta-joias, query: jewelry box, keywords: [jewelry box, jewelry holder, porta joias]}
     - {name: Flor, query: flower, keywords: [flower, flor]}
-    - {name: Luminária, query: lamp, keywords: [lamp, luminaria, luminária]}
+    - {name: Luminária, query: lamp, keywords: [desk lamp, table lamp, night light, lamp shade, luminaria]}
     - {name: Porta-retrato, query: photo frame, keywords: [photo frame, porta retrato]}
     - {name: Litofania, query: lithophane, keywords: [lithophane, litofania]}
 
   pais:
     - {name: Organizador de mesa, query: desk organizer, keywords: [desk organizer, organizador de mesa]}
     - {name: Miniatura de carro, query: car model, keywords: [car model, carro]}
-    - {name: Futebol, query: football, keywords: [football, soccer, futebol]}
+    - {name: Futebol, query: football, keywords: [soccer ball, football club, football fan, futebol]}
     - {name: Churrasco, query: bbq, keywords: [bbq, churrasco]}
     - {name: Porta-ferramentas, query: tool holder, keywords: [tool holder, ferramenta]}
     - {name: Porta-cerveja, query: beer holder, keywords: [beer, cerveja]}
 
   carnaval:
-    - {name: Máscara, query: carnival mask, keywords: [carnival mask, mask, mascara, máscara]}
+    - {name: Máscara, query: carnival mask, keywords: [carnival mask, venetian mask, mascara de carnaval]}
     - {name: Brinco, query: earring, keywords: [earring, brinco]}
     - {name: Coroa, query: crown, keywords: [crown, coroa]}
     - {name: Adereço de fantasia, query: costume prop, keywords: [costume, cosplay, fantasia]}
     - {name: Confete e serpentina, query: confetti, keywords: [confetti, confete]}
 
   thanksgiving:
-    - {name: Peru, query: turkey, keywords: [turkey]}
+    - {name: Peru, query: turkey, keywords: [thanksgiving turkey, turkey decoration, turkey figurine]}
     - {name: Folhas de outono, query: autumn leaves, keywords: [autumn, fall leaves, outono]}
     - {name: Porta-guardanapo, query: napkin ring, keywords: [napkin ring, porta guardanapo]}
     - {name: Centro de mesa, query: centerpiece, keywords: [centerpiece, centro de mesa]}
@@ -103,8 +104,8 @@ idea_sets:
     - {name: Gato da sorte, query: maneki neko, keywords: [maneki neko, 招き猫]}
 
   tanabata:
-    - {name: Estrela, query: star ornament, keywords: [star ornament, estrela, 星]}
-    - {name: Bambu, query: bamboo, keywords: [bamboo, 竹]}
+    - {name: Estrela, query: star ornament, keywords: [star ornament, tanabata star, 星飾り]}
+    - {name: Bambu, query: bamboo, keywords: [bamboo, 笹飾り, 竹飾り]}
     - {name: Orihime e Hikoboshi, query: orihime, keywords: [orihime, hikoboshi, 織姫, 彦星]}
     - {name: Lanterna, query: lantern, keywords: [lantern, 提灯]}
     - {name: Porta-tanzaku, query: tanzaku, keywords: [tanzaku, 短冊]}

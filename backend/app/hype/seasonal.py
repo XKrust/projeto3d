@@ -140,7 +140,7 @@ def top_models(
     entre as ideias da data; saturação = percentil dos anúncios entre as ideias medidas;
     momentum neutro; janela = (evento − antecedência) contra (hoje + modelagem). Ideias
     sem sinal nem contagem ficam sem nota (nada de número inventado) e vão por último,
-    na ordem do YAML.
+    na ordem do YAML. Se nenhuma ideia da data tem procura, ninguém ganha nota.
     """
     from app.hype.seasonal_ideas import latest_competition, latest_signals
     from app.scoring import formulas
@@ -160,6 +160,9 @@ def top_models(
     )
     peak = formulas.peak_day(today, 0.0, event_day=event_date, lead_days=lead_days)
     fit = formulas.window_fit(peak, today + timedelta(days=modeling_days))
+    # Só contagem de anúncios, sem procura em nenhuma ideia da data: não há o que ranquear
+    # na demanda, então nenhuma nota (a concorrência continua aparecendo).
+    has_demand = any(signal > 0 for signal in idea_signal.values())
 
     models = []
     for position, idea in enumerate(ideas):
@@ -167,7 +170,7 @@ def top_models(
         is_measured = name in measured
         opportunity = None
         chance = None
-        if is_measured:
+        if is_measured and has_demand:
             opportunity = formulas.opportunity(
                 demand.get(name, 0.0), NEUTRAL_MOMENTUM,
                 saturation.get(name, UNMEASURED_SATURATION), fit, weights,
