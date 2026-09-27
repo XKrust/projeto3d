@@ -85,31 +85,61 @@ if not exist "frontend\.next\BUILD_ID" (
     popd
 )
 
-rem 6. Sobe o backend minimizado.
+rem 6. Prepara a pasta de logs (o backend tambem cria "data\" sozinho, mas precisa existir
+rem    antes do redirecionamento abaixo, senao o cmd nao consegue criar o arquivo de log).
+if not exist "data" mkdir "data"
+
+rem 7. Sobe o backend minimizado. Saida (normal e erro) vai para data\backend.log, sobrescrito
+rem    a cada inicio, para dar para investigar uma falha mesmo com a janela minimizada/fechada.
 echo Iniciando o backend...
-start "Radar3D-backend" /min cmd /c "cd backend && uv run uvicorn app.main:app --port 8000"
+start "Radar3D-backend" /min cmd /c "cd backend && uv run uvicorn app.main:app --port 8000 > ..\data\backend.log 2>&1"
 
-rem 7. Sobe o frontend minimizado.
+rem 8. Espera o backend responder (no maximo 60 segundos) antes de subir o frontend. Se o
+rem    backend cair na inicializacao, a janela minimizada fecha sozinha e leva o traceback
+rem    junto, por isso a checagem eh no data\backend.log, nao na janela.
+echo Aguardando o backend iniciar...
+set /a RADAR_TENTATIVAS=0
+
+:backend_espera
+curl -s -o nul --max-time 2 http://localhost:8000/api/health
+if not errorlevel 1 goto backend_ok
+
+set /a RADAR_TENTATIVAS+=1
+if %RADAR_TENTATIVAS% geq 60 (
+    echo.
+    echo O backend nao iniciou.
+    echo Veja o arquivo data\backend.log ^(ou mande esse arquivo para quem esta te ajudando^).
+    start "" notepad "data\backend.log"
+    pause
+    exit /b 1
+)
+ping -n 2 127.0.0.1 >nul
+goto backend_espera
+
+:backend_ok
+
+rem 9. Sobe o frontend minimizado, com a mesma logica de log.
 echo Iniciando o frontend...
-start "Radar3D-frontend" /min cmd /c "cd frontend && npm run start -- -p 3000"
+start "Radar3D-frontend" /min cmd /c "cd frontend && npm run start -- -p 3000 > ..\data\frontend.log 2>&1"
 
-rem 8. Espera a porta 3000 responder (no maximo 60 segundos) e abre o navegador.
-echo Aguardando o Radar 3D iniciar...
+rem 10. Espera a porta 3000 responder (no maximo 60 segundos) e abre o navegador.
+echo Aguardando o frontend iniciar...
 set /a RADAR_TENTATIVAS=0
 
 :radar_espera
-curl -s -o nul http://localhost:3000
+curl -s -o nul --max-time 2 http://localhost:3000
 if not errorlevel 1 goto radar_abrir
 
 set /a RADAR_TENTATIVAS+=1
 if %RADAR_TENTATIVAS% geq 60 (
     echo.
-    echo O Radar 3D demorou demais para iniciar.
-    echo Veja as janelas "Radar3D-backend" e "Radar3D-frontend" para mensagens de erro.
+    echo O frontend nao iniciou.
+    echo Veja o arquivo data\frontend.log ^(ou mande esse arquivo para quem esta te ajudando^).
+    start "" notepad "data\frontend.log"
     pause
     exit /b 1
 )
-timeout /t 1 /nobreak >nul
+ping -n 2 127.0.0.1 >nul
 goto radar_espera
 
 :radar_abrir

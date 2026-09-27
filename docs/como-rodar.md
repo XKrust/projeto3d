@@ -101,8 +101,22 @@ cd frontend && RADAR_SMOKE=1 npx playwright test tests/e2e/smoke.spec.ts
 - `iniciar.bat`: se a porta 3000 já estiver ouvindo, só abre o navegador. Senão, confere
   Node.js e `uv` (instala o `uv` sozinho se faltar), roda `uv sync` no backend, `npm install`
   se faltar `frontend/node_modules` e `npm run build` se faltar `frontend/.next/BUILD_ID`, sobe
-  backend (`:8000`) e frontend (`:3000`) cada um numa janela minimizada própria, espera a porta
-  3000 responder (até 60 s) e abre `http://localhost:3000/radar`. Qualquer passo que falhar
-  mostra uma mensagem em português e pausa a janela (não fecha sozinho escondendo o erro).
+  o backend (`:8000`) minimizado com a saída redirecionada para `data\backend.log` e espera ele
+  responder em `/api/health` (até 60 s) **antes** de subir o frontend — se o backend cair na
+  inicialização, a janela minimizada fecha sozinha e levaria o erro junto, por isso a checagem
+  é feita no arquivo de log, não na janela. Só então sobe o frontend (`:3000`, saída em
+  `data\frontend.log`), espera a porta 3000 responder (até 60 s) e abre
+  `http://localhost:3000/radar`. Qualquer passo que falhar mostra uma mensagem em português e
+  pausa a janela (não fecha sozinho escondendo o erro).
 - `parar.bat`: encerra os processos que estiverem ouvindo nas portas 8000 e 3000. Pode ser
   chamado mesmo se nada estiver rodando (não dá erro).
+
+### Se o backend ou o frontend não subirem
+
+`iniciar.bat` grava a saída de cada processo em `data\backend.log` e `data\frontend.log`
+(sobrescritos a cada `iniciar.bat`, então sempre têm a última tentativa). Se o backend não
+responder em `/api/health` dentro de 60 s, ou o frontend não responder na porta 3000 dentro de
+60 s, a janela mostra uma mensagem em português, **abre o log correspondente no Bloco de
+Notas automaticamente** e pausa — não fecha sozinha. Se pedir ajuda a alguém, mande o
+conteúdo desse arquivo (`data\backend.log` é o mais comum: geralmente mostra o traceback do
+Python que fez o backend não subir).
