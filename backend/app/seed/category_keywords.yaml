@@ -1,0 +1,56 @@
+# Palavras-chave usadas por `guess_category` para topicos sem entidade (candidatos
+# e termos do Google Trends). A categoria "outros" e o padrao (sem lista propria).
+
+anime:
+  - anime
+  - manga
+  - chibi
+  - waifu
+  - shonen
+  - senpai
+  - otaku
+
+games:
+  - game
+  - gamer
+  - videogame
+  - gaming
+  - boss
+  - pixel
+  - console
+
+filmes_series:
+  - movie
+  - filme
+  - filmes
+  - series
+  - serie
+  - cinema
+  - tv
+
+toys_memes:
+  - funko
+  - meme
+  - toy
+  - brinquedo
+  - figure
+  - figurine
+  - collectible
+
+rpg_miniaturas:
+  - dnd
+  - warhammer
+  - miniature
+  - mini
+  - tabletop
+  - rpg
+  - grimdark
+
+decoracao:
+  - vase
+  - vaso
+  - lamp
+  - luminaria
+  - planter
+  - decor
+  - holder

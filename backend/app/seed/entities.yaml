@@ -1,0 +1,83 @@
+# Entidades curadas de cultura pop e 3D, com aliases para casamento de titulo+tags.
+# Viram topicos-semente mesmo sem nenhum item casado no dia (`extract_topics`, regra 2).
+# `category` e uma das `app.constants.CATEGORIES`.
+
+- name: Labubu
+  category: toys_memes
+  aliases: []
+
+- name: Dungeons & Dragons
+  category: rpg_miniaturas
+  aliases: [dnd, d&d]
+
+- name: Warhammer 40000
+  category: rpg_miniaturas
+  aliases: [40k, wh40k, warhammer 40k]
+
+- name: Pokemon
+  category: games
+  aliases: [pokémon]
+
+- name: Naruto
+  category: anime
+  aliases: [naruto shippuden]
+
+- name: One Piece
+  category: anime
+  aliases: []
+
+- name: Dragon Ball
+  category: anime
+  aliases: [dragonball, dbz]
+
+- name: Demon Slayer
+  category: anime
+  aliases: [kimetsu no yaiba]
+
+- name: Jujutsu Kaisen
+  category: anime
+  aliases: [jjk]
+
+- name: Attack on Titan
+  category: anime
+  aliases: [shingeki no kyojin, snk]
+
+- name: My Hero Academia
+  category: anime
+  aliases: [boku no hero academia, mha]
+
+- name: Star Wars
+  category: filmes_series
+  aliases: []
+
+- name: Marvel
+  category: filmes_series
+  aliases: [marvel comics, mcu]
+
+- name: Harry Potter
+  category: filmes_series
+  aliases: []
+
+- name: The Legend of Zelda
+  category: games
+  aliases: [zelda]
+
+- name: Minecraft
+  category: games
+  aliases: []
+
+- name: Fortnite
+  category: games
+  aliases: []
+
+- name: Funko Pop
+  category: toys_memes
+  aliases: [funko]
+
+- name: Baby Yoda
+  category: toys_memes
+  aliases: [grogu]
+
+- name: Sonic the Hedgehog
+  category: games
+  aliases: [sonic]
