@@ -1,0 +1,60 @@
+{
+ "total_count": 3127,
+ "items": [
+  {
+   "id": 410001,
+   "url": "https://www.myminifactory.com/object/3d-print-frieren-bust-410001",
+   "name": "Frieren Bust",
+   "visibility": "public",
+   "views": 45200,
+   "likes": 980,
+   "published_at": "2026-09-10T12:00:00+00:00",
+   "featured": false,
+   "images": [
+    {
+     "id": 1,
+     "is_primary": true,
+     "original": {
+      "url": "https://dl.myminifactory.com/object-assets/410001/1_original.jpg",
+      "width": "1600",
+      "height": "1200"
+     },
+     "thumbnail": {
+      "url": "https://dl.myminifactory.com/object-assets/410001/1_thumbnail.jpg",
+      "width": "230",
+      "height": "230"
+     },
+     "standard": {
+      "url": "https://dl.myminifactory.com/object-assets/410001/1_standard.jpg",
+      "width": "720",
+      "height": "540"
+     }
+    },
+    {
+     "id": 2,
+     "is_primary": false,
+     "original": {
+      "url": "https://dl.myminifactory.com/object-assets/410001/2_original.jpg",
+      "width": "1600",
+      "height": "1200"
+     },
+     "thumbnail": {
+      "url": "https://dl.myminifactory.com/object-assets/410001/2_thumbnail.jpg",
+      "width": "230",
+      "height": "230"
+     },
+     "standard": {
+      "url": "https://dl.myminifactory.com/object-assets/410001/2_standard.jpg",
+      "width": "720",
+      "height": "540"
+     }
+    }
+   ],
+   "tags": [
+    "frieren",
+    "anime",
+    "bust"
+   ]
+  }
+ ]
+}

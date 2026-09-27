@@ -38,6 +38,10 @@ const API_KEY_GROUPS: ApiKeyGroup[] = [
     service: "thingiverse",
     fields: [{ key: "thingiverse", label: "App Token do Thingiverse" }],
   },
+  {
+    service: "myminifactory",
+    fields: [{ key: "myminifactory", label: "Chave da API do MyMiniFactory" }],
+  },
   { service: "gemini", fields: [{ key: "gemini", label: "Chave da API do Gemini" }] },
 ];
 

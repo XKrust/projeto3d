@@ -471,6 +471,36 @@ da demanda.
 - **Fixture** montada à mão no formato do schema: `tests/fixtures/thingiverse/popular.json`
   (5 things, um NSFW).
 
+## MyMiniFactory
+
+`backend/app/collectors/myminifactory.py` (`MyMiniFactoryCollector`: `name="myminifactory"`,
+`label="MyMiniFactory"`, `kind="api"`, `platform="myminifactory"`,
+`needs_key=("myminifactory",)`, país `GLOBAL`, 60 minutos). Implementa `Collector` e
+`count_listings`.
+
+**⚠️ Não validado com chave real — validar e regravar as fixtures assim que houver uma.**
+
+- **Formato confirmado no OpenAPI oficial:** `myminifactory-api.yaml` do repositório
+  `https://github.com/MyMiniFactory/api-documentation` (27/09/2026).
+  - Servidor: `https://www.myminifactory.com/api/v2`.
+  - Autenticação `ApiKeyAuth`: parâmetro `key=<chave>` na query.
+  - `/search`: `q` é obrigatório, e `sort` aceita `visits`, `date` ou `popularity`.
+  - A resposta é `{"total_count", "items": [Object]}`.
+  - O schema `Object` **não tem preço**, então `price_usd` é sempre `None`.
+- **Tendências:** `GET .../search?q=&sort=popularity&per_page=30&key=<chave>`.
+- **Campos:** `external_id=str(id)`, `title=name`, `url`, `likes`, `views`,
+  `metric = likes + views/100` e `tags`. `thumb_url` é o `thumbnail.url` da imagem com
+  `is_primary`, ou da primeira imagem se nenhuma for primária.
+- **Contagem:** `q=<termo>` e `per_page=1` → `total_count`.
+- **Chave na URL:** as mensagens de erro de `get_with_retry` só levam o status, nunca a URL,
+  então a chave não aparece na tela `/config` (há um teste para isso).
+- **Fixtures** montadas à mão no formato do schema: `tests/fixtures/myminifactory/popular.json`
+  (5 objetos, um com a imagem primária em segundo) e `count.json` (`total_count: 3127`).
+- **Onde pegar a chave:** o README oficial aponta
+  `https://www.myminifactory.com/pages/for-developers` e diz que os clientes de API são
+  criados nas configurações da conta. A página bloqueia acesso automatizado (403), então os
+  passos exatos não foram conferidos.
+
 ## Como adicionar um coletor
 
 1. **Fixture primeiro.** Grave uma resposta real da fonte (ou monte uma à mão, se a fonte

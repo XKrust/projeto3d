@@ -67,6 +67,15 @@ export const KEY_GUIDES: Record<string, KeyGuide> = {
     ],
     url: "https://www.thingiverse.com/apps/create",
   },
+  myminifactory: {
+    titulo: "MyMiniFactory",
+    passos: [
+      "Entre no MyMiniFactory com sua conta e abra a página para desenvolvedores (link abaixo).",
+      "Nas configurações da sua conta, crie um cliente de API (“API client”).",
+      "Copie a chave de API (“API key”) do cliente criado e cole aqui.",
+    ],
+    url: "https://www.myminifactory.com/pages/for-developers",
+  },
   gemini: {
     titulo: "Gemini",
     passos: [

@@ -86,3 +86,17 @@
     ES: 0.4
     JP: 0.2
   notes: ""
+
+- slug: myminifactory
+  name: MyMiniFactory
+  markets: [print]
+  fee_pct: null
+  strength:
+    BR: 0.4
+    US: 0.6
+    GB: 0.7
+    DE: 0.6
+    FR: 0.6
+    ES: 0.5
+    JP: 0.2
+  notes: ""

@@ -22,6 +22,7 @@ DEFAULTS: dict = {
         "etsy_keystring": "",
         "etsy_shared_secret": "",
         "thingiverse": "",
+        "myminifactory": "",
         "gemini": "",
     },
     "countries": ["BR", "US", "GB", "DE", "FR", "ES", "JP"],
