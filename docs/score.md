@@ -47,3 +47,15 @@ Função: `backend/app/pipeline.py:compute_scores(session, day)`.
   não teve. A compatibilidade de mercado é gravada como 1, porque o filtro de mercado é
   aplicado na API.
 - Rodar de novo no mesmo dia atualiza as linhas existentes, sem duplicar.
+
+## Chance de venda por país (tela inicial)
+
+`GET /api/countries` (`app/api/countries.py`) → um item por país de `COUNTRIES`:
+`{code, name, active, chance, top_topic, topics}`.
+
+- **`chance`:** média da `opportunity` dos 5 melhores tópicos do país no último dia com
+  score, arredondada. Cada tópico conta uma vez, pela mesma plataforma que o radar mostra
+  (maior `opportunity × fit_platform`). É `null` sem score. A interface exibe
+  "NN% (estimativa)": é a nota de oportunidade (0–100), não uma probabilidade medida.
+- **Demais campos:** `top_topic` é o melhor tópico, `topics` é quantos tópicos têm score e
+  `active` diz se o país está em `settings.countries`.
