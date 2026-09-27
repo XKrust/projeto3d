@@ -11,3 +11,4 @@
 | 2026-09-26 | Docs divididos por assunto, com CLAUDE.md como índice | Economizar tokens |
 | 2026-09-26 | `app.clock.now()` retorna hora local com fuso (`.astimezone()`), não mais naive | O SQLModel 0.0.47 exige `tzinfo` em colunas `datetime` (ex.: `Source.last_run`); sem isso o runner não conseguia gravar o horário da última execução |
 | 2026-09-26 | Printables via GraphQL público (`api.printables.com/graphql/`), não scraping de HTML | O site está atrás de um desafio Cloudflare que bloqueia acesso automatizado (HTTP simples e Chromium headless); o endpoint GraphQL do próprio frontend responde normalmente e sem desafio |
+| 2026-09-26 | Enriquecimento diário por IA (fusão de tópicos e motivo do hype) roda 1x/dia e ignora fusão de entidades curadas | Uma entidade de `seed/entities.yaml` é sempre re-semeada em `extract_topics`; fundi-la para dentro de outro tópico seria desfeito no ciclo seguinte |

@@ -351,6 +351,40 @@ def test_make_after_builds_counters_only_for_eligible_collectors(session, monkey
     assert list(captured["counters"]) == ["fake_platform", "fake_keyed"]
 
 
+def test_make_after_wires_enrich_when_gemini_key_present(session, monkeypatch):
+    import app.topics.enrich as enrich_mod
+    from app.ai.provider import GeminiTextProvider
+
+    monkeypatch.setattr(collectors_pkg, "ALL_COLLECTORS", [])
+    captured: dict = {}
+    monkeypatch.setattr(
+        enrich_mod,
+        "enrich_topics",
+        lambda s, provider, day: captured.update(session=s, provider=provider, day=day),
+    )
+    http = object()
+    settings = {"api_keys": {"gemini": "chave-secreta"}, "gemini_model": "gemini-2.5-flash"}
+
+    make_after(settings, http)(session)
+
+    assert captured["session"] is session
+    assert captured["day"] == DAY
+    assert isinstance(captured["provider"], GeminiTextProvider)
+    assert captured["provider"].api_key == "chave-secreta"
+
+
+def test_make_after_leaves_enrich_none_without_gemini_key(session, monkeypatch):
+    captured: dict = {}
+    monkeypatch.setattr(
+        pipeline, "run_pipeline", lambda s, counters, *, enrich=None: captured.update(enrich=enrich)
+    )
+    settings = {"api_keys": {}}
+
+    make_after(settings, object())(session)
+
+    assert captured["enrich"] is None
+
+
 def test_post_collect_passes_pipeline_after(client, monkeypatch):
     captured: dict = {}
 

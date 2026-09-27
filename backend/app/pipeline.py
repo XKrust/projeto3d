@@ -16,6 +16,7 @@ from sqlmodel import Session, select
 
 import app.collectors as collectors_pkg
 from app import clock
+from app.ai.provider import get_text_provider
 from app.collectors.base import ListingCounter
 from app.constants import GLOBAL
 from app.http import make_client
@@ -276,8 +277,15 @@ def make_after(settings: dict, http: httpx.Client) -> Callable[[Session], None]:
             continue
         counters[cls.platform] = cls(settings, http)
 
-    # Tarefa 13: `enrich` passa a ser preenchido quando houver chave de IA.
-    return lambda session: run_pipeline(session, counters, enrich=None)
+    provider = get_text_provider(settings)
+    enrich: Callable[[Session], None] | None = None
+    if provider is not None:
+        from app.topics.enrich import enrich_topics
+
+        def enrich(session: Session) -> None:
+            enrich_topics(session, provider, clock.today())
+
+    return lambda session: run_pipeline(session, counters, enrich=enrich)
 
 
 def run_after_cycle(session: Session) -> None:

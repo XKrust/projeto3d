@@ -44,7 +44,8 @@ agendador (a cada 10 min + 30 s após iniciar)  ou  "Coletar agora" (POST /api/c
      último dia com score, ou de maior soma de sinais do dia, se ainda não houver score.
      Se um contador falhar, só aquela plataforma fica sem contagem;
   3. `compute_scores(session, hoje)` (fórmulas em `score.md`);
-  4. `enrich(session)`, que ainda não é usado (fica para a Tarefa 13).
+  4. `enrich(session)`, presente só quando há chave do Gemini configurada (ver
+     "Enriquecimento por IA" abaixo).
 - Um erro no pipeline é registrado no log e não afeta o status das fontes.
 
 ## Formação de tópicos
@@ -95,5 +96,43 @@ agendador (a cada 10 min + 30 s após iniciar)  ou  "Coletar agora" (POST /api/c
    são definidos na criação e, se ainda vazios (`image_url is None` / `category ==
    "outros"`), preenchidos num dia seguinte assim que houver item casado que os resolva —
    sem nunca sobrescrever um valor já definido (edição manual ou fusão).
+
+## Enriquecimento por IA (Gemini, opcional)
+
+`backend/app/ai/provider.py` define `TextProvider` (protocolo com `generate_json(prompt)
+-> dict`) e `GeminiTextProvider`, que usa `google.genai.Client(api_key=...).models.
+generate_content(model=..., contents=prompt, config={"response_mime_type":
+"application/json"})` e faz `json.loads(resp.text)`. Um erro 429 ou `RESOURCE_EXHAUSTED`
+da API vira `AIQuotaError`. `get_text_provider(settings)` devolve `None` quando não há
+chave do Gemini em `settings["api_keys"]["gemini"]` — nesse caso `pipeline.make_after`
+não passa `enrich` para `run_pipeline` e o resto do ciclo roda normalmente.
+
+`backend/app/topics/enrich.py:enrich_topics(session, provider, day, top_n=50)` roda uma
+vez por dia (controlado pela `Setting` `last_enrich_day`, fora de `settings_store.
+DEFAULTS`) como último passo do pipeline. Monta um único prompt em português
+(`PROMPT_TEMPLATE`) com os `top_n` tópicos de maior oportunidade (mesma seleção de
+`pipeline._top_topic_ids`): `slug`, nome e até 3 títulos de exemplo dos itens coletados.
+Pede duas coisas ao modelo, num JSON só:
+
+- `merges`: fundir tópicos que são o mesmo personagem, obra ou produto
+  (`{"keep": slug, "merge": [slugs]}`);
+- `reasons`: 1 frase em português por tópico, explicando por que está em alta,
+  **sem inventar fatos** que não estejam nos títulos de exemplo.
+
+Aplicação da resposta:
+
+- `merge_topics(session, keep_id, merge_id)` reaponta `TopicSignal` (somando em conflito
+  de fonte/país/dia), `TopicItem` e `TopicListing` (fica a maior contagem por
+  plataforma/dia), apaga os `TopicScore` do tópico removido, junta os aliases no tópico
+  mantido e apaga o tópico removido.
+- Um slug desconhecido (fora do top-N) ou um `merge` igual ao `keep` é ignorado. Um slug
+  de fusão que é uma entidade curada (`seed/entities.yaml`) também é ignorado: uma
+  entidade é sempre re-semeada em `extract_topics`, então fundi-la para dentro de outro
+  tópico seria desfeito no próximo ciclo — só fusões *para* uma entidade são aplicadas.
+- O motivo é cortado em 140 caracteres e grava `Topic.reason`/`reason_day`.
+- Um erro do provedor (cota excedida, rede, JSON inválido) é só registrado em log; a
+  função devolve `(0, 0)` sem propagar a exceção para o pipeline, e **não** marca
+  `last_enrich_day` — o enriquecimento é tentado de novo num próximo ciclo do mesmo dia.
+  `last_enrich_day` só é gravado depois de aplicar uma resposta com sucesso.
 
 > Atualize este doc quando a estrutura real divergir.
