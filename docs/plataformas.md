@@ -13,7 +13,8 @@
 |---|---|---|---|---|
 | cults3d | Cults3D | print | `null` (não confirmado nesta etapa) | — |
 | sketchfab | Sketchfab Store | digital | `null` (não confirmado nesta etapa) | — |
+| artstation | ArtStation Marketplace | digital | `null` | — |
 | booth | BOOTH | digital | `null` | — (marketplace japonês, força 0.9 no JP) |
 | printables | Printables | print | 20.0 | [Termos para criadores da Prusa](https://www.prusa3d.com/page/printables-club-store-terms-and-conditions-for-creators_236503/) |
 
-**Plataformas previstas para etapas futuras:** ArtStation Marketplace, CGTrader, TurboSquid, Fab, MyMiniFactory, MakerWorld, Thingiverse e Etsy.
+**Plataformas previstas para etapas futuras:** CGTrader, TurboSquid, Fab, MyMiniFactory, MakerWorld, Thingiverse e Etsy.

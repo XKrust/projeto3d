@@ -58,3 +58,17 @@
     ES: 0.2
     JP: 0.9
   notes: "Marketplace japones (pixiv); forte em modelos 3D para VRChat."
+
+- slug: artstation
+  name: ArtStation Marketplace
+  markets: [digital]
+  fee_pct: null
+  strength:
+    BR: 0.5
+    US: 0.7
+    GB: 0.6
+    DE: 0.6
+    FR: 0.6
+    ES: 0.5
+    JP: 0.4
+  notes: ""

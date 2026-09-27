@@ -5,6 +5,7 @@ printables, ...) acrescenta a propria classe a `ALL_COLLECTORS`.
 """
 
 from app.collectors.base import Collector
+from app.collectors.artstation import ArtStationCollector
 from app.collectors.booth import BoothCollector
 from app.collectors.cults3d import Cults3DCollector
 from app.collectors.google_trends import GoogleTrendsCollector
@@ -21,4 +22,5 @@ ALL_COLLECTORS: list[type[Collector]] = [
     Cults3DCollector,
     PrintablesCollector,
     BoothCollector,
+    ArtStationCollector,
 ]

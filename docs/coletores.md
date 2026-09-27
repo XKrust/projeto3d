@@ -75,7 +75,8 @@ Regras gerais:
 | Printables | scraping | não | 1 |
 | Thingiverse, MyMiniFactory, Etsy | API | sim | 1b |
 | BOOTH (Japão) | scraping | não | 1b |
-| ArtStation, MakerWorld, CGTrader | scraping | não | 1b |
+| ArtStation | JSON não oficial (tratado como scraping) | não | 1b |
+| MakerWorld, CGTrader | scraping | não | 1b |
 | AniList | API | não | 2 |
 | TMDB, IGDB | API | sim | 2 |
 | frankfurter.app (câmbio) | API | não | 3 |
@@ -380,6 +381,35 @@ copiado dos exemplos acima).
   - `wish_lists.json`: resposta real para esses 5 ids;
   - `search.html`: só o trecho "対象商品 11,068 件" da busca real por "ドラゴン";
   - `robots.txt`: real.
+
+## ArtStation
+
+`backend/app/collectors/artstation.py` (`ArtStationCollector`: `name="artstation"`,
+`label="ArtStation"`, `kind="scrape"`, `platform="artstation"`, sem chave, país `GLOBAL`,
+1440 minutos). Usa o JSON que o próprio site consome. Não há API pública documentada, por
+isso o coletor segue as regras de scraping: robots.txt e espera de 3 a 5 s.
+
+- **Robots.txt:** `https://www.artstation.com/robots.txt` não bloqueia `/projects.json` nem
+  `/api/v2/marketplace/` (confirmado em 27/09/2026).
+- **Tendências:** `GET https://www.artstation.com/projects.json?sorting=trending&page=1` e
+  `page=2`, com 50 artworks por página.
+  - Campos: `external_id=str(id)`, `title`, `url=permalink`, `likes=likes_count`,
+    `views=views_count`, `metric = likes + views/100`, `tags = tag_list or []` (na prática
+    vem `null`) e `thumb_url = cover.thumb_url`.
+  - Artworks com `adult_content` ou `hide_as_adult` são descartados, assim como itens sem
+    `id` ou sem título.
+  - Nenhum item nas duas páginas → `CollectorError("Formato da página do ArtStation mudou")`.
+  - **Atenção:** são artworks, não anúncios. Eles medem o interesse por arte digital, e a
+    "presença" do tópico na plataforma `artstation` vem deles.
+- **Contagem:** `GET https://www.artstation.com/api/v2/marketplace/products.json` com
+  `visibility=profile`, `page=1`, `per_page=5` e `q=<termo>` → `total_count`.
+  - Confirmado por chamada real: sem `page` ou `visibility` a resposta é 400, e
+    `per_page < 5` também dá 400.
+  - O parâmetro de ordenação (`sorting`) do marketplace é ignorado. Por isso o marketplace
+    não serve para as tendências.
+- **Fixtures** (chamadas reais de 27/09/2026): `tests/fixtures/artstation/trending.json` (5
+  primeiros artworks), `marketplace_search.json` (`q=dragon`, `total_count: 5983`) e
+  `robots.txt`.
 
 ## Como adicionar um coletor
 
