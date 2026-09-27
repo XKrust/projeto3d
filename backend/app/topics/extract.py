@@ -51,6 +51,7 @@ from sqlmodel import Session, select
 
 from app.models import RawItem, Topic, TopicItem, TopicSignal
 from app.topics.category import guess_category
+from app.hype.entities import hype_entities
 from app.topics.normalize import is_cjk, matches_phrase, normalize, tokens
 
 _SEED_DIR = Path(__file__).resolve().parent.parent / "seed"
@@ -107,7 +108,7 @@ def _register(drafts: dict[str, _Draft], slug: str, alias: str, make: Callable[[
     return draft
 
 
-def _seed_entities(drafts: dict[str, _Draft]) -> set[str]:
+def _seed_entities(drafts: dict[str, _Draft], extra: list[dict] | None = None) -> set[str]:
     """Registra as entidades de `entities.yaml` como topicos-semente (mesmo sem itens).
 
     Retorna o conjunto de nome+aliases normalizados de todas as entidades, usado
@@ -115,7 +116,7 @@ def _seed_entities(drafts: dict[str, _Draft]) -> set[str]:
     por uma entidade.
     """
     entity_alias_pool: set[str] = set()
-    for entity in _load_entities():
+    for entity in [*_load_entities(), *(extra or [])]:
         name = entity["name"]
         key = normalize(name)
         aliases = [normalize(a) for a in entity.get("aliases", [])]
@@ -340,7 +341,7 @@ def extract_topics(session: Session, day: date) -> int:
     items = list(session.exec(select(RawItem).where(RawItem.day == day)))
 
     drafts: dict[str, _Draft] = {}
-    entity_alias_pool = _seed_entities(drafts)
+    entity_alias_pool = _seed_entities(drafts, hype_entities(session, day))
     existing_alias_pool = _seed_existing_topics(session, drafts)
     known_alias_pool = entity_alias_pool | existing_alias_pool
     _seed_trends_terms(drafts, items, known_alias_pool)
