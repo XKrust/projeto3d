@@ -13,6 +13,7 @@ dependencies = [
     "playwright",
     "selectolax",
     "google-genai",
+    "defusedxml>=0.7.1",
 ]
 
 [dependency-groups]

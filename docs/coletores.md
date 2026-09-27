@@ -79,6 +79,76 @@ Regras gerais:
 | TMDB, IGDB | API | sim | 2 |
 | frankfurter.app (câmbio) | API | não | 3 |
 
+## Google Trends RSS
+
+`backend/app/collectors/google_trends.py` (`GoogleTrendsCollector`: `name="google_trends"`,
+`label="Google Trends"`, `kind="rss"`, sem chave, 60 minutos).
+
+- **URL:** `GET https://trends.google.com/trending/rss?geo=<país>`, uma chamada por país de
+  `settings["countries"]` (feed público, não exige chave).
+- **Campos mapeados** (`parse_feed(xml, country) -> list[CollectedItem]`):
+  - `external_id`: título em minúsculas e sem espaços nas pontas (normalização definitiva
+    fica a cargo de `app.topics.normalize`, na Tarefa 10 — títulos em japonês passam
+    inalterados por `title`, só o `external_id` é normalizado).
+  - `title`: `<title>` do item, sem alteração (preserva japonês e outros idiomas).
+  - `country`: o país da chamada.
+  - `metric`: `<ht:approx_traffic>` convertido por `parse_traffic` (ex.: `"200K+"` → `200000`,
+    `"2M+"` → `2000000`, `"1,000+"` → `1000`, string vazia → `0`).
+  - `thumb_url`: `<ht:picture>`.
+  - `tags`: títulos dos até 3 primeiros `<ht:news_item><ht:news_item_title>`.
+- O XML é interpretado com `defusedxml.ElementTree` (evita XXE/entidades externas de um feed
+  remoto).
+- **Fixtures:** `backend/tests/fixtures/google_trends/{br,jp}.xml`, gravadas de uma chamada
+  real (`curl "https://trends.google.com/trending/rss?geo=BR"` e `...geo=JP`, em 26/09/2026),
+  reduzidas aos 5 primeiros itens.
+
+## YouTube
+
+`backend/app/collectors/youtube.py` (`YouTubeCollector`: `name="youtube"`, `label="YouTube"`,
+`kind="api"`, `needs_key=("youtube",)`, 60 minutos).
+
+- **URL:** `GET https://www.googleapis.com/youtube/v3/videos` com
+  `part=snippet,statistics&chart=mostPopular&regionCode=<país>&videoCategoryId=<cat>&maxResults=50&key=<chave>`,
+  para cada país de `settings["countries"]` e cada categoria em `[1, 20, 24]` (Filmes/Animação,
+  Games, Entretenimento).
+- **Campos mapeados:**
+  - `external_id`: `id` do vídeo.
+  - `title`: `snippet.title`.
+  - `tags`: até 10 primeiras de `snippet.tags`.
+  - `views`, `comments`, `likes`: `statistics.viewCount`/`commentCount`/`likeCount` (ausentes
+    viram `None`).
+  - `metric`: igual a `views`.
+  - `thumb_url`: `snippet.thumbnails.medium.url`.
+- Uma categoria que responde 400/404 num país (categoria sem vídeos populares ali) é
+  ignorada — as demais categorias e países seguem normalmente. Uma resposta 403 (chave
+  inválida/sem permissão) propaga como `CollectorError`, via `get_with_retry`.
+- **Fixture:** `backend/tests/fixtures/youtube/most_popular_br.json`, montada à mão no formato
+  documentado de `videos.list` (a chave real ainda não existe nesta etapa).
+
+## Reddit
+
+`backend/app/collectors/reddit.py` (`RedditCollector`: `name="reddit"`, `label="Reddit"`,
+`kind="api"`, `needs_key=("reddit_client_id", "reddit_client_secret")`, 60 minutos).
+
+- **Token:** `POST https://www.reddit.com/api/v1/access_token` com
+  `grant_type=client_credentials` e autenticação básica (`client_id`/`client_secret`).
+- **URL de posts:** `GET https://oauth.reddit.com/r/<subreddit>/hot?limit=50`, com o token
+  como `Bearer`, para cada subreddit de `backend/app/seed/reddit.yaml` (`3Dprinting`,
+  `PrintedMinis`, `3Dmodeling`, `blender`, `ZBrush`, `anime`, `gaming`, `boardgames`,
+  `ActionFigures`, `DnD`).
+- **Campos mapeados:**
+  - `external_id`: `id` do post.
+  - `title`: `title` do post.
+  - `tags`: `[subreddit, flair]`, sem entradas vazias (`link_flair_text` ausente/vazio é
+    descartado).
+  - `likes`: `score`. `comments`: `num_comments`.
+  - `metric`: `score + 2 * num_comments`.
+  - `country`: sempre `GLOBAL` (`app.constants.GLOBAL`) — Reddit não segmenta por país.
+- Posts com `stickied=true` (fixados pelos moderadores) são ignorados. Falha no token com
+  401/403 vira `CollectorError` com "Chave inválida ou sem permissão (...)", via
+  `get_with_retry`.
+- **Fixtures:** `backend/tests/fixtures/reddit/{token,hot}.json`.
+
 ## Como adicionar um coletor
 
 O passo a passo é documentado junto com a implementação da Etapa 1.
