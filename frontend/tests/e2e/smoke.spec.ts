@@ -40,7 +40,7 @@ test.describe("smoke (servidores reais)", () => {
     });
   }
 
-  test("/config lista as 6 fontes", async ({ page }) => {
+  test("/config lista as 12 fontes", async ({ page }) => {
     await page.goto("/config");
     await page.waitForLoadState("networkidle");
 
@@ -51,6 +51,12 @@ test.describe("smoke (servidores reais)", () => {
       "Sketchfab",
       "Cults3D",
       "Printables",
+      "BOOTH",
+      "ArtStation",
+      "Etsy",
+      "Thingiverse",
+      "MyMiniFactory",
+      "CGTrader",
     ]) {
       await expect(page.getByText(fonte).first()).toBeVisible();
     }

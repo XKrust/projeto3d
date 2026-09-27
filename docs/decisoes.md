@@ -14,3 +14,4 @@
 | 2026-09-26 | Enriquecimento diário por IA (fusão de tópicos e motivo do hype) roda 1x/dia e ignora fusão de entidades curadas | Uma entidade de `seed/entities.yaml` é sempre re-semeada em `extract_topics`; fundi-la para dentro de outro tópico seria desfeito no ciclo seguinte |
 | 2026-09-27 | CGTrader via API oficial (`api.cgtrader.com`, com chave), não scraping | O site responde com desafio anti-robô (202 vazio) e o robots.txt proíbe `/search*` e `*/api/internal/*` |
 | 2026-09-27 | No grupo `platforms` da demanda, cada fonte vira percentil entre os tópicos antes de somar | Com 9 fontes de escalas muito diferentes, somar valores brutos deixava a fonte de maior escala (ex.: favoritos do BOOTH) decidir sozinha |
+| 2026-09-27 | MakerWorld fica fora da Etapa 1b | Todas as rotas úteis estão atrás de desafio Cloudflare, e não burlamos proteção anti-robô |

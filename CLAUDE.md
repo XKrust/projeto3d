@@ -53,4 +53,4 @@ O usuário **não programa**. Tudo precisa rodar com duplo clique em `iniciar.ba
 
 ## Status
 
-Etapa 1 concluída; próxima: 1b. Consulte o plano mais recente em `docs/superpowers/plans/`.
+Etapa 1b concluída; próxima: Etapa 2 (Sazonal e Hype). Consulte o plano mais recente em `docs/superpowers/plans/`.

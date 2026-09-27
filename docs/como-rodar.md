@@ -30,18 +30,10 @@ demais continuam funcionando normalmente.
 
 ## Setup de desenvolvimento (para quem mexe no código)
 
-Nenhum passo extra de setup é necessário na Etapa 1: o coletor do Printables usa o endpoint
-GraphQL público da própria API do site (não scraping de página renderizada), então não
-depende de Chromium/Playwright — ver `docs/coletores.md`. Por isso `iniciar.bat` **não**
-roda `playwright install`.
-
-A partir da **Etapa 1b** (scrapers de página renderizada como ArtStation, MakerWorld, CGTrader,
-BOOTH), instale o navegador do Playwright depois de instalar as dependências do backend
-(`uv sync`):
-
-```
-cd backend && uv run playwright install chromium
-```
+Nenhum passo extra de setup é necessário: nenhum coletor usa navegador. O Printables e o
+ArtStation usam o JSON da própria API do site, e o BOOTH é HTML simples lido com
+`selectolax` — ver `docs/coletores.md`. Por isso `iniciar.bat` **não** roda
+`playwright install` para o backend.
 
 ### Backend
 

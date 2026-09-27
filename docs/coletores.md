@@ -378,6 +378,11 @@ copiado dos exemplos acima).
 - **Contagem:** `GET https://booth.pm/ja/search/<termo>` (termo codificado com
   `quote(..., safe="")`, ou seja, `/` vira `%2F`) e leitura de "対象商品 N 件". Sem esse
   texto, lança `CollectorError`.
+- **Limitação conhecida:** os títulos do BOOTH são em japonês, e os tópicos (entidades de
+  `seed/entities.yaml` e candidatos) são quase todos em inglês. Assim, poucos itens do BOOTH
+  casam com tópicos, e a "presença" no BOOTH fica baixa. Na primeira coleta real
+  (27/09/2026), a melhor plataforma no JP ainda saía como Sketchfab. Para melhorar, é preciso
+  acrescentar aliases em japonês às entidades (ex.: `フリーレン` para Frieren).
 - **Fixtures** (chamadas reais de 27/09/2026):
   - `tests/fixtures/booth/browse.html`: página real, reduzida aos 5 primeiros cards e sem
     `<script>`;
@@ -533,6 +538,17 @@ da demanda.
 - **Fixtures** montadas à mão a partir do Example Response oficial:
   `tests/fixtures/cgtrader/models.json` (5 modelos, um sem thumbnails) e `count.json`
   (`total: 2214`).
+
+## MakerWorld (não implementado)
+
+O MakerWorld (makerworld.com) responde com o desafio Cloudflare "Just a moment..." a acesso
+automatizado. Isso vale para a página principal e para os endpoints de busca usados pelo
+próprio site (`/api/v1/search-service/...`), confirmado em 27/09/2026. Só rotas de detalhe
+por id (`/api/v1/design-service/design/<id>`) respondem, e elas não servem para descobrir
+tendências.
+
+Burlar um desafio anti-robô é proibido neste projeto. Por isso a fonte **não foi
+implementada**. Revisitar se o MakerWorld publicar uma API pública.
 
 ## Como adicionar um coletor
 
