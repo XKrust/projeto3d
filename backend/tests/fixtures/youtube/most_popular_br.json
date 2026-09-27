@@ -1,0 +1,68 @@
+{
+  "kind": "youtube#videoListResponse",
+  "etag": "fixture-etag",
+  "items": [
+    {
+      "kind": "youtube#video",
+      "etag": "fixture-etag-1",
+      "id": "abc123",
+      "snippet": {
+        "title": "Impressão 3D em alta",
+        "description": "Video de exemplo para os testes do coletor.",
+        "channelTitle": "Canal de Exemplo",
+        "categoryId": "24",
+        "tags": [
+          "3d print",
+          "miniatura",
+          "anime",
+          "game",
+          "tag5",
+          "tag6",
+          "tag7",
+          "tag8",
+          "tag9",
+          "tag10",
+          "tag11"
+        ],
+        "thumbnails": {
+          "medium": {
+            "url": "https://i.ytimg.com/vi/abc123/mqdefault.jpg",
+            "width": 320,
+            "height": 180
+          }
+        }
+      },
+      "statistics": {
+        "viewCount": "123456",
+        "likeCount": "7890",
+        "commentCount": "321"
+      }
+    },
+    {
+      "kind": "youtube#video",
+      "etag": "fixture-etag-2",
+      "id": "def456",
+      "snippet": {
+        "title": "Outro video popular",
+        "description": "Segundo video de exemplo, sem estatisticas de curtidas/comentarios.",
+        "channelTitle": "Outro Canal",
+        "categoryId": "1",
+        "tags": ["tag1", "tag2"],
+        "thumbnails": {
+          "medium": {
+            "url": "https://i.ytimg.com/vi/def456/mqdefault.jpg",
+            "width": 320,
+            "height": 180
+          }
+        }
+      },
+      "statistics": {
+        "viewCount": "654321"
+      }
+    }
+  ],
+  "pageInfo": {
+    "totalResults": 2,
+    "resultsPerPage": 2
+  }
+}
