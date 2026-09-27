@@ -1,0 +1,38 @@
+[
+  {
+    "topic_id": 1,
+    "slug": "goku-super-saiyajin",
+    "name": "Goku Super Saiyajin",
+    "category": "anime",
+    "image_url": "https://example.com/goku.jpg",
+    "reason": "Alta procura por bonecos de anime shonen no Brasil.",
+    "opportunity": 82.5,
+    "sale_chance": "Alta",
+    "estimate": true,
+    "momentum_arrow": "up",
+    "days_to_peak": 10,
+    "best_platform": { "slug": "cults3d", "name": "Cults3D" },
+    "median_price_usd": 4.5,
+    "sparkline": [
+      { "day": "2026-09-01", "value": 40.0 },
+      { "day": "2026-09-02", "value": 45.0 },
+      { "day": "2026-09-03", "value": 50.0 }
+    ]
+  },
+  {
+    "topic_id": 2,
+    "slug": "miniatura-rpg",
+    "name": "Miniatura de RPG sem preço",
+    "category": "rpg_miniaturas",
+    "image_url": null,
+    "reason": null,
+    "opportunity": 55.0,
+    "sale_chance": "Média",
+    "estimate": true,
+    "momentum_arrow": "flat",
+    "days_to_peak": 0,
+    "best_platform": { "slug": "printables", "name": "Printables" },
+    "median_price_usd": null,
+    "sparkline": []
+  }
+]

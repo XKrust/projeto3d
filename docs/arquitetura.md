@@ -37,6 +37,23 @@ Next.js (App Router, TypeScript), com Tailwind e shadcn/ui, em `frontend/`.
 - Páginas em `app/`: `/` redireciona para `/radar`. Busca de dados é feita em
   componentes cliente (`"use client"`) com SWR chamando `lib/api.ts` — não há fetch no
   servidor Next.
+- `app/radar/page.tsx`: tela principal. Usa `useSearchParams` (por isso fica dentro de
+  um `<Suspense>`, exigido pelo Next 16 para não quebrar o build estático) para ler os
+  filtros da URL, busca `GET /api/radar/meta` e `GET /api/radar?...` via SWR e chama
+  `POST /api/collect` no botão "Coletar agora" (mostra a `message` da resposta e, se
+  `started` for `true`, dá `mutate()` na lista 5s depois).
+- `components/radar/Filters.tsx`: selects de país (com optgroup "Europa"), plataforma,
+  mercado e categoria; lê e escreve os filtros em `useSearchParams`/`useRouter`
+  (`?country=...`). A opção "Todas"/"Todos" apenas remove o parâmetro da URL.
+- `components/radar/TopicCard.tsx`: card do tópico (imagem ou ícone de fallback,
+  categoria, `opportunity`, chip de chance de venda com "estimativa", seta de momentum,
+  sparkline, "Pico em N dias", melhor plataforma, preço mediano formatado em pt-BR e o
+  `reason` quando existe).
+- `components/radar/Sparkline.tsx`: `LineChart` do Recharts sem eixos/grid/tooltip;
+  não renderiza nada com menos de 2 pontos.
+- `lib/radar-labels.ts` e `lib/radar-types.ts`: rótulos em PT-BR (categoria, país,
+  mercado), formatação (preço mediano, "Pico em N dias") e os tipos do payload do
+  radar, compartilhados pelos componentes acima.
 
 ## Ciclo de coleta
 

@@ -1,0 +1,20 @@
+{
+  "countries": ["BR", "US", "GB", "DE", "FR", "ES", "JP"],
+  "country_groups": { "Europa": ["GB", "DE", "FR", "ES"] },
+  "categories": [
+    "anime",
+    "games",
+    "filmes_series",
+    "toys_memes",
+    "rpg_miniaturas",
+    "decoracao",
+    "outros"
+  ],
+  "markets": ["print", "digital"],
+  "platforms": [
+    { "slug": "cults3d", "name": "Cults3D", "markets": ["print"] },
+    { "slug": "printables", "name": "Printables", "markets": ["print"] },
+    { "slug": "sketchfab", "name": "Sketchfab", "markets": ["digital"] }
+  ],
+  "last_updated": "2026-09-20T10:00:00"
+}
