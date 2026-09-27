@@ -32,7 +32,7 @@ def hype_terms(session: Session, day: date, limit: int = DEFAULT_TERMS) -> list[
         return len(terms) >= limit
 
     for row in recent_releases(session, day):
-        if add(base_title(row.title)):
+        if add(base_title(row.title, row.kind)):
             break
         if any(add(c["name"]) for c in top_characters(row.characters_json)):
             break

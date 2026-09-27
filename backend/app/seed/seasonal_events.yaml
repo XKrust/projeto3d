@@ -11,6 +11,7 @@
 #   rule (uma destas):
 #     fixed: "MM-DD"
 #     nth_weekday: {month, weekday (0=segunda … 6=domingo), n (1 = primeiro, -1 = último)}
+#       + skip_pentecost: true opcional (se cair no Pentecostes, vai 1 semana depois)
 #     easter_offset: dias em relação à Páscoa (0 = domingo de Páscoa)
 #     after_nth_weekday: {month, weekday, n, plus_days}  (ex.: Black Friday)
 #   ideas: nome de um idea_set.
@@ -99,7 +100,7 @@ idea_sets:
   japao_festas:
     - {name: Kabuto de samurai, query: samurai helmet, keywords: [kabuto, samurai, 兜]}
     - {name: Koinobori, query: koinobori, keywords: [koinobori, 鯉のぼり]}
-    - {name: Figura de anime, query: anime figure, keywords: [anime figure, figurine, フィギュア]}
+    - {name: Figura de anime, query: anime figure, keywords: [anime figure, figurine, action figure, フィギュア]}
     - {name: Garage kit, query: garage kit, keywords: [garage kit, ガレージキット]}
     - {name: Gato da sorte, query: maneki neko, keywords: [maneki neko, 招き猫]}
 
@@ -163,7 +164,7 @@ events:
   - slug: fete_des_meres_fr
     name: Fête des Mères
     countries: [FR]
-    rule: {nth_weekday: {month: 5, weekday: 6, n: -1}}
+    rule: {nth_weekday: {month: 5, weekday: 6, n: -1}, skip_pentecost: true}
     ideas: maes
   - slug: dia_de_la_madre_es
     name: Día de la Madre

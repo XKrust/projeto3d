@@ -88,3 +88,16 @@ def test_country_active_flag(client, engine):
     assert countries["BR"]["active"] is True
     assert countries["JP"]["active"] is True
     assert countries["US"]["active"] is False
+
+
+def test_inactive_country_has_null_chance_even_with_old_scores(client, engine):
+    with Session(engine) as session:
+        topic = _topic(session, "Frieren")
+        _score(session, topic, country="US", opportunity=80.0)
+        update_settings(session, {"countries": ["BR"]})
+
+    us = _countries(client)["US"]
+
+    assert us["active"] is False
+    assert us["chance"] is None
+    assert us["top_topic"] is None

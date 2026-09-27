@@ -59,7 +59,7 @@ def test_hype_terms_title_plus_two_characters(session):
         "The Apothecary Diaries",
         "Anya Forger",
         "Loid Forger",
-        "Monster Hunter Stories",
+        "Monster Hunter Stories 3",
     ]
 
 

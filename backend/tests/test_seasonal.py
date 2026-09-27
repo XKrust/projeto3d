@@ -3,7 +3,7 @@ from datetime import date
 import pytest
 
 from app import clock
-from app.hype.seasonal import next_occurrence, resolve, upcoming_events
+from app.hype.seasonal import load_events, next_occurrence, resolve, upcoming_events
 
 
 def test_resolve_fixed():
@@ -115,3 +115,11 @@ def test_api_seasonal_invalid_country_422(client):
 @pytest.mark.parametrize("country", ["BR", "US", "GB", "DE", "FR", "ES", "JP"])
 def test_every_country_has_events(country):
     assert upcoming_events(country, date(2026, 9, 1), lead_days=21, modeling_days=7)
+
+
+def test_fete_des_meres_moves_when_pentecost():
+    # Último domingo de maio, exceto quando cai no Pentecostes: vai para o 1º de junho.
+    event = next(e for e in load_events() if e["slug"] == "fete_des_meres_fr")
+    assert resolve(event["rule"], 2027) == date(2027, 5, 30)
+    assert resolve(event["rule"], 2023) == date(2023, 6, 4)
+    assert resolve(event["rule"], 2034) == date(2034, 6, 4)

@@ -2,7 +2,6 @@
 
 import { Suspense } from "react";
 import useSWR from "swr";
-import { useSearchParams } from "next/navigation";
 import { apiGet, BackendOfflineError } from "@/lib/api";
 import { BackendOffline } from "@/components/BackendOffline";
 import { useCountry } from "@/lib/country";
@@ -19,7 +18,6 @@ function Loading() {
 }
 
 function SazonalContent() {
-  const searchParams = useSearchParams();
   const country = useCountry();
   const { data, error, isLoading } = useSWR<SeasonalResponse>(
     country ? `/api/seasonal?country=${country}` : null,

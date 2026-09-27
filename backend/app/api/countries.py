@@ -2,7 +2,8 @@
 
 `chance` = média da nota de oportunidade dos 5 melhores tópicos do país no último dia
 com score. Cada tópico conta uma vez, pela mesma plataforma que o radar mostra (maior
-oportunidade × fit da plataforma). A interface exibe como "NN% (estimativa)".
+oportunidade × fit da plataforma). A interface exibe como "NN% (estimativa)". País
+inativo vem com `chance` nulo (a nota antiga não é mais atualizada).
 """
 
 from collections import defaultdict
@@ -46,7 +47,8 @@ def read_countries(session: Session = Depends(get_session)) -> list[dict]:
     active = set(get_settings(session).get("countries", []))
     result = []
     for code in COUNTRIES:
-        best = _best_opportunities(session, code)
+        # País inativo não é coletado: a nota antiga ficaria parada, então não mostra.
+        best = _best_opportunities(session, code) if code in active else []
         top = best[:TOP_N]
         top_topic = session.get(Topic, top[0][1]).name if top else None
         result.append(

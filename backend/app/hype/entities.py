@@ -34,24 +34,26 @@ KIND_CATEGORY = {
 }
 
 # Marcas de temporada/parte no fim do título: "Season 3", "3rd Season", "第3期",
-# "Part 2", "2" solto. Tirá-las deixa o alias casar com anúncios que não citam a
-# temporada.
+# "Part 2". Tirá-las deixa o alias casar com anúncios que não citam a temporada.
 _SEASON_PATTERNS = [
     re.compile(r"\s*\b(season|temporada)\s*\d+\s*$", re.IGNORECASE),
     re.compile(r"\s*\b\d+(st|nd|rd|th)\s+season\s*$", re.IGNORECASE),
     re.compile(r"\s*\bpart\s*\d+\s*$", re.IGNORECASE),
     re.compile(r"\s*第\s*\d+\s*期\s*$"),
-    re.compile(r"\s+\d\s*$"),
 ]
+# "2" solto no fim só é temporada em anime ("Cyberpunk: Edgerunners 2"). Em jogo e filme
+# faz parte do nome ("Persona 5", "Toy Story 5"), e "No. 8" também ("Kaiju No. 8").
+_ANIME_BARE_NUMBER = re.compile(r"(?<!no\.)(?<!no)(?<!#)\s+\d\s*$", re.IGNORECASE)
 
 
-def base_title(title: str) -> str:
+def base_title(title: str, kind: str) -> str:
     """Título sem a marca de temporada ou parte no fim."""
+    patterns = _SEASON_PATTERNS + ([_ANIME_BARE_NUMBER] if kind == "anime" else [])
     result = title.strip()
     changed = True
     while changed:
         changed = False
-        for pattern in _SEASON_PATTERNS:
+        for pattern in patterns:
             stripped = pattern.sub("", result).strip()
             if stripped and stripped != result:
                 result, changed = stripped, True
@@ -155,13 +157,13 @@ def hype_entities(session: Session, day: date, limit: int = 25) -> list[dict]:
     for row in rows:
         if releases_used >= limit:
             break
-        name = base_title(row.title)
+        name = base_title(row.title, row.kind)
         if not usable(name) or normalize(name) in seen:
             continue
         releases_used += 1
         category = KIND_CATEGORY.get(row.kind, "outros")
         raw_aliases = json.loads(row.aliases_json or "[]")
-        aliases = [base_title(a) for a in raw_aliases] + raw_aliases
+        aliases = [base_title(a, row.kind) for a in raw_aliases] + raw_aliases
         if row.title != name:
             aliases.append(row.title)
         add(name, category, aliases)

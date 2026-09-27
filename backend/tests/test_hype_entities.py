@@ -35,12 +35,22 @@ def _char(name, native=None, favourites=5000):
 
 
 def test_base_title_strips_season_markers():
-    assert base_title("The Apothecary Diaries Season 3") == "The Apothecary Diaries"
-    assert base_title("Kusuriya no Hitorigoto 3rd Season") == "Kusuriya no Hitorigoto"
-    assert base_title("薬屋のひとりごと 第3期") == "薬屋のひとりごと"
-    assert base_title("Black Clover 2nd Season") == "Black Clover"
-    assert base_title("Cyberpunk: Edgerunners 2") == "Cyberpunk: Edgerunners"
-    assert base_title("Frieren") == "Frieren"
+    assert base_title("The Apothecary Diaries Season 3", "anime") == "The Apothecary Diaries"
+    assert base_title("Kusuriya no Hitorigoto 3rd Season", "anime") == "Kusuriya no Hitorigoto"
+    assert base_title("薬屋のひとりごと 第3期", "anime") == "薬屋のひとりごと"
+    assert base_title("Black Clover 2nd Season", "anime") == "Black Clover"
+    assert base_title("Cyberpunk: Edgerunners 2", "anime") == "Cyberpunk: Edgerunners"
+    assert base_title("Frieren", "anime") == "Frieren"
+
+
+def test_base_title_keeps_numbers_that_are_part_of_the_name():
+    # O número solto no fim só é temporada em anime; "No. 8" faz parte do nome.
+    assert base_title("Kaiju No. 8", "anime") == "Kaiju No. 8"
+    assert base_title("Kaiju No. 8 Season 2", "anime") == "Kaiju No. 8"
+    assert base_title("Persona 5", "jogo") == "Persona 5"
+    assert base_title("Monster Hunter Stories 3", "jogo") == "Monster Hunter Stories 3"
+    assert base_title("Toy Story 5", "filme") == "Toy Story 5"
+    assert base_title("Cyberpunk: Edgerunners 2", "anime") == "Cyberpunk: Edgerunners"
 
 
 def test_hype_entities_include_title_and_top2_characters(session):
@@ -95,7 +105,7 @@ def test_hype_entities_category_by_kind(session):
     categories = {e["name"]: e["category"] for e in hype_entities(session, DAY)}
 
     assert categories["Vingadores: Guerras Secretas"] == "filmes_series"
-    assert categories["Monster Hunter Stories"] == "games"
+    assert categories["Monster Hunter Stories 3"] == "games"
 
 
 def test_hype_entities_ignore_old_or_stale_releases(session):

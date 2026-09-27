@@ -400,3 +400,8 @@ A revisão independente da branch aprovou com correções. Já corrigido: contag
    - avisos do lint;
    - Fête des Mères em ano de Pentecostes;
    - ideias com o mesmo nome e keywords diferentes.
+
+**Resolvido em 27/09/2026 (branch `etapa-2-pendencias`):** todos os itens 1–7 acima, com
+testes (363 no backend, 27 e2e). No item 3, a regra ficou "2+ palavras ou 3+ caracteres
+CJK" para o nome do personagem, então nomes únicos de uma palavra ("Maomao", "Frieren")
+também saem; é o preço de não casar "Power" com qualquer anúncio.

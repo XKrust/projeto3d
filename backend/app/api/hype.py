@@ -131,7 +131,7 @@ def read_hype(
 
     releases = []
     for row in rows:
-        term = base_title(row.title)
+        term = base_title(row.title, row.kind)
         if row.release_date is not None:
             days_to_release = (row.release_date - today).days
             peak = formulas.peak_day(today, 0.0, event_day=row.release_date, lead_days=lead_days)

@@ -33,9 +33,15 @@ datas, sem rede.
 - **Top 5 modelos por data** (`app/hype/seasonal_ideas.py` + `top_models` em
   `app/hype/seasonal.py`):
   - **Procura:** `update_seasonal_signals` roda 1x/dia no pipeline. Para cada ideia e país
-    ativo, grava `SeasonalIdeaSignal` com a soma do `metric` dos itens dos últimos 30 dias
-    cujo título+tags cita alguma keyword (`matches_phrase`). Entram as fontes de
-    plataforma de qualquer país e as outras fontes do próprio país ou GLOBAL.
+    ativo, grava `SeasonalIdeaSignal`. Soma, fonte por fonte, o `metric` dos itens dos
+    últimos 30 dias cujo título+tags cita alguma keyword (`matches_phrase`). Entram as
+    fontes de plataforma de qualquer país e as outras fontes do próprio país ou GLOBAL.
+    AniList, TMDB e IGDB ficam de fora: título de estreia não é procura por modelo.
+    Cada fonte vira percentil entre as ideias que ela cita, e o sinal é a soma dos
+    percentis (como no radar), para um vídeo viral não decidir sozinho.
+  - **Keywords:** frases específicas ("santa claus", "heart shaped"), nunca palavra solta
+    que aparece em qualquer título ("santa", "heart", "星"). Ideias com o mesmo nome em
+    datas diferentes têm keywords idênticas (o sinal é gravado por nome).
   - **Concorrência:** `update_seasonal_listings` roda 1x/dia no pipeline. Conta os anúncios
     do `query` das ideias das datas cujo "comece até" está nos próximos 60 dias (ou
     atrasado com o evento ainda por vir), no máximo 20 termos, e grava `SeasonalListing`.
@@ -46,6 +52,9 @@ datas, sem rede.
     `sale_chance` saem de `formulas`.
   - **Sem dados:** a ideia fica `measured: false`, sem nota nem chance (nada inventado), e
     vai para o fim, na ordem do YAML.
+  - **Só anúncios, sem procura:** se nenhuma ideia da data tem sinal, ninguém ganha nota;
+    a concorrência continua aparecendo e a linha diz "sem procura medida".
+  - **Data atrasada:** a tela troca "Comece até DD/MM" por "Prazo ideal já passou".
 - **API:** `GET /api/seasonal?country=BR` →
   `{country, lead_days, modeling_days, events: [{slug, name, date, start_by, days_to_event,
   days_to_start, status, themes, top_models}]}`. `top_models` traz 5 itens
@@ -72,15 +81,21 @@ tabela `HypeRelease` (gancho `releases()` do coletor).
 `app/hype/entities.py` → `hype_entities(session, day, limit=25)`, chamada por
 `extract_topics` junto com as entidades de `seed/entities.yaml`.
 
-- **Quais lançamentos:** os 25 mais populares com estreia entre 60 dias atrás e 180 dias à
-  frente (ou sem data), coletados nos últimos 7 dias.
-- **Nome do tópico:** o título sem marca de temporada (`base_title`: tira "Season 3",
-  "3rd Season", "第3期", "Part 2" e um número solto no fim). Ex.: "The Apothecary Diaries
-  Season 3" vira "The Apothecary Diaries".
+- **Quais lançamentos:** os 25 primeiros de `recent_releases`: estreia entre 60 dias atrás
+  e 180 dias à frente (ou sem data), coletados nos últimos 7 dias, **intercalando os
+  tipos** (o mais popular de cada tipo, depois o 2º de cada…). Cada fonte tem sua escala
+  (AniList ~100 mil, TMDB e IGDB ~500); ordenar tudo junto deixaria filmes e jogos de fora.
+- **Nome do tópico:** o título sem marca de temporada (`base_title(title, kind)`: tira
+  "Season 3", "3rd Season", "第3期", "Part 2" e, **só em anime**, um número solto no fim,
+  exceto depois de "No."/"#"). Ex.: "The Apothecary Diaries Season 3" vira "The Apothecary
+  Diaries"; "Kaiju No. 8", "Persona 5" e "Toy Story 5" ficam inteiros.
 - **Aliases:** os títulos alternativos, com e sem a marca de temporada, inclusive o japonês.
   É isso que faz um anúncio do BOOTH escrito "薬屋のひとりごと" casar com o tópico.
-- **Personagens:** os 2 mais favoritados de cada anime (mínimo de 500 favoritos), com o nome
-  nativo como alias.
+- **Personagens:** os 2 mais favoritados de cada anime entre os de nome distinto
+  (`usable_character`: 2+ palavras, ou 3+ caracteres CJK) com mínimo de 500 favoritos. O
+  nome nativo vira alias só com 3+ caracteres CJK. Nome de uma palavra comum ("Power",
+  "Fern", "Stark") e nativo curto ("レゼ" está dentro de "プレゼント") casariam com
+  anúncios sem relação.
 - **Filtro de nomes curtos:** nomes e aliases com menos de 4 caracteres latinos (ou 2 CJK)
   são descartados, porque casariam com qualquer texto (o personagem "D" casaria com
   "D&D").
@@ -91,7 +106,7 @@ tabela `HypeRelease` (gancho `releases()` do coletor).
 `app/hype/competition.py`, chamada em `run_pipeline` logo depois de `update_listings`.
 
 - **Termos:** `hype_terms(session, day, limit=15)`: título sem temporada + os 2 personagens,
-  do lançamento mais popular para o menos, até 15 termos distintos.
+  na ordem de `recent_releases` (tipos intercalados), até 15 termos distintos.
 - **Contagem:** `update_hype_listings(session, counters, day)` grava `HypeListing(term,
   platform, day, count)` usando os mesmos contadores da saturação do radar (plataformas com
   `count_listings` e chave).
@@ -105,7 +120,8 @@ tabela `HypeRelease` (gancho `releases()` do coletor).
 
 - **Lançamentos:** os de país `GLOBAL` ou do país pedido, coletados nos últimos 7 dias, com
   estreia a partir de 30 dias atrás (ou sem data), do mais popular para o menos, no máximo
-  40.
+  40. Sem filtro de tipo, no máximo 10 por tipo (as escalas de popularidade não se
+  comparam entre fontes).
 - **Nota por lançamento** (mesma fórmula de oportunidade do radar, `docs/score.md`):
   - `demanda`: percentil da popularidade entre os lançamentos do mesmo tipo;
   - `momentum`: 50 fixo (neutro, porque não há série histórica da estreia);

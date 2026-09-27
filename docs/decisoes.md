@@ -22,3 +22,7 @@
 | 2026-09-27 | Tela inicial de países substitui o seletor de país em cada tela | Pedido do usuário: escolher o país uma vez, vendo bandeira e chance de venda estimada de cada um |
 | 2026-09-27 | "% de chance de venda" do país = média da nota de oportunidade dos 5 melhores temas | Não existe probabilidade de venda medida; a nota de oportunidade é o que o app tem, sempre rotulada como estimativa |
 | 2026-09-27 | Top 5 modelos por data sazonal vem de ideias curadas no YAML, ranqueadas por procura (itens coletados) e concorrência (anúncios) | Pedido do usuário; ideias sem dado nenhum aparecem sem nota, para não inventar número |
+| 2026-09-27 | Hype intercala os tipos (e limita 10 por tipo na API) em vez de ordenar tudo por popularidade | AniList mede em ~100 mil e TMDB/IGDB em ~500: filmes e jogos nunca entravam no corte |
+| 2026-09-27 | Personagem só vira termo com nome de 2+ palavras (ou 3+ caracteres CJK) | Nomes de uma palavra ("Power", "Fern") e nativos curtos ("レゼ") casavam com anúncios sem relação; perder alguns nomes únicos é melhor que inflar números |
+| 2026-09-27 | Procura sazonal: cada fonte vira percentil antes de somar, sem AniList/TMDB/IGDB, e ideia só com anúncios não ganha nota | Vídeos virais e títulos de estreia distorciam o top 5; contagem de anúncios sozinha não mede procura |
+| 2026-09-27 | País inativo mostra chance nula na tela inicial | A nota antiga para de ser atualizada quando o país é desativado |

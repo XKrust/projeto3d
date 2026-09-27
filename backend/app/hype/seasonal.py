@@ -64,7 +64,11 @@ def resolve(rule: dict, year: int) -> date:
         return easter(year) + timedelta(days=int(rule["easter_offset"]))
     if "nth_weekday" in rule:
         r = rule["nth_weekday"]
-        return _nth_weekday(year, r["month"], r["weekday"], r["n"])
+        result = _nth_weekday(year, r["month"], r["weekday"], r["n"])
+        # Fête des Mères: se cair no Pentecostes (Páscoa + 49), vai uma semana depois.
+        if rule.get("skip_pentecost") and result == easter(year) + timedelta(days=49):
+            result += timedelta(days=7)
+        return result
     if "after_nth_weekday" in rule:
         r = rule["after_nth_weekday"]
         return _nth_weekday(year, r["month"], r["weekday"], r["n"]) + timedelta(days=r["plus_days"])

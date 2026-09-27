@@ -244,3 +244,12 @@ def test_api_seasonal_includes_top5(client, engine, monkeypatch):
 def test_idea_queries_are_unique_per_event(slug):
     queries = [i["query"] for i in event_ideas(_event(slug))]
     assert len(queries) == len(set(queries))
+
+
+def test_ideas_with_same_name_are_identical_everywhere():
+    # A procura é gravada por nome de ideia: o mesmo nome precisa das mesmas keywords.
+    seen: dict[str, dict] = {}
+    for event in load_events():
+        for idea in event_ideas(event):
+            first = seen.setdefault(idea["name"], idea)
+            assert first == idea, idea["name"]
