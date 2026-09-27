@@ -27,6 +27,7 @@ O usuário **não programa**. Tudo precisa rodar com duplo clique em `iniciar.ba
 | Tabela de plataformas (taxas, força por país) | `docs/plataformas.md` |
 | Instalar, rodar e testar | `docs/como-rodar.md` |
 | Histórico de decisões | `docs/decisoes.md` |
+| Ideias para vender mais (backlog priorizado) | `docs/ideias-vendas.md` |
 | Spec completa (ler só se precisar do todo) | `docs/superpowers/specs/2026-09-26-radar3d-design.md` |
 | Planos de implementação por etapa | `docs/superpowers/plans/` |
 
