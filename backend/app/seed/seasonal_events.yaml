@@ -1,0 +1,129 @@
+# Datas que puxam vendas de modelos 3D, por país. Ver docs/hype-sazonal.md.
+#
+# countries: lista de códigos (app.constants.COUNTRIES) ou [ALL].
+# rule (uma destas):
+#   fixed: "MM-DD"
+#   nth_weekday: {month, weekday (0=segunda … 6=domingo), n (1 = primeiro, -1 = último)}
+#   easter_offset: dias em relação à Páscoa (0 = domingo de Páscoa)
+#   after_nth_weekday: {month, weekday, n, plus_days}  (ex.: Black Friday)
+# themes: ideias de modelos que costumam vender na data.
+
+- slug: halloween
+  name: Halloween
+  countries: [ALL]
+  rule: {fixed: "10-31"}
+  themes: [abóboras, caveiras, bruxas, monstros clássicos, decoração de terror]
+
+- slug: natal
+  name: Natal
+  countries: [ALL]
+  rule: {fixed: "12-25"}
+  themes: [enfeites de árvore, presépio, Papai Noel, porta-velas, presentes personalizados]
+
+- slug: pascoa
+  name: Páscoa
+  countries: [ALL]
+  rule: {easter_offset: 0}
+  themes: [coelhos, porta-ovos, cestas, moldes de chocolate]
+
+- slug: black_friday
+  name: Black Friday
+  countries: [ALL]
+  rule: {after_nth_weekday: {month: 11, weekday: 3, n: 4, plus_days: 1}}
+  themes: [pacotes de modelos, coleções com desconto, itens de presente]
+
+- slug: dia_dos_namorados_br
+  name: Dia dos Namorados
+  countries: [BR]
+  rule: {fixed: "06-12"}
+  themes: [corações, casais, porta-retratos, luminárias personalizadas]
+
+- slug: dia_das_criancas_br
+  name: Dia das Crianças
+  countries: [BR]
+  rule: {fixed: "10-12"}
+  themes: [brinquedos articulados, flexi, personagens de anime e games, quebra-cabeças]
+
+- slug: dia_das_maes
+  name: Dia das Mães
+  countries: [BR, US]
+  rule: {nth_weekday: {month: 5, weekday: 6, n: 2}}
+  themes: [vasos, porta-joias, flores, luminárias, nomes personalizados]
+
+- slug: dia_dos_pais_br
+  name: Dia dos Pais
+  countries: [BR]
+  rule: {nth_weekday: {month: 8, weekday: 6, n: 2}}
+  themes: [organizadores de mesa, carros, futebol, churrasco, ferramentas]
+
+- slug: carnaval
+  name: Carnaval
+  countries: [BR]
+  rule: {easter_offset: -47}
+  themes: [máscaras, adereços, fantasias, brincos]
+
+- slug: valentines_day
+  name: Dia dos Namorados (14/02)
+  countries: [US, GB, DE, FR, ES]
+  rule: {fixed: "02-14"}
+  themes: [corações, casais, porta-retratos, luminárias personalizadas]
+
+- slug: fathers_day_us
+  name: Father's Day
+  countries: [US]
+  rule: {nth_weekday: {month: 6, weekday: 6, n: 3}}
+  themes: [organizadores de mesa, carros, esportes, ferramentas]
+
+- slug: thanksgiving
+  name: Thanksgiving
+  countries: [US]
+  rule: {nth_weekday: {month: 11, weekday: 3, n: 4}}
+  themes: [perus, decoração de mesa, outono, porta-guardanapos]
+
+- slug: mothering_sunday_gb
+  name: Mothering Sunday
+  countries: [GB]
+  rule: {easter_offset: -21}
+  themes: [vasos, porta-joias, flores, nomes personalizados]
+
+- slug: muttertag_de
+  name: Muttertag
+  countries: [DE]
+  rule: {nth_weekday: {month: 5, weekday: 6, n: 2}}
+  themes: [vasos, porta-joias, flores, nomes personalizados]
+
+- slug: fete_des_meres_fr
+  name: Fête des Mères
+  countries: [FR]
+  rule: {nth_weekday: {month: 5, weekday: 6, n: -1}}
+  themes: [vasos, porta-joias, flores, nomes personalizados]
+
+- slug: dia_de_la_madre_es
+  name: Día de la Madre
+  countries: [ES]
+  rule: {nth_weekday: {month: 5, weekday: 6, n: 1}}
+  themes: [vasos, porta-joias, flores, nomes personalizados]
+
+- slug: golden_week
+  name: Golden Week
+  countries: [JP]
+  rule: {fixed: "04-29"}
+  themes: [figuras de anime, kits de garagem, acessórios de viagem]
+
+- slug: kodomo_no_hi
+  name: Kodomo no Hi (Dia das Crianças)
+  countries: [JP]
+  rule: {fixed: "05-05"}
+  themes: [koinobori, samurai kabuto, brinquedos]
+
+- slug: tanabata
+  name: Tanabata
+  countries: [JP]
+  rule: {fixed: "07-07"}
+  themes: [estrelas, bambu, tanzaku, casais Orihime e Hikoboshi]
+
+- slug: obon
+  name: Obon
+  countries: [JP]
+  rule: {fixed: "08-13"}
+  themes: [lanternas, decoração tradicional, santuários em miniatura]
