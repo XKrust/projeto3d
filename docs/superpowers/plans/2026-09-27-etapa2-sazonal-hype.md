@@ -270,6 +270,84 @@
 - [ ] Ajustar `shell.spec.ts` (`/hype` sem "Chega na Etapa").
 - [ ] Commit `feat(frontend): tela Hype`.
 
+### Pedido do usuário (27/09/2026), tarefas 11 a 14
+
+> "A parte dos filtros não deve ser assim: deve ser uma tela inicial com todos os países
+> citados, mostrando a bandeira que você pode escolher e, do lado, a % de chance de venda.
+> No sazonal, a mesma coisa. E em cada data sazonal, colocar também qual o melhor modelo
+> 3D a ser feito, que vai ter mais chance de vender nessa data — um top 5."
+
+### Tarefa 11: API de países com chance de venda
+
+- `GET /api/countries` → `[{code, name, active, chance, top_topic, topics}]`, um por país
+  de `COUNTRIES`, na ordem da constante.
+- `chance` = média da `opportunity` dos 5 melhores tópicos do país no último dia com score
+  (um tópico conta uma vez: a plataforma de maior nota), arredondada. `null` sem score.
+  Aparece na interface como "NN% (estimativa)".
+- `top_topic` = nome do melhor tópico. `topics` = quantos tópicos têm score. `active` = se
+  o país está em `settings.countries`.
+- Testes: `test_countries_chance_is_mean_of_top5`, `test_country_without_scores_has_null_chance`,
+  `test_country_active_flag` e `test_topic_counted_once_per_country`.
+
+### Tarefa 12: Tela inicial de países (escolha global)
+
+- `/` deixa de redirecionar: vira a tela "Escolha o país". Uma grade com os 7 países, cada
+  um com bandeira SVG (pacote `country-flag-icons`: emoji de bandeira não aparece no
+  Windows), nome, "NN% de chance de venda (estimativa)" e o melhor tópico. Países
+  inativos aparecem apagados, com "ative em Configurações".
+- A escolha fica em `localStorage["radar3d.country"]`. O hook `useCountry()` lê primeiro
+  `?country=`, depois o `localStorage`, depois "BR". Escolher um país grava e leva para
+  `/radar?country=XX`.
+- A nav ganha um chip com a bandeira e o nome do país atual ("trocar" leva a `/`), e os
+  links da nav carregam `?country=`.
+- O seletor de país sai do Radar (os filtros de plataforma, mercado e categoria ficam), do
+  Sazonal e do Hype.
+- `iniciar.bat` passa a abrir `http://localhost:3000/`.
+- e2e:
+  - `inicio lista os 7 paises com chance`;
+  - `escolher Japao leva ao radar com country=JP e lembra a escolha`;
+  - `nav mostra o pais escolhido`.
+  O teste antigo "trocar o país muda a query" (radar/sazonal) é adaptado ao novo fluxo.
+
+### Tarefa 13: Top 5 modelos por data sazonal (backend)
+
+- **YAML:** o `seasonal_events.yaml` ganha `idea_sets` (conjuntos reutilizáveis de ideias,
+  cada ideia `{name (PT), query (termo de busca em inglês), keywords: [...]}`). Cada evento
+  referencia um conjunto (`ideas: <set>`). Os `themes` de exibição continuam.
+- **Sinal de demanda de uma ideia num país:** soma de `metric` dos `RawItem` dos últimos 30
+  dias (fontes de plataforma em qualquer país + Trends/YouTube do país) cujo título+tags
+  casa com alguma keyword (`matches_phrase`).
+- **Concorrência:** a tabela nova `SeasonalListing(term, platform, day, count)`.
+  `update_seasonal_listings(session, counters, day)` roda 1x/dia no `run_pipeline`, para as
+  ideias dos eventos com `start_by` nos próximos 60 dias (ou atrasados com o evento ainda
+  por vir), no máximo 30 termos. Usa as mesmas regras de falha do hype.
+- **Nota por ideia:**
+  - `demanda` = percentil do sinal entre as ideias do evento;
+  - `momentum` = 50;
+  - `saturação` = percentil dos anúncios entre as ideias medidas (50 sem medição);
+  - `fit` = `window_fit(evento − lead_days, hoje + modeling_days)`;
+  - `opportunity` e `sale_chance` pelas fórmulas do radar.
+- `measured` = verdadeiro se houve sinal ou contagem. Sem nenhum dado, a ideia aparece
+  sem chance ("ainda sem dados"), para não inventar número.
+- **`/api/seasonal`:** cada evento ganha `top_models` (5 ideias, da maior nota para a menor;
+  as sem dados vão por último, na ordem do YAML), com `{name, query, opportunity,
+  sale_chance, measured, competition: {plataforma: n}, signal}`.
+- Testes:
+  - `test_ideas_resolved_from_idea_set`;
+  - `test_idea_signal_matches_keywords_last_30_days`;
+  - `test_top_models_ranked_by_opportunity`;
+  - `test_unmeasured_ideas_have_no_chance`;
+  - `test_update_seasonal_listings_only_upcoming_events`;
+  - `test_api_seasonal_includes_top5`.
+
+### Tarefa 14: Top 5 na tela Sazonal
+
+- O destaque mostra o top 5 do evento em lista numerada (nome da ideia, chance
+  "(estimativa)" e concorrência), substituindo as pílulas de tema.
+- Cada linha do calendário mostra o top 5 compacto (nome + ponto de chance). Ideias sem
+  dados aparecem com "sem dados ainda".
+- e2e: `destaque mostra o top 5 do evento` e `linha do calendario mostra top 5`.
+
 ### Tarefa 10: Fechamento da Etapa 2
 
 - [ ] Nav: Sazonal e Hype deixam de ficar apagadas (`emBreve` falso).
