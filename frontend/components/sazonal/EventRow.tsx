@@ -1,4 +1,5 @@
 import { StatusBadge } from "@/components/sazonal/StatusBadge";
+import { TopModels } from "@/components/sazonal/TopModels";
 import { formatDayMonth, formatDays } from "@/lib/dates";
 import type { SeasonEvent } from "@/lib/sazonal-types";
 
@@ -15,7 +16,7 @@ export function EventRow({ event }: { event: SeasonEvent }) {
         <p className="text-sm text-muted-foreground">
           Comece até {formatDayMonth(event.start_by)} · evento em {formatDays(event.days_to_event)}
         </p>
-        <p className="text-sm text-muted-foreground">{event.themes.join(" · ")}</p>
+        <TopModels models={event.top_models} label={`Top 5 de ${event.name}`} variant="compact" />
       </div>
       <div className="col-start-2 sm:col-start-3 sm:row-start-1 sm:justify-self-end">
         <StatusBadge status={event.status} />

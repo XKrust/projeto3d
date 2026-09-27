@@ -1,11 +1,266 @@
 {
-  "country": "BR",
-  "lead_days": 21,
-  "modeling_days": 7,
-  "events": [
-    {"slug": "dia_das_criancas_br", "name": "Dia das Crianças", "date": "2026-10-12", "start_by": "2026-09-14", "days_to_event": 15, "days_to_start": -13, "status": "atrasado", "themes": ["brinquedos articulados", "flexi"]},
-    {"slug": "halloween", "name": "Halloween", "date": "2026-10-31", "start_by": "2026-10-03", "days_to_event": 34, "days_to_start": 6, "status": "agora", "themes": ["abóboras", "caveiras", "bruxas"]},
-    {"slug": "black_friday", "name": "Black Friday", "date": "2026-11-27", "start_by": "2026-10-30", "days_to_event": 61, "days_to_start": 33, "status": "em_breve", "themes": ["pacotes de modelos"]},
-    {"slug": "natal", "name": "Natal", "date": "2026-12-25", "start_by": "2026-11-27", "days_to_event": 89, "days_to_start": 61, "status": "em_breve", "themes": ["enfeites de árvore", "presépio"]}
-  ]
+ "country": "BR",
+ "lead_days": 21,
+ "modeling_days": 7,
+ "events": [
+  {
+   "slug": "dia_das_criancas_br",
+   "name": "Dia das Crianças",
+   "date": "2026-10-12",
+   "start_by": "2026-09-14",
+   "days_to_event": 15,
+   "days_to_start": -13,
+   "status": "atrasado",
+   "themes": [
+    "Dragão",
+    "Bicho flexi",
+    "Dinossauro",
+    "Carrinho",
+    "Quebra-cabeça"
+   ],
+   "top_models": [
+    {
+     "name": "Dragão",
+     "query": "dragon",
+     "opportunity": 66.2,
+     "sale_chance": "Média",
+     "measured": true,
+     "competition": {
+      "Cults3D": 120
+     },
+     "signal": 100
+    },
+    {
+     "name": "Bicho flexi",
+     "query": "flexi",
+     "opportunity": 58.0,
+     "sale_chance": "Média",
+     "measured": true,
+     "competition": {},
+     "signal": 100
+    },
+    {
+     "name": "Dinossauro",
+     "query": "dinosaur",
+     "opportunity": 41.5,
+     "sale_chance": "Média",
+     "measured": true,
+     "competition": {},
+     "signal": 100
+    },
+    {
+     "name": "Carrinho",
+     "query": "toy car",
+     "opportunity": null,
+     "sale_chance": null,
+     "measured": false,
+     "competition": {},
+     "signal": 0
+    },
+    {
+     "name": "Quebra-cabeça",
+     "query": "puzzle",
+     "opportunity": null,
+     "sale_chance": null,
+     "measured": false,
+     "competition": {},
+     "signal": 0
+    }
+   ]
+  },
+  {
+   "slug": "halloween",
+   "name": "Halloween",
+   "date": "2026-10-31",
+   "start_by": "2026-10-03",
+   "days_to_event": 34,
+   "days_to_start": 6,
+   "status": "agora",
+   "themes": [
+    "Caveira",
+    "Abóbora",
+    "Bruxa",
+    "Fantasma",
+    "Morcego"
+   ],
+   "top_models": [
+    {
+     "name": "Caveira",
+     "query": "skull",
+     "opportunity": 74.3,
+     "sale_chance": "Alta",
+     "measured": true,
+     "competition": {
+      "Cults3D": 900,
+      "BOOTH": 12
+     },
+     "signal": 100
+    },
+    {
+     "name": "Abóbora",
+     "query": "pumpkin",
+     "opportunity": 61.0,
+     "sale_chance": "Média",
+     "measured": true,
+     "competition": {
+      "Cults3D": 40
+     },
+     "signal": 100
+    },
+    {
+     "name": "Bruxa",
+     "query": "witch",
+     "opportunity": 52.4,
+     "sale_chance": "Média",
+     "measured": true,
+     "competition": {},
+     "signal": 100
+    },
+    {
+     "name": "Fantasma",
+     "query": "ghost",
+     "opportunity": 39.0,
+     "sale_chance": "Baixa",
+     "measured": true,
+     "competition": {},
+     "signal": 100
+    },
+    {
+     "name": "Morcego",
+     "query": "bat decoration",
+     "opportunity": null,
+     "sale_chance": null,
+     "measured": false,
+     "competition": {},
+     "signal": 0
+    }
+   ]
+  },
+  {
+   "slug": "black_friday",
+   "name": "Black Friday",
+   "date": "2026-11-27",
+   "start_by": "2026-10-30",
+   "days_to_event": 61,
+   "days_to_start": 33,
+   "status": "em_breve",
+   "themes": [
+    "Dragão articulado",
+    "Suporte de celular",
+    "Chaveiro",
+    "Fidget",
+    "Vaso para plantas"
+   ],
+   "top_models": [
+    {
+     "name": "Dragão articulado",
+     "query": "articulated dragon",
+     "opportunity": 70.1,
+     "sale_chance": "Alta",
+     "measured": true,
+     "competition": {},
+     "signal": 100
+    },
+    {
+     "name": "Suporte de celular",
+     "query": "phone stand",
+     "opportunity": 55.0,
+     "sale_chance": "Média",
+     "measured": true,
+     "competition": {},
+     "signal": 100
+    },
+    {
+     "name": "Chaveiro",
+     "query": "keychain",
+     "opportunity": 44.0,
+     "sale_chance": "Média",
+     "measured": true,
+     "competition": {},
+     "signal": 100
+    },
+    {
+     "name": "Fidget",
+     "query": "fidget",
+     "opportunity": 30.0,
+     "sale_chance": "Baixa",
+     "measured": true,
+     "competition": {},
+     "signal": 100
+    },
+    {
+     "name": "Vaso para plantas",
+     "query": "planter",
+     "opportunity": 22.0,
+     "sale_chance": "Baixa",
+     "measured": true,
+     "competition": {},
+     "signal": 100
+    }
+   ]
+  },
+  {
+   "slug": "natal",
+   "name": "Natal",
+   "date": "2026-12-25",
+   "start_by": "2026-11-27",
+   "days_to_event": 89,
+   "days_to_start": 61,
+   "status": "em_breve",
+   "themes": [
+    "Enfeite de árvore",
+    "Presépio",
+    "Papai Noel",
+    "Árvore de Natal",
+    "Floco de neve"
+   ],
+   "top_models": [
+    {
+     "name": "Enfeite de árvore",
+     "query": "christmas ornament",
+     "opportunity": null,
+     "sale_chance": null,
+     "measured": false,
+     "competition": {},
+     "signal": 0
+    },
+    {
+     "name": "Presépio",
+     "query": "nativity",
+     "opportunity": null,
+     "sale_chance": null,
+     "measured": false,
+     "competition": {},
+     "signal": 0
+    },
+    {
+     "name": "Papai Noel",
+     "query": "santa claus",
+     "opportunity": null,
+     "sale_chance": null,
+     "measured": false,
+     "competition": {},
+     "signal": 0
+    },
+    {
+     "name": "Árvore de Natal",
+     "query": "christmas tree",
+     "opportunity": null,
+     "sale_chance": null,
+     "measured": false,
+     "competition": {},
+     "signal": 0
+    },
+    {
+     "name": "Floco de neve",
+     "query": "snowflake",
+     "opportunity": null,
+     "sale_chance": null,
+     "measured": false,
+     "competition": {},
+     "signal": 0
+    }
+   ]
+  }
+ ]
 }

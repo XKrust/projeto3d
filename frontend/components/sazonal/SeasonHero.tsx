@@ -1,4 +1,5 @@
 import { CountUp } from "@/components/radar/CountUp";
+import { TopModels } from "@/components/sazonal/TopModels";
 import { formatDayMonth, formatDays } from "@/lib/dates";
 import { COUNTRY_IN } from "@/lib/radar-labels";
 import type { SeasonEvent } from "@/lib/sazonal-types";
@@ -43,16 +44,12 @@ export function SeasonHero({
           Conta: evento − {leadDays} dias de antecedência de compra − {modelingDays} de modelagem
         </li>
       </ul>
-      <ul aria-label="Temas que vendem" className="flex flex-wrap gap-2">
-        {event.themes.map((theme) => (
-          <li
-            key={theme}
-            className="rounded-full bg-card px-3 py-1 text-sm text-foreground"
-          >
-            {theme}
-          </li>
-        ))}
-      </ul>
+      <div className="flex max-w-2xl flex-col gap-2">
+        <h2 className="text-[length:var(--text-lg)] font-bold">
+          O que modelar para vender mais
+        </h2>
+        <TopModels models={event.top_models} label={`Top 5 modelos para ${event.name}`} variant="hero" />
+      </div>
     </section>
   );
 }

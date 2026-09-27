@@ -26,7 +26,27 @@ test.describe("/sazonal", () => {
     ).toBeVisible();
     await expect(page.getByText("Comece a modelar até 03/10")).toBeVisible();
     await expect(page.getByText("Evento em 31/10")).toBeVisible();
-    await expect(page.getByText("caveiras").first()).toBeVisible();
+  });
+
+  test("destaque mostra o top 5 do evento", async ({ page }) => {
+    await page.goto("/sazonal");
+
+    const top = page.getByRole("list", { name: "Top 5 modelos para Halloween" });
+    await expect(top.getByRole("listitem")).toHaveCount(5);
+    await expect(top.getByRole("listitem").first()).toContainText("Caveira");
+    await expect(top.getByRole("listitem").first()).toContainText("Alta");
+    await expect(top.getByRole("listitem").first()).toContainText("(estimativa)");
+    await expect(top.getByRole("listitem").first()).toContainText("Cults3D 900 · BOOTH 12");
+    await expect(top.getByRole("listitem").last()).toContainText("sem dados ainda");
+  });
+
+  test("linha do calendario mostra top 5", async ({ page }) => {
+    await page.goto("/sazonal");
+
+    const natal = page.getByRole("list", { name: "Top 5 de Natal" });
+    await expect(natal.getByRole("listitem")).toHaveCount(5);
+    await expect(natal).toContainText("Enfeite de árvore");
+    await expect(natal).toContainText("sem dados ainda");
   });
 
   test("evento atrasado aparece com o texto atrasado", async ({ page }) => {
