@@ -34,18 +34,16 @@ test.describe("/radar", () => {
     await expect(page.getByText("Preço mediano: —")).toBeVisible();
   });
 
-  test("trocar o país para JP muda a query da URL", async ({ page }) => {
+  test("o país da URL vai para a consulta do radar", async ({ page }) => {
     await page.route("**/api/radar?*", (route) =>
       route.fulfill({ json: radarFixture })
     );
+    const radarRequest = page.waitForRequest((req) => req.url().includes("/api/radar?"));
 
-    await page.goto("/radar");
+    await page.goto("/radar?country=JP");
+
+    expect((await radarRequest).url()).toContain("country=JP");
     await expect(page.getByText("Goku Super Saiyajin")).toBeVisible();
-
-    await page.getByLabel("País").click();
-    await page.getByRole("option", { name: "Japão" }).click();
-
-    await expect(page).toHaveURL(/country=JP/);
   });
 
   test("lista vazia mostra o texto de orientação", async ({ page }) => {

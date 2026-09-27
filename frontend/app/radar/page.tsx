@@ -3,6 +3,7 @@
 import { Suspense, useState } from "react";
 import useSWR from "swr";
 import { useSearchParams } from "next/navigation";
+import { useCountry } from "@/lib/country";
 import { apiGet, apiPost, BackendOfflineError } from "@/lib/api";
 import { BackendOffline } from "@/components/BackendOffline";
 import { Filters } from "@/components/radar/Filters";
@@ -13,9 +14,9 @@ import type { CollectResponse, RadarMeta, Topic } from "@/lib/radar-types";
 
 const COLLECT_REFRESH_DELAY_MS = 5000;
 
-function buildRadarQuery(searchParams: URLSearchParams): string {
+function buildRadarQuery(searchParams: URLSearchParams, country: string): string {
   const params = new URLSearchParams();
-  params.set("country", searchParams.get("country") || "BR");
+  params.set("country", country);
   for (const key of ["platform", "market", "category"]) {
     const value = searchParams.get(key);
     if (value) {
@@ -35,6 +36,7 @@ function Loading() {
 
 function RadarContent() {
   const searchParams = useSearchParams();
+  const country = useCountry();
   const [collectMessage, setCollectMessage] = useState<string | null>(null);
   const [collecting, setCollecting] = useState(false);
 
@@ -44,13 +46,13 @@ function RadarContent() {
     isLoading: metaLoading,
   } = useSWR<RadarMeta>("/api/radar/meta", apiGet);
 
-  const radarQuery = buildRadarQuery(searchParams);
+  const radarQuery = country ? buildRadarQuery(searchParams, country) : null;
   const {
     data: topics,
     error: topicsError,
     isLoading: topicsLoading,
     mutate,
-  } = useSWR<Topic[]>(`/api/radar?${radarQuery}`, apiGet);
+  } = useSWR<Topic[]>(radarQuery ? `/api/radar?${radarQuery}` : null, apiGet);
 
   if (
     metaError instanceof BackendOfflineError ||
@@ -59,7 +61,7 @@ function RadarContent() {
     return <BackendOffline />;
   }
 
-  if (metaLoading || topicsLoading) {
+  if (!country || metaLoading || topicsLoading) {
     return <Loading />;
   }
 
@@ -91,7 +93,6 @@ function RadarContent() {
     }
   }
 
-  const country = searchParams.get("country") || "BR";
   const [leader, ...rest] = topics ?? [];
 
   return (

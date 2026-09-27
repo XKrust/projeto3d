@@ -4,7 +4,9 @@
 2. Dê dois cliques em `iniciar.bat`. Na primeira vez ele instala tudo sozinho (o `uv`, as
    dependências do backend e do frontend, e compila o frontend), e isso demora alguns
    minutos — as janelas mostram o progresso, não feche nada.
-3. O navegador abre sozinho em http://localhost:3000/radar quando tudo estiver pronto.
+3. O navegador abre sozinho em http://localhost:3000 quando tudo estiver pronto: é a tela
+   inicial, onde você escolhe o país. A escolha fica guardada e vale para Radar, Sazonal e
+   Hype. Para trocar, clique na bandeira no menu de cima.
 4. Para desligar, dê dois cliques em `parar.bat`.
 5. Se der dois cliques em `iniciar.bat` com o Radar 3D já aberto, ele só abre o navegador de
    novo (não inicia tudo uma segunda vez).
@@ -98,7 +100,7 @@ cd frontend && RADAR_SMOKE=1 npx playwright test tests/e2e/smoke.spec.ts
   inicialização, a janela minimizada fecha sozinha e levaria o erro junto, por isso a checagem
   é feita no arquivo de log, não na janela. Só então sobe o frontend (`:3000`, saída em
   `data\frontend.log`), espera a porta 3000 responder (até 60 s) e abre
-  `http://localhost:3000/radar`. Qualquer passo que falhar mostra uma mensagem em português e
+  `http://localhost:3000/` (tela de países). Qualquer passo que falhar mostra uma mensagem em português e
   pausa a janela (não fecha sozinho escondendo o erro).
 - `parar.bat`: encerra os processos que estiverem ouvindo nas portas 8000 e 3000. Pode ser
   chamado mesmo se nada estiver rodando (não dá erro).

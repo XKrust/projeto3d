@@ -6,7 +6,7 @@ rem 1. Se a porta 3000 ja estiver em uso, o Radar 3D ja esta rodando: so abre o 
 netstat -ano | findstr /r /c:":3000 .*LISTENING" >nul
 if not errorlevel 1 (
     echo O Radar 3D ja esta rodando. Abrindo o navegador...
-    start "" http://localhost:3000/radar
+    start "" http://localhost:3000/
     exit /b 0
 )
 
@@ -153,5 +153,5 @@ goto radar_espera
 
 :radar_abrir
 echo Pronto! Abrindo o navegador...
-start "" http://localhost:3000/radar
+start "" http://localhost:3000/
 exit /b 0

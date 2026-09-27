@@ -5,7 +5,7 @@ import useSWR from "swr";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { apiGet, BackendOfflineError } from "@/lib/api";
 import { BackendOffline } from "@/components/BackendOffline";
-import { CountrySelect } from "@/components/CountrySelect";
+import { useCountry } from "@/lib/country";
 import { HypeHero } from "@/components/hype/HypeHero";
 import { ReleaseRow } from "@/components/hype/ReleaseRow";
 import {
@@ -16,7 +16,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { KIND_FILTER_LABELS, type HypeResponse } from "@/lib/hype-types";
-import type { RadarMeta } from "@/lib/radar-types";
 
 const ALL_KINDS = "todos";
 
@@ -63,20 +62,19 @@ function KindSelect() {
 
 function HypeContent() {
   const searchParams = useSearchParams();
-  const country = searchParams.get("country") || "BR";
+  const country = useCountry();
   const kind = searchParams.get("kind");
-  const query = new URLSearchParams({ country });
+  const query = new URLSearchParams({ country: country ?? "" });
   if (kind) {
     query.set("kind", kind);
   }
 
-  const { data: meta, error: metaError } = useSWR<RadarMeta>("/api/radar/meta", apiGet);
-  const { data, error, isLoading } = useSWR<HypeResponse>(`/api/hype?${query}`, apiGet);
+  const { data, error, isLoading } = useSWR<HypeResponse>(country ? `/api/hype?${query}` : null, apiGet);
 
-  if (error instanceof BackendOfflineError || metaError instanceof BackendOfflineError) {
+  if (error instanceof BackendOfflineError) {
     return <BackendOffline />;
   }
-  if (isLoading || !data) {
+  if (!country || isLoading || !data) {
     return error ? (
       <div className="flex flex-1 items-center justify-center p-8">
         <p className="text-destructive">{error.message}</p>
@@ -107,9 +105,6 @@ function HypeContent() {
         aria-label="Filtros"
         className="flex flex-wrap items-center gap-2 rounded-[var(--radius-card)] bg-card p-3 sm:p-4"
       >
-        {meta && (
-          <CountrySelect countries={meta.countries} europe={meta.country_groups?.Europa ?? []} />
-        )}
         <KindSelect />
       </section>
 

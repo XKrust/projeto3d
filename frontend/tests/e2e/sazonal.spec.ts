@@ -37,13 +37,11 @@ test.describe("/sazonal", () => {
     await expect(row).toContainText("Comece até 14/09");
   });
 
-  test("trocar país muda a query", async ({ page }) => {
-    await page.goto("/sazonal");
-    await expect(page.getByRole("heading", { level: 1, name: "Halloween" })).toBeVisible();
+  test("usa o país da URL", async ({ page }) => {
+    const request = page.waitForRequest((req) => req.url().includes("/api/seasonal?"));
 
-    await page.getByLabel("País").click();
-    await page.getByRole("option", { name: "Japão" }).click();
+    await page.goto("/sazonal?country=JP");
 
-    await expect(page).toHaveURL(/country=JP/);
+    expect((await request).url()).toContain("country=JP");
   });
 });

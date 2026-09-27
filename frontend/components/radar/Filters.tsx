@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CATEGORY_LABELS, COUNTRY_LABELS, MARKET_LABELS } from "@/lib/radar-labels";
+import { CATEGORY_LABELS, MARKET_LABELS } from "@/lib/radar-labels";
 import type { RadarMeta } from "@/lib/radar-types";
 
 // Sentinela para a opção "Todas"/"Todos": nunca vai para a URL, só remove o filtro.
@@ -21,7 +21,6 @@ export function Filters({ meta }: { meta: RadarMeta }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const country = searchParams.get("country") || "BR";
   const platform = searchParams.get("platform") || ALL_VALUE;
   const market = searchParams.get("market") || ALL_VALUE;
   const category = searchParams.get("category") || ALL_VALUE;
@@ -37,10 +36,7 @@ export function Filters({ meta }: { meta: RadarMeta }) {
     router.push(query ? `${pathname}?${query}` : pathname);
   }
 
-  // Mapas valor → rótulo: fazem o campo mostrar "Brasil" em vez de "BR".
-  const countryItems = Object.fromEntries(
-    meta.countries.map((code) => [code, COUNTRY_LABELS[code] ?? code])
-  );
+  // Mapas valor → rótulo: fazem o campo mostrar o nome em vez do código.
   const platformItems = {
     [ALL_VALUE]: "Todas as plataformas",
     ...Object.fromEntries(meta.platforms.map((item) => [item.slug, item.name])),
@@ -54,35 +50,8 @@ export function Filters({ meta }: { meta: RadarMeta }) {
     ...Object.fromEntries(meta.categories.map((slug) => [slug, CATEGORY_LABELS[slug] ?? slug])),
   };
 
-  const europeCodes = new Set(meta.country_groups?.Europa ?? []);
-  const mainCountries = meta.countries.filter((code) => !europeCodes.has(code));
-  const europeCountries = meta.countries.filter((code) => europeCodes.has(code));
-
   return (
     <div className="flex flex-wrap gap-2">
-      <Select items={countryItems} value={country} onValueChange={(value) => setParam("country", String(value))}>
-        <SelectTrigger aria-label="País">
-          <SelectValue placeholder="País" />
-        </SelectTrigger>
-        <SelectContent>
-          {mainCountries.map((code) => (
-            <SelectItem key={code} value={code}>
-              {COUNTRY_LABELS[code] ?? code}
-            </SelectItem>
-          ))}
-          {europeCountries.length > 0 && (
-            <SelectGroup>
-              <SelectLabel>Europa</SelectLabel>
-              {europeCountries.map((code) => (
-                <SelectItem key={code} value={code}>
-                  {COUNTRY_LABELS[code] ?? code}
-                </SelectItem>
-              ))}
-            </SelectGroup>
-          )}
-        </SelectContent>
-      </Select>
-
       <Select items={platformItems} value={platform} onValueChange={(value) => setParam("platform", String(value))}>
         <SelectTrigger aria-label="Plataforma">
           <SelectValue placeholder="Plataforma" />

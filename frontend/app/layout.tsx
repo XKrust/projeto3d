@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
 import { Nav } from "@/components/Nav";
 import "./globals.css";
@@ -34,7 +35,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${bricolage.variable} ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <Nav />
+        <Suspense fallback={null}>
+          <Nav />
+        </Suspense>
         <main className="flex flex-1 flex-col pt-24 sm:pt-28">{children}</main>
         <footer className="mx-auto w-full max-w-6xl px-4 pb-8 pt-16 sm:px-8">
           <p className="border-t border-border pt-4 text-sm text-muted-foreground">

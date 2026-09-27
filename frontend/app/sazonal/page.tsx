@@ -5,10 +5,9 @@ import useSWR from "swr";
 import { useSearchParams } from "next/navigation";
 import { apiGet, BackendOfflineError } from "@/lib/api";
 import { BackendOffline } from "@/components/BackendOffline";
-import { CountrySelect } from "@/components/CountrySelect";
+import { useCountry } from "@/lib/country";
 import { EventRow } from "@/components/sazonal/EventRow";
 import { SeasonHero } from "@/components/sazonal/SeasonHero";
-import type { RadarMeta } from "@/lib/radar-types";
 import type { SeasonalResponse } from "@/lib/sazonal-types";
 
 function Loading() {
@@ -21,17 +20,16 @@ function Loading() {
 
 function SazonalContent() {
   const searchParams = useSearchParams();
-  const country = searchParams.get("country") || "BR";
-  const { data: meta, error: metaError } = useSWR<RadarMeta>("/api/radar/meta", apiGet);
+  const country = useCountry();
   const { data, error, isLoading } = useSWR<SeasonalResponse>(
-    `/api/seasonal?country=${country}`,
+    country ? `/api/seasonal?country=${country}` : null,
     apiGet
   );
 
-  if (error instanceof BackendOfflineError || metaError instanceof BackendOfflineError) {
+  if (error instanceof BackendOfflineError) {
     return <BackendOffline />;
   }
-  if (isLoading || !data) {
+  if (!country || isLoading || !data) {
     return error ? (
       <div className="flex flex-1 items-center justify-center p-8">
         <p className="text-destructive">{error.message}</p>
@@ -64,9 +62,6 @@ function SazonalContent() {
               Ordenado pelo dia de começar a modelar. Ajuste os prazos em Configurações.
             </p>
           </div>
-          {meta && (
-            <CountrySelect countries={meta.countries} europe={meta.country_groups?.Europa ?? []} />
-          )}
         </div>
         <ol className="flex flex-col border-b border-border">
           {data.events.map((event) => (

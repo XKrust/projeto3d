@@ -66,8 +66,17 @@ Escala de 4pt com nomes (`--space-sm` … `--space-3xl`). Entre seções grandes
 - **Secundário:** pílula com contorno (`variant="outline"`, `rounded-full`).
 - A barra "Salvar" das Configurações é uma pílula fixa no rodapé da tela.
 
+## Escolha do país
+- A tela inicial (`/`) é uma grade de países com bandeira SVG (`country-flag-icons`, porque
+  emoji de bandeira não aparece no Windows), a chance de venda estimada ("NN%
+  (estimativa)") e o melhor tema.
+- A escolha fica no navegador (`localStorage["radar3d.country"]`) e vale para o app todo, via
+  `useCountry()` em `frontend/lib/country.ts`. Um `?country=` na URL tem prioridade.
+- Nenhuma tela tem seletor de país: para trocar, clica-se no chip de bandeira da nav.
+
 ## Navegação e rodapé
-- **N5 · Pílula flutuante** no topo, centralizada, com fundo translúcido. A tela atual
+- **N5 · Pílula flutuante** no topo, centralizada, com fundo translúcido. O primeiro item é
+  o chip do país (bandeira + nome; leva a `/`). A tela atual
   fica em laranja, e as telas que ainda não existem ficam em tom mais apagado. Em
   telas ≤ 640px, rótulos curtos (Config, Analisar) e o logotipo é omitido.
 - **Ft2 · Linha única** no rodapé: o que o app é e o aviso de que notas e preços são
