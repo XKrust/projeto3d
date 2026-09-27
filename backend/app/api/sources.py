@@ -6,6 +6,7 @@ from sqlmodel import Session, select
 import app.collectors as collectors_pkg
 from app.db import get_session
 from app.models import Source
+from app.pipeline import run_after_cycle
 from app.runner import start_cycle_in_background
 from app.settings_store import get_settings
 
@@ -48,7 +49,7 @@ def read_sources(session: Session = Depends(get_session)) -> list[dict]:
 @router.post("/collect")
 def start_collect(request: Request, source: str | None = None) -> dict:
     session_factory = request.app.state.session_factory
-    started = start_cycle_in_background(session_factory, only=source)
+    started = start_cycle_in_background(session_factory, only=source, after=run_after_cycle)
     if started:
         return {"started": True, "message": "Coleta iniciada."}
     return {"started": False, "message": "Já existe uma coleta em andamento."}

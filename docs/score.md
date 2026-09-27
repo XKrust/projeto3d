@@ -13,3 +13,31 @@ O score é calculado por (tópico, país, plataforma, dia). Os pesos ficam em `c
 - **oportunidade** = `(0.40·demanda + 0.25·momentum + 0.35·(100−saturação)) · fit_janela`.
 - **fit_plataforma** = força da plataforma no país × compatibilidade de mercado × presença do tema na plataforma.
 - **Chance de venda:** ≥70 é Alta, 40–69 é Média, <40 é Baixa. Sempre rotulada como "estimativa".
+
+## Como o cálculo roda
+
+Função: `backend/app/pipeline.py:compute_scores(session, day)`.
+
+- **Sinais do país:** para o país `c`, entram os sinais de `c` e os de `GLOBAL`. Um tópico sem
+  nenhum sinal de `c`/`GLOBAL` nos últimos 10 dias não ganha linha de score em `c`.
+- **Grupos de fonte:** `google_trends`, `youtube` e `reddit` são grupos separados.
+  `sketchfab`, `cults3d` e `printables` somam no grupo `platforms`. Os pesos são os
+  `source_weights` da config (padrão: Trends 0.35, YouTube 0.25, Reddit 0.15, plataformas
+  0.25).
+- **Demanda bruta de um dia:** para cada grupo, calcula o percentil do valor do dia entre os
+  tópicos com sinal naquele dia. Um tópico sem aquele grupo conta como 0. Depois faz a média
+  ponderada pelos `source_weights`, só com os grupos que têm algum dado no dia. Assim, uma
+  fonte desligada (por exemplo, sem chave) não derruba a nota de todos.
+- **demanda:** percentil da demanda bruta de hoje entre os tópicos do país.
+- **momentum:** usa a série de 10 dias da demanda bruta (do mais antigo até hoje). Um dia sem
+  sinal conta como 0. `TopicScore.momentum` guarda a nota de 0–100 e
+  `TopicScore.momentum_raw` guarda o valor bruto.
+- **Plataformas:** só entram as plataformas cadastradas que já têm algum item coletado.
+- **saturação:** percentil da contagem de anúncios mais recente (`TopicListing`) entre os
+  tópicos daquela plataforma. Sem contagem, vale 50.
+- **pico previsto:** por enquanto, sempre a regra orgânica. Os eventos entram na Etapa 2.
+- **fit_plataforma:** força da plataforma no país (`Platform.strength_json`) × 1 × presença.
+  A presença vale 1.0 se o tópico teve item daquela plataforma nos últimos 7 dias, e 0.5 se
+  não teve. A compatibilidade de mercado é gravada como 1, porque o filtro de mercado é
+  aplicado na API.
+- Rodar de novo no mesmo dia atualiza as linhas existentes, sem duplicar.

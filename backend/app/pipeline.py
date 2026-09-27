@@ -1,0 +1,289 @@
+"""Pipeline pos-coleta: topicos -> saturacao (contagem de anuncios) -> scores.
+
+Roda ao final de cada ciclo de coleta (callback `after` de `run_cycle`), ver o
+fluxo em `docs/arquitetura.md#ciclo-de-coleta` e as formulas em `docs/score.md`.
+"""
+
+import json
+import logging
+from collections import defaultdict
+from collections.abc import Callable
+from datetime import date, timedelta
+
+import httpx
+from sqlalchemy import func
+from sqlmodel import Session, select
+
+import app.collectors as collectors_pkg
+from app import clock
+from app.collectors.base import ListingCounter
+from app.constants import GLOBAL
+from app.http import make_client
+from app.models import Platform, RawItem, Topic, TopicItem, TopicListing, TopicScore, TopicSignal
+from app.scoring import formulas
+from app.settings_store import get_settings
+from app.topics.extract import PLATFORM_SOURCES, extract_topics
+
+logger = logging.getLogger(__name__)
+
+PLATFORMS_GROUP = "platforms"
+MOMENTUM_DAYS = 10
+PRESENCE_DAYS = 7
+NO_LISTING_SATURATION = 50.0
+
+
+# ---------------------------------------------------------------- saturacao
+
+
+def _top_topic_ids(session: Session, day: date, top_n: int) -> list[int]:
+    """Os `top_n` topicos pela maior oportunidade do ultimo dia com score; sem
+    nenhum score ainda, pela soma dos sinais de `day`."""
+    last_scored_day = session.exec(select(func.max(TopicScore.day)).where(TopicScore.day <= day)).first()
+    if last_scored_day is not None:
+        ranking = session.exec(
+            select(TopicScore.topic_id, func.max(TopicScore.opportunity))
+            .where(TopicScore.day == last_scored_day)
+            .group_by(TopicScore.topic_id)
+        ).all()
+    else:
+        ranking = session.exec(
+            select(TopicSignal.topic_id, func.sum(TopicSignal.value))
+            .where(TopicSignal.day == day)
+            .group_by(TopicSignal.topic_id)
+        ).all()
+
+    ordered = sorted(ranking, key=lambda row: (-row[1], row[0]))
+    return [topic_id for topic_id, _ in ordered[:top_n]]
+
+
+def update_listings(session: Session, counters: dict[str, ListingCounter], day: date, top_n: int) -> int:
+    """Grava `TopicListing` (contagem de anuncios por plataforma) dos `top_n`
+    topicos principais. A consulta usa o `name` do topico. A falha de um
+    contador so pula aquela plataforma. Retorna o numero de linhas gravadas."""
+    topic_ids = _top_topic_ids(session, day, top_n)
+    if not topic_ids or not counters:
+        return 0
+
+    topics = {t.id: t for t in session.exec(select(Topic).where(Topic.id.in_(topic_ids))).all()}
+    written = 0
+
+    for platform, counter in counters.items():
+        try:
+            counts = {topic_id: counter.count_listings(topics[topic_id].name) for topic_id in topic_ids}
+        except Exception:
+            logger.exception("Contagem de anuncios falhou na plataforma %s; pulando", platform)
+            continue
+
+        existing = {
+            row.topic_id: row
+            for row in session.exec(
+                select(TopicListing).where(TopicListing.platform == platform, TopicListing.day == day)
+            ).all()
+        }
+        for topic_id, count in counts.items():
+            row = existing.get(topic_id) or TopicListing(topic_id=topic_id, platform=platform, day=day, count=count)
+            row.count = count
+            session.add(row)
+            written += 1
+        session.commit()
+
+    return written
+
+
+# ---------------------------------------------------------------- scores
+
+
+def _source_group(source: str) -> str:
+    return PLATFORMS_GROUP if source in PLATFORM_SOURCES else source
+
+
+def _raw_demand_by_day(
+    values: dict[date, dict[int, dict[str, float]]], source_weights: dict[str, float]
+) -> dict[date, dict[int, float]]:
+    """Demanda bruta por dia e topico: percentil do valor do dia por grupo de
+    fonte, somado com os `source_weights` renormalizados sobre os grupos
+    presentes naquele dia. So entram os topicos com sinal no dia."""
+    result: dict[date, dict[int, float]] = {}
+    for day, by_topic in values.items():
+        groups = {group for by_group in by_topic.values() for group in by_group}
+        weights = {group: source_weights.get(group, 0.0) for group in groups}
+        total_weight = sum(weights.values())
+        raw: dict[int, float] = {topic_id: 0.0 for topic_id in by_topic}
+        if total_weight > 0:
+            for group, weight in weights.items():
+                ranks = formulas.percentile_ranks(
+                    {topic_id: by_group.get(group, 0.0) for topic_id, by_group in by_topic.items()}
+                )
+                for topic_id, rank in ranks.items():
+                    raw[topic_id] += weight * rank / total_weight
+        result[day] = raw
+    return result
+
+
+def _latest_listing_saturation(session: Session, day: date, platforms: list[str]) -> dict[str, dict[int, float]]:
+    """Percentil do `TopicListing.count` mais recente (ate `day`) entre os
+    topicos de cada plataforma."""
+    latest: dict[str, dict[int, tuple[date, int]]] = defaultdict(dict)
+    rows = session.exec(
+        select(TopicListing).where(TopicListing.platform.in_(platforms), TopicListing.day <= day)
+    ).all()
+    for row in rows:
+        current = latest[row.platform].get(row.topic_id)
+        if current is None or row.day > current[0]:
+            latest[row.platform][row.topic_id] = (row.day, row.count)
+
+    return {
+        platform: formulas.percentile_ranks({topic_id: float(count) for topic_id, (_, count) in by_topic.items()})
+        for platform, by_topic in latest.items()
+    }
+
+
+def _present_pairs(session: Session, day: date, platforms: list[str]) -> set[tuple[int, str]]:
+    """(topico, plataforma) com `TopicItem` daquela plataforma nos ultimos 7 dias."""
+    start = day - timedelta(days=PRESENCE_DAYS - 1)
+    rows = session.exec(
+        select(TopicItem.topic_id, RawItem.source)
+        .join(RawItem, RawItem.id == TopicItem.raw_item_id)
+        .where(RawItem.source.in_(platforms), RawItem.day >= start, RawItem.day <= day)
+    ).all()
+    return {(topic_id, source) for topic_id, source in rows}
+
+
+def compute_scores(session: Session, day: date) -> int:
+    """Calcula e grava (upsert) `TopicScore` por (topico, pais ativo, plataforma
+    com dado) em `day`. Retorna o numero de linhas gravadas. Ver `docs/score.md`."""
+    settings = get_settings(session)
+    countries: list[str] = settings["countries"]
+    weights = settings["weights"]
+    source_weights = settings["source_weights"]
+    delivery = day + timedelta(days=int(settings["modeling_days"]))
+    window_days = [day - timedelta(days=MOMENTUM_DAYS - 1 - i) for i in range(MOMENTUM_DAYS)]
+
+    platform_slugs_with_data = set(session.exec(select(RawItem.source).distinct()).all())
+    platforms = [p for p in session.exec(select(Platform)).all() if p.slug in platform_slugs_with_data]
+    if not platforms:
+        return 0
+    platform_slugs = [p.slug for p in platforms]
+    strengths = {p.slug: json.loads(p.strength_json) for p in platforms}
+
+    saturation = _latest_listing_saturation(session, day, platform_slugs)
+    present = _present_pairs(session, day, platform_slugs)
+
+    # Todos os sinais da janela de 10 dias, numa consulta so.
+    signals = session.exec(
+        select(TopicSignal).where(
+            TopicSignal.day >= window_days[0],
+            TopicSignal.day <= day,
+            TopicSignal.country.in_([*countries, GLOBAL]),
+        )
+    ).all()
+
+    existing = {
+        (row.topic_id, row.country, row.platform): row
+        for row in session.exec(select(TopicScore).where(TopicScore.day == day)).all()
+    }
+    written = 0
+
+    for country in countries:
+        # dia -> topico -> grupo de fonte -> valor (pais + GLOBAL somados)
+        values: dict[date, dict[int, dict[str, float]]] = defaultdict(lambda: defaultdict(lambda: defaultdict(float)))
+        for signal in signals:
+            if signal.country in (country, GLOBAL):
+                values[signal.day][signal.topic_id][_source_group(signal.source)] += signal.value
+
+        topic_ids = {topic_id for by_topic in values.values() for topic_id in by_topic}
+        if not topic_ids:
+            continue
+
+        raw_by_day = _raw_demand_by_day(values, source_weights)
+        today_raw = raw_by_day.get(day, {})
+        demand = formulas.percentile_ranks({topic_id: today_raw.get(topic_id, 0.0) for topic_id in topic_ids})
+
+        for topic_id in topic_ids:
+            series = [raw_by_day.get(d, {}).get(topic_id, 0.0) for d in window_days]
+            m_raw = formulas.momentum_raw(series)
+            momentum = formulas.momentum_score(m_raw)
+            peak = formulas.peak_day(day, m_raw)
+            fit_window = formulas.window_fit(peak, delivery)
+
+            for platform in platform_slugs:
+                sat = saturation.get(platform, {}).get(topic_id, NO_LISTING_SATURATION)
+                fit_platform = formulas.platform_fit(
+                    float(strengths[platform].get(country, 0.0)),
+                    True,  # market_match: o filtro de mercado e aplicado na API
+                    (topic_id, platform) in present,
+                )
+                opp = formulas.opportunity(demand[topic_id], momentum, sat, fit_window, weights)
+
+                key = (topic_id, country, platform)
+                row = existing.get(key)
+                if row is None:
+                    row = TopicScore(
+                        topic_id=topic_id, country=country, platform=platform, day=day,
+                        demand=0, momentum=0, momentum_raw=0, saturation=0, peak_day=day,
+                        fit_window=0, fit_platform=0, opportunity=0,
+                    )
+                    existing[key] = row
+                row.demand = demand[topic_id]
+                row.momentum = momentum
+                row.momentum_raw = m_raw
+                row.saturation = sat
+                row.peak_day = peak
+                row.fit_window = fit_window
+                row.fit_platform = fit_platform
+                row.opportunity = opp
+                session.add(row)
+                written += 1
+
+    session.commit()
+    return written
+
+
+# ---------------------------------------------------------------- orquestracao
+
+
+def run_pipeline(
+    session: Session,
+    counters: dict[str, ListingCounter],
+    *,
+    enrich: Callable[[Session], None] | None = None,
+) -> None:
+    """extract_topics -> update_listings (1x por dia) -> compute_scores -> enrich."""
+    day = clock.today()
+    extract_topics(session, day)
+
+    has_listing_today = session.exec(select(TopicListing.id).where(TopicListing.day == day)).first() is not None
+    if not has_listing_today:
+        top_n = int(get_settings(session)["top_n_saturation"])
+        update_listings(session, counters, day, top_n)
+
+    compute_scores(session, day)
+
+    if enrich is not None:
+        enrich(session)
+
+
+def make_after(settings: dict, http: httpx.Client) -> Callable[[Session], None]:
+    """Monta o callback `after` do ciclo: contadores de anuncios (`{platform:
+    coletor}`) dos coletores de plataforma que implementam `count_listings` e
+    tem todas as chaves exigidas."""
+    api_keys = settings.get("api_keys", {})
+    counters: dict[str, ListingCounter] = {}
+    for cls in collectors_pkg.ALL_COLLECTORS:
+        if not cls.platform or not callable(getattr(cls, "count_listings", None)):
+            continue
+        if not all(api_keys.get(key) for key in cls.needs_key):
+            continue
+        counters[cls.platform] = cls(settings, http)
+
+    # Tarefa 13: `enrich` passa a ser preenchido quando houver chave de IA.
+    return lambda session: run_pipeline(session, counters, enrich=None)
+
+
+def run_after_cycle(session: Session) -> None:
+    """Callback `after` usado pelo agendador e por POST /api/collect: le as
+    configuracoes atuais e roda o pipeline com um cliente HTTP proprio (o do
+    ciclo ja foi fechado quando `after` e chamado)."""
+    settings = get_settings(session)
+    with make_client() as http:
+        make_after(settings, http)(session)

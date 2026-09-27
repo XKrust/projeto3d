@@ -1,4 +1,9 @@
-import pytest
+import os
+
+# Nunca iniciar o agendador (thread do APScheduler) durante os testes.
+os.environ["RADAR_NO_SCHEDULER"] = "1"
+
+import pytest  # noqa: E402
 from sqlmodel import Session, SQLModel, create_engine
 from sqlalchemy.pool import StaticPool
 from fastapi.testclient import TestClient

@@ -1,11 +1,13 @@
 """Aplicacao FastAPI do Radar 3D."""
 
+import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from sqlmodel import Session
 
+from app import scheduler as scheduler_mod
 from app.api import health
 from app.api import settings as settings_api
 from app.api import sources as sources_api
@@ -27,7 +29,16 @@ def create_app(engine=None) -> FastAPI:
         init_db(db_engine)
         with Session(db_engine) as session:
             seed_platforms(session)
-        yield
+
+        # RADAR_NO_SCHEDULER=1 (usado nos testes) nao inicia o agendador.
+        scheduler = None
+        if os.environ.get("RADAR_NO_SCHEDULER") != "1":
+            scheduler = scheduler_mod.start_scheduler(app.state.session_factory)
+        try:
+            yield
+        finally:
+            if scheduler is not None:
+                scheduler.shutdown(wait=False)
 
     app = FastAPI(title="Radar 3D", lifespan=lifespan)
     app.state.engine = db_engine

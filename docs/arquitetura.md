@@ -17,6 +17,36 @@
 - `frontend/`: as telas `/radar`, `/sazonal`, `/hype`, `/analisar` e `/config`.
 - `data/`: banco, imagens e cache (fica fora do git).
 
+## Ciclo de coleta
+
+```
+agendador (a cada 10 min + 30 s após iniciar)  ou  "Coletar agora" (POST /api/collect)
+  → coletores (cada um só roda no seu horário: API 60 min, scraping 1440 min)
+  → extract_topics (tópicos e sinais do dia)
+  → update_listings (contagem de anúncios, 1x por dia)
+  → compute_scores (TopicScore por tópico, país e plataforma)
+```
+
+- `backend/app/scheduler.py:start_scheduler` usa um `BackgroundScheduler` do APScheduler
+  3.x. Ele é iniciado no `lifespan` de `app/main.py` e desligado na saída. Com a variável
+  de ambiente `RADAR_NO_SCHEDULER=1` (os testes a definem em `tests/conftest.py`), o
+  agendador não é iniciado.
+- Só um ciclo roda por vez (`runner.start_cycle_in_background` usa um lock). Um tique do
+  agendador durante uma coleta manual (ou o contrário) não faz nada.
+- Ao final de todo ciclo, o runner chama o callback `after`: `pipeline.run_after_cycle`.
+  Ele lê as configurações atuais, abre um cliente HTTP próprio e roda
+  `make_after(settings, http)`, que roda `run_pipeline`:
+  1. `extract_topics(session, hoje)`;
+  2. `update_listings`, só se ainda não houver `TopicListing` de hoje. Os contadores são
+     os coletores de plataforma com `count_listings` e todas as chaves preenchidas
+     (Sketchfab e Printables sem chave; Cults3D com chave). A busca usa o `name` do
+     tópico. Entram os `top_n_saturation` tópicos (padrão 50) de maior oportunidade no
+     último dia com score, ou de maior soma de sinais do dia, se ainda não houver score.
+     Se um contador falhar, só aquela plataforma fica sem contagem;
+  3. `compute_scores(session, hoje)` (fórmulas em `score.md`);
+  4. `enrich(session)`, que ainda não é usado (fica para a Tarefa 13).
+- Um erro no pipeline é registrado no log e não afeta o status das fontes.
+
 ## Formação de tópicos
 
 `backend/app/topics/extract.py:extract_topics(session, day)` roda por dia e transforma os
