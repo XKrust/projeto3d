@@ -17,6 +17,27 @@
 - `frontend/`: as telas `/radar`, `/sazonal`, `/hype`, `/analisar` e `/config`.
 - `data/`: banco, imagens e cache (fica fora do git).
 
+## Frontend
+
+Next.js (App Router, TypeScript), com Tailwind e shadcn/ui, em `frontend/`.
+
+- `next.config.ts`: `rewrites()` manda `/api/:path*` para
+  `http://127.0.0.1:8000/api/:path*`, então o frontend só chama `/api/...` (mesma
+  origem no navegador, sem CORS) e o backend continua ouvindo só em `:8000`.
+- `lib/api.ts`: cliente HTTP sem dependência de framework (fetch puro, para poder ser
+  usado tanto direto quanto como fetcher do SWR). `apiGet`/`apiPut`/`apiPost` tratam os
+  erros: erro de rede ou HTTP 502/503/504 viram `BackendOfflineError` (a tela renderiza
+  `<BackendOffline />` com "Não consegui falar com o backend..."); HTTP 422 vira
+  `Error(detail)` com a mensagem que veio da API; qualquer outro erro HTTP vira
+  `Error("Erro inesperado (<status>)")`.
+- `components/Nav.tsx`: navegação fixa (Radar, Sazonal, Hype, Analisar Modelo,
+  Configurações), com selo "Etapa 2"/"Etapa 3" nas telas que ainda não existem.
+- `components/EmBreve.tsx`: placeholder ("Chega na Etapa N.") usado por `/sazonal`,
+  `/hype` e `/analisar` até essas etapas serem implementadas.
+- Páginas em `app/`: `/` redireciona para `/radar`. Busca de dados é feita em
+  componentes cliente (`"use client"`) com SWR chamando `lib/api.ts` — não há fetch no
+  servidor Next.
+
 ## Ciclo de coleta
 
 ```

@@ -22,3 +22,21 @@ BOOTH), instale o navegador do Playwright depois de instalar as dependências do
 ```
 cd backend && uv run playwright install chromium
 ```
+
+### Frontend
+
+Backend rodando em `:8000` (`cd backend && uv run uvicorn app.main:app --port 8000`, ou
+via `iniciar.bat`). Em outro terminal:
+
+```
+cd frontend && npm run dev
+```
+
+Abre em http://localhost:3000. O `next.config.ts` reescreve `/api/*` para
+`http://127.0.0.1:8000/api/*`, então o frontend nunca precisa saber a porta do backend.
+
+Testes e2e (Playwright, só a primeira vez precisa do `install`):
+
+```
+cd frontend && npx playwright install chromium && npx playwright test
+```
