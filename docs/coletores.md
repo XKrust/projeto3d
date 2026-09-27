@@ -370,8 +370,11 @@ copiado dos exemplos acima).
   `GET https://accounts.booth.pm/wish_lists.json?item_ids[]=<id>&item_ids[]=...`, que
   responde `{"wishlists_counts": {"<id>": n}}`.
   - `likes` e `metric` recebem esse número.
-  - Se essa chamada falhar, os itens voltam com `likes=None` e `metric` pela posição no
-    ranking (o primeiro de N cards vale N, o último vale 1).
+  - Antes, o coletor checa o robots.txt de `accounts.booth.pm`, que também só bloqueia
+    `/terms` e o carrinho (27/09/2026).
+  - Se o robots bloquear ou a chamada falhar por qualquer motivo (status, rede, JSON
+    inesperado), os itens voltam com `likes=None` e `metric` pela posição no ranking (o
+    primeiro de N cards vale N, o último vale 1).
 - **Campos:** `external_id`=id, `title`=nome, `url=https://booth.pm/ja/items/<id>`,
   `country="JP"`. `price_usd=None`, porque o preço está em JPY e a conversão fica para a
   Etapa 3.

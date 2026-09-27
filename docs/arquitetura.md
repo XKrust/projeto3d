@@ -77,10 +77,13 @@ agendador (a cada 10 min + 30 s após iniciar)  ou  "Coletar agora" (POST /api/c
   1. `extract_topics(session, hoje)`;
   2. `update_listings`, só se ainda não houver `TopicListing` de hoje. Os contadores são
      os coletores de plataforma com `count_listings` e todas as chaves preenchidas
-     (Sketchfab e Printables sem chave; Cults3D com chave). A busca usa o `name` do
+     (Sketchfab, Printables, BOOTH e ArtStation sem chave; Cults3D, Etsy, MyMiniFactory e
+     CGTrader com chave). A busca usa o `name` do
      tópico. Entram os `top_n_saturation` tópicos (padrão 50) de maior oportunidade no
      último dia com score, ou de maior soma de sinais do dia, se ainda não houver score.
-     Se um contador falhar, só aquela plataforma fica sem contagem;
+     Se a busca de um termo falhar, só aquele tópico fica sem contagem. Depois de 3 falhas
+     seguidas (`MAX_CONSECUTIVE_COUNT_FAILURES`), a plataforma é abandonada no dia, para não
+     gastar minutos com uma fonte fora do ar ou com chave inválida;
   3. `compute_scores(session, hoje)` (fórmulas em `score.md`);
   4. `enrich(session)`, presente só quando há chave do Gemini configurada (ver
      "Enriquecimento por IA" abaixo).

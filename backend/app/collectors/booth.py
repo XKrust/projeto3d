@@ -4,7 +4,8 @@ A listagem `https://booth.pm/ja/browse/3Dモデル?sort=wish_list` (ordenada por
 traz cada produto num `li.item-card` com atributos `data-product-*`. A contagem de
 favoritos nao vem no HTML: o proprio site busca em
 `https://accounts.booth.pm/wish_lists.json?item_ids[]=...`. O robots.txt de booth.pm so
-bloqueia `/terms` e o carrinho (confirmado em 27/09/2026, ver `docs/coletores.md`).
+bloqueia `/terms` e o carrinho, e o de accounts.booth.pm tambem (confirmado em 27/09/2026,
+ver `docs/coletores.md`).
 """
 
 import re
@@ -20,6 +21,7 @@ BROWSE_URL = "https://booth.pm/ja/browse/3D%E3%83%A2%E3%83%87%E3%83%AB?sort=wish
 WISH_URL = "https://accounts.booth.pm/wish_lists.json"
 SEARCH_URL = "https://booth.pm/ja/search/{q}"
 ROBOTS_URL = "https://booth.pm/robots.txt"
+ACCOUNTS_ROBOTS_URL = "https://accounts.booth.pm/robots.txt"
 ITEM_URL = "https://booth.pm/ja/items/{id}"
 COUNTRY = "JP"
 
@@ -72,15 +74,17 @@ class BoothCollector(Collector):
     interval_minutes = 1440
 
     def _wish_counts(self, ids: list[str]) -> dict[str, int] | None:
-        """Favoritos por id, ou `None` se a chamada falhar (os itens seguem sem eles)."""
+        """Favoritos por id, ou `None` se a chamada falhar ou o robots.txt de
+        accounts.booth.pm bloquear (os itens seguem sem eles, ranqueados pela posicao)."""
         try:
+            check_robots(self.http, ACCOUNTS_ROBOTS_URL, WISH_URL)
             response = get_with_retry(
                 self.http, "GET", WISH_URL, params=[("item_ids[]", i) for i in ids]
             )
             if response.status_code != 200:
                 return None
             return parse_wish_counts(response.json())
-        except (CollectorError, ValueError):
+        except Exception:  # favoritos sao opcionais: qualquer falha cai no ranking por posicao
             return None
 
     def collect(self) -> list[CollectedItem]:

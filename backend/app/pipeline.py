@@ -28,6 +28,7 @@ from app.topics.extract import PLATFORM_SOURCES, extract_topics
 logger = logging.getLogger(__name__)
 
 PLATFORMS_GROUP = "platforms"
+MAX_CONSECUTIVE_COUNT_FAILURES = 3
 MOMENTUM_DAYS = 10
 PRESENCE_DAYS = 7
 NO_LISTING_SATURATION = 50.0
@@ -59,8 +60,10 @@ def _top_topic_ids(session: Session, day: date, top_n: int) -> list[int]:
 
 def update_listings(session: Session, counters: dict[str, ListingCounter], day: date, top_n: int) -> int:
     """Grava `TopicListing` (contagem de anuncios por plataforma) dos `top_n`
-    topicos principais. A consulta usa o `name` do topico. A falha de um
-    contador so pula aquela plataforma. Retorna o numero de linhas gravadas."""
+    topicos principais. A consulta usa o `name` do topico. A falha de um termo
+    so pula aquele topico; depois de `MAX_CONSECUTIVE_COUNT_FAILURES` falhas
+    seguidas, a plataforma e abandonada no dia (fonte fora do ar ou chave
+    invalida). Retorna o numero de linhas gravadas."""
     topic_ids = _top_topic_ids(session, day, top_n)
     if not topic_ids or not counters:
         return 0
@@ -69,11 +72,18 @@ def update_listings(session: Session, counters: dict[str, ListingCounter], day: 
     written = 0
 
     for platform, counter in counters.items():
-        try:
-            counts = {topic_id: counter.count_listings(topics[topic_id].name) for topic_id in topic_ids}
-        except Exception:
-            logger.exception("Contagem de anuncios falhou na plataforma %s; pulando", platform)
-            continue
+        counts: dict[int, int] = {}
+        failures = 0
+        for topic_id in topic_ids:
+            try:
+                counts[topic_id] = counter.count_listings(topics[topic_id].name)
+                failures = 0
+            except Exception:
+                logger.exception("Contagem de anuncios falhou em %s para %r", platform, topics[topic_id].name)
+                failures += 1
+                if failures >= MAX_CONSECUTIVE_COUNT_FAILURES:
+                    logger.warning("Contagem de anuncios abandonada na plataforma %s", platform)
+                    break
 
         existing = {
             row.topic_id: row

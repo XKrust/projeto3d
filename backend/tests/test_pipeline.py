@@ -236,6 +236,46 @@ def test_failing_counter_does_not_stop_other_platforms(session):
     assert [(row.platform, row.topic_id, row.count) for row in listings] == [("sketchfab", topic.id, 12)]
 
 
+class FlakyCounter(FakeCounter):
+    """Falha so nos termos de `failing`."""
+
+    def __init__(self, counts, failing):
+        super().__init__(counts)
+        self.failing = set(failing)
+
+    def count_listings(self, query: str) -> int:
+        self.queries.append(query)
+        if query in self.failing:
+            raise CollectorError("Falha simulada")
+        return self.counts.get(query, 7)
+
+
+def test_failing_term_only_skips_that_topic(session):
+    good = _topic(session, "Bom")
+    bad = _topic(session, "Ruim")
+    _signal(session, good, 10)
+    _signal(session, bad, 20)
+    counter = FlakyCounter({"Bom": 12}, failing={"Ruim"})
+
+    written = update_listings(session, {"booth": counter}, DAY, 50)
+
+    assert written == 1
+    listings = session.exec(select(TopicListing)).all()
+    assert [(row.platform, row.topic_id, row.count) for row in listings] == [("booth", good.id, 12)]
+
+
+def test_platform_is_abandoned_after_3_consecutive_failures(session):
+    names = [f"Tema {i}" for i in range(6)]
+    for value, name in enumerate(names):
+        _signal(session, _topic(session, name), 100 - value)
+    counter = FakeCounter(error=CollectorError("Fora do ar"))
+
+    written = update_listings(session, {"booth": counter}, DAY, 50)
+
+    assert written == 0
+    assert len(counter.queries) == 3
+
+
 def test_update_listings_uses_signal_sum_when_there_is_no_score(session):
     small = _topic(session, "Pequeno")
     big = _topic(session, "Grande")

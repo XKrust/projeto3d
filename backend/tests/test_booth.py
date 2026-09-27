@@ -7,6 +7,7 @@ import respx
 
 from app.collectors.base import CollectorError
 from app.collectors.booth import (
+    ACCOUNTS_ROBOTS_URL,
     BROWSE_URL,
     ROBOTS_URL,
     WISH_URL,
@@ -22,6 +23,8 @@ BROWSE = (FIXTURES / "browse.html").read_text(encoding="utf-8")
 SEARCH = (FIXTURES / "search.html").read_text(encoding="utf-8")
 WISH = json.loads((FIXTURES / "wish_lists.json").read_text(encoding="utf-8"))
 ROBOTS = (FIXTURES / "robots.txt").read_text(encoding="utf-8")
+ACCOUNTS_ROBOTS = (FIXTURES / "accounts_robots.txt").read_text(encoding="utf-8")
+SEARCH_ZERO = (FIXTURES / "search_zero.html").read_text(encoding="utf-8")
 
 SETTINGS = {"api_keys": {}}
 IDS = ["7657840", "5479202", "5813187", "4511536", "6106863"]
@@ -33,8 +36,9 @@ def no_real_delay(monkeypatch):
     monkeypatch.setattr("app.http.RETRY_DELAYS", ())
 
 
-def _mock_robots():
+def _mock_robots(accounts_robots: str = ACCOUNTS_ROBOTS):
     respx.get(ROBOTS_URL).mock(return_value=httpx.Response(200, text=ROBOTS))
+    respx.get(ACCOUNTS_ROBOTS_URL).mock(return_value=httpx.Response(200, text=accounts_robots))
 
 
 def test_parse_browse_reads_5_cards():
@@ -143,3 +147,33 @@ def test_collect_waits_between_requests(monkeypatch):
         BoothCollector(SETTINGS, http).collect()
 
     assert len(waits) >= 2
+
+
+def test_parse_search_count_zero_results():
+    assert parse_search_count(SEARCH_ZERO) == 0
+
+
+@respx.mock
+def test_wish_counts_respect_accounts_robots():
+    _mock_robots(accounts_robots="User-agent: *\nDisallow: /\n")
+    respx.get(BROWSE_URL).mock(return_value=httpx.Response(200, text=BROWSE))
+    wish = respx.get(url__startswith=WISH_URL).mock(return_value=httpx.Response(200, json=WISH))
+
+    with make_client() as http:
+        items = BoothCollector(SETTINGS, http).collect()
+
+    assert not wish.called
+    assert [i.metric for i in items] == [5, 4, 3, 2, 1]
+
+
+@respx.mock
+def test_collect_survives_connection_error_on_wish_counts():
+    _mock_robots()
+    respx.get(BROWSE_URL).mock(return_value=httpx.Response(200, text=BROWSE))
+    respx.get(url__startswith=WISH_URL).mock(side_effect=httpx.ConnectError("sem rede"))
+
+    with make_client() as http:
+        items = BoothCollector(SETTINGS, http).collect()
+
+    assert [i.likes for i in items] == [None] * 5
+    assert [i.metric for i in items] == [5, 4, 3, 2, 1]
