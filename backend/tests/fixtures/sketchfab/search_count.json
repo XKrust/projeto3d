@@ -1,0 +1,930 @@
+{
+  "cursors": {
+    "next": "5",
+    "previous": null
+  },
+  "next": "https://api.sketchfab.com/v3/search?count=5&cursor=5&q=dragon&type=models",
+  "previous": null,
+  "results": [
+    {
+      "uri": "https://api.sketchfab.com/v3/models/14ec4c0460c64065af1c6fd31f104344",
+      "uid": "14ec4c0460c64065af1c6fd31f104344",
+      "name": "Dragon",
+      "staffpickedAt": "2015-03-29T20:12:29",
+      "viewCount": 66766,
+      "likeCount": 1162,
+      "animationCount": 0,
+      "viewerUrl": "https://sketchfab.com/3d-models/none-14ec4c0460c64065af1c6fd31f104344",
+      "embedUrl": "https://sketchfab.com/models/14ec4c0460c64065af1c6fd31f104344/embed",
+      "commentCount": 31,
+      "isDownloadable": false,
+      "publishedAt": "2015-03-28T22:50:07",
+      "tags": [
+        {
+          "name": "dota2",
+          "slug": "dota2",
+          "uri": "https://api.sketchfab.com/v3/tags/dota2"
+        },
+        {
+          "name": "dota",
+          "slug": "dota",
+          "uri": "https://api.sketchfab.com/v3/tags/dota"
+        },
+        {
+          "name": "dk",
+          "slug": "dk",
+          "uri": "https://api.sketchfab.com/v3/tags/dk"
+        },
+        {
+          "name": "dragonknight",
+          "slug": "dragonknight",
+          "uri": "https://api.sketchfab.com/v3/tags/dragonknight"
+        },
+        {
+          "name": "ugc",
+          "slug": "ugc",
+          "uri": "https://api.sketchfab.com/v3/tags/ugc"
+        },
+        {
+          "name": "graff",
+          "slug": "graff",
+          "uri": "https://api.sketchfab.com/v3/tags/graff"
+        },
+        {
+          "name": "workshop",
+          "slug": "workshop",
+          "uri": "https://api.sketchfab.com/v3/tags/workshop"
+        },
+        {
+          "name": "steam",
+          "slug": "steam",
+          "uri": "https://api.sketchfab.com/v3/tags/steam"
+        },
+        {
+          "name": "steamworkshop",
+          "slug": "steamworkshop",
+          "uri": "https://api.sketchfab.com/v3/tags/steamworkshop"
+        },
+        {
+          "name": "dragon",
+          "slug": "dragon",
+          "uri": "https://api.sketchfab.com/v3/tags/dragon"
+        }
+      ],
+      "categories": [],
+      "thumbnails": {
+        "images": [
+          {
+            "uid": "d10bd4145f1d4c82b2f1e942051e434c",
+            "size": 139436,
+            "width": 1920,
+            "url": "https://media.sketchfab.com/models/14ec4c0460c64065af1c6fd31f104344/thumbnails/cb10acabab60429d8e5b7c5ecb9aee11/07a1f51c12864bea95e33b6ace600c4b.jpeg",
+            "height": 1080
+          },
+          {
+            "uid": "085ba225054745a1ae11a23cdb978ce9",
+            "size": 43735,
+            "width": 1024,
+            "url": "https://media.sketchfab.com/models/14ec4c0460c64065af1c6fd31f104344/thumbnails/cb10acabab60429d8e5b7c5ecb9aee11/cce7b60bc0b241af8da4eb665e21d834.jpeg",
+            "height": 576
+          },
+          {
+            "uid": "43119912d6554aa2b5ee61b0036f8f9e",
+            "size": 25375,
+            "width": 720,
+            "url": "https://media.sketchfab.com/models/14ec4c0460c64065af1c6fd31f104344/thumbnails/cb10acabab60429d8e5b7c5ecb9aee11/c9bd74633568463c8185993addd71dd6.jpeg",
+            "height": 405
+          },
+          {
+            "uid": "53fb49e7987a493a822b66fdf96ba109",
+            "size": 4736,
+            "width": 256,
+            "url": "https://media.sketchfab.com/models/14ec4c0460c64065af1c6fd31f104344/thumbnails/cb10acabab60429d8e5b7c5ecb9aee11/a36307d59cc34d66b403895092e4d370.jpeg",
+            "height": 144
+          },
+          {
+            "uid": "da644d9fd838453ebab7afb0e2d2d02f",
+            "size": 788,
+            "width": 64,
+            "url": "https://media.sketchfab.com/models/14ec4c0460c64065af1c6fd31f104344/thumbnails/cb10acabab60429d8e5b7c5ecb9aee11/c1b1c016f07f47ff8d57e541609ca730.jpeg",
+            "height": 36
+          }
+        ]
+      },
+      "user": {
+        "uid": "f1755cd24aa447849aee04e266fd3e8a",
+        "username": "stanislavpotlov",
+        "displayName": "Stanislav Potlov",
+        "profileUrl": "https://sketchfab.com/stanislavpotlov",
+        "account": "basic",
+        "avatar": {
+          "uri": "https://api.sketchfab.com/v3/avatars/ab3187cda7954ede9b2a7ffc3478ef17",
+          "images": [
+            {
+              "size": 1096,
+              "width": 48,
+              "url": "https://media.sketchfab.com/avatars/ab3187cda7954ede9b2a7ffc3478ef17/bb11c64184df48eb895e71d6551b55bf.jpeg",
+              "height": 48
+            },
+            {
+              "size": 3480,
+              "width": 100,
+              "url": "https://media.sketchfab.com/avatars/ab3187cda7954ede9b2a7ffc3478ef17/ee7e1ba714d24c55bd3d90a80b30be0f.jpeg",
+              "height": 100
+            },
+            {
+              "size": 3035,
+              "width": 90,
+              "url": "https://media.sketchfab.com/avatars/ab3187cda7954ede9b2a7ffc3478ef17/a8014defbeea4822a499f9104f4b1060.jpeg",
+              "height": 90
+            },
+            {
+              "size": 643,
+              "width": 32,
+              "url": "https://media.sketchfab.com/avatars/ab3187cda7954ede9b2a7ffc3478ef17/12da382be8924872814264074d52c81c.jpeg",
+              "height": 32
+            }
+          ]
+        },
+        "uri": "https://api.sketchfab.com/v3/users/f1755cd24aa447849aee04e266fd3e8a"
+      },
+      "description": "Dragon form for Dragon Knight (Dota 2)",
+      "faceCount": 6276,
+      "createdAt": "2015-03-28T22:50:06",
+      "vertexCount": 2999,
+      "isAgeRestricted": false,
+      "archives": {},
+      "license": null
+    },
+    {
+      "uri": "https://api.sketchfab.com/v3/models/44eaf4fac27a4c5da0e1c3aa8adeb4b8",
+      "uid": "44eaf4fac27a4c5da0e1c3aa8adeb4b8",
+      "name": "Dragon Girl",
+      "staffpickedAt": "2017-06-06T06:26:50.072751",
+      "viewCount": 310550,
+      "likeCount": 3326,
+      "animationCount": 0,
+      "viewerUrl": "https://sketchfab.com/3d-models/none-44eaf4fac27a4c5da0e1c3aa8adeb4b8",
+      "embedUrl": "https://sketchfab.com/models/44eaf4fac27a4c5da0e1c3aa8adeb4b8/embed",
+      "commentCount": 71,
+      "isDownloadable": false,
+      "publishedAt": "2017-06-04T09:20:30.367629",
+      "tags": [
+        {
+          "name": "devil",
+          "slug": "devil",
+          "uri": "https://api.sketchfab.com/v3/tags/devil"
+        },
+        {
+          "name": "girls",
+          "slug": "girls",
+          "uri": "https://api.sketchfab.com/v3/tags/girls"
+        },
+        {
+          "name": "wings",
+          "slug": "wings",
+          "uri": "https://api.sketchfab.com/v3/tags/wings"
+        },
+        {
+          "name": "wings3d",
+          "slug": "wings3d",
+          "uri": "https://api.sketchfab.com/v3/tags/wings3d"
+        },
+        {
+          "name": "young",
+          "slug": "young",
+          "uri": "https://api.sketchfab.com/v3/tags/young"
+        },
+        {
+          "name": "animegirl",
+          "slug": "animegirl",
+          "uri": "https://api.sketchfab.com/v3/tags/animegirl"
+        },
+        {
+          "name": "weapon-3dmodel",
+          "slug": "weapon-3dmodel",
+          "uri": "https://api.sketchfab.com/v3/tags/weapon-3dmodel"
+        },
+        {
+          "name": "blender3d-modeling",
+          "slug": "blender3d-modeling",
+          "uri": "https://api.sketchfab.com/v3/tags/blender3d-modeling"
+        },
+        {
+          "name": "animeangel",
+          "slug": "animeangel",
+          "uri": "https://api.sketchfab.com/v3/tags/animeangel"
+        },
+        {
+          "name": "blender",
+          "slug": "blender",
+          "uri": "https://api.sketchfab.com/v3/tags/blender"
+        },
+        {
+          "name": "dragon",
+          "slug": "dragon",
+          "uri": "https://api.sketchfab.com/v3/tags/dragon"
+        },
+        {
+          "name": "anime",
+          "slug": "anime",
+          "uri": "https://api.sketchfab.com/v3/tags/anime"
+        },
+        {
+          "name": "blender-cycles",
+          "slug": "blender-cycles",
+          "uri": "https://api.sketchfab.com/v3/tags/blender-cycles"
+        }
+      ],
+      "categories": [
+        {
+          "name": "characters-creatures"
+        }
+      ],
+      "thumbnails": {
+        "images": [
+          {
+            "uid": "77e0a33e187a489c86d35fbedd9c3f4e",
+            "size": 247427,
+            "width": 1920,
+            "url": "https://media.sketchfab.com/models/44eaf4fac27a4c5da0e1c3aa8adeb4b8/thumbnails/1d558bd895064e77b144620cc4c8cfc2/ffdf395985cd4e3e8529eacaa5f57f71.jpeg",
+            "height": 1080
+          },
+          {
+            "uid": "f24c7bb7b0b04f49a58e0b8a10f7f1f3",
+            "size": 47804,
+            "width": 1024,
+            "url": "https://media.sketchfab.com/models/44eaf4fac27a4c5da0e1c3aa8adeb4b8/thumbnails/1d558bd895064e77b144620cc4c8cfc2/4d3906f539e349299647fc6ddfc9d743.jpeg",
+            "height": 576
+          },
+          {
+            "uid": "54c4cc7ca22b4c9d8a03b85b7f6e67b9",
+            "size": 26519,
+            "width": 720,
+            "url": "https://media.sketchfab.com/models/44eaf4fac27a4c5da0e1c3aa8adeb4b8/thumbnails/1d558bd895064e77b144620cc4c8cfc2/d2007800f41345fd8e742cbe92e10e3e.jpeg",
+            "height": 405
+          },
+          {
+            "uid": "42cef73039d94a2db5a9c30be9acbad0",
+            "size": 5501,
+            "width": 256,
+            "url": "https://media.sketchfab.com/models/44eaf4fac27a4c5da0e1c3aa8adeb4b8/thumbnails/1d558bd895064e77b144620cc4c8cfc2/ae478c208495474b9ee29147e0d56e5f.jpeg",
+            "height": 144
+          },
+          {
+            "uid": "0cd6b321ef0e484aba0edc234a66c583",
+            "size": 954,
+            "width": 64,
+            "url": "https://media.sketchfab.com/models/44eaf4fac27a4c5da0e1c3aa8adeb4b8/thumbnails/1d558bd895064e77b144620cc4c8cfc2/fdc0d68b83b44765a43d94750efcbb7d.jpeg",
+            "height": 36
+          }
+        ]
+      },
+      "user": {
+        "uid": "ef08a07e6afd46138ecd0989e9a19ca1",
+        "username": "adipriatna",
+        "displayName": "Adipriatna",
+        "profileUrl": "https://sketchfab.com/adipriatna",
+        "account": "pro",
+        "avatar": {
+          "uri": "https://api.sketchfab.com/v3/avatars/ca9d819339294cf28192a88c6d637a3b",
+          "images": [
+            {
+              "size": 871,
+              "width": 32,
+              "url": "https://media.sketchfab.com/avatars/ca9d819339294cf28192a88c6d637a3b/2eaf5ed279ef43dd9e0e6e55ff3ca487.jpeg",
+              "height": 32
+            },
+            {
+              "size": 1477,
+              "width": 48,
+              "url": "https://media.sketchfab.com/avatars/ca9d819339294cf28192a88c6d637a3b/8ebc7010323844f080fef3d2835a8bd9.jpeg",
+              "height": 48
+            },
+            {
+              "size": 3975,
+              "width": 90,
+              "url": "https://media.sketchfab.com/avatars/ca9d819339294cf28192a88c6d637a3b/e2211c21919a417f83defd5a3e6cf699.jpeg",
+              "height": 90
+            },
+            {
+              "size": 4590,
+              "width": 100,
+              "url": "https://media.sketchfab.com/avatars/ca9d819339294cf28192a88c6d637a3b/ce8c6395b1d24256b925a4404ea8a6cd.jpeg",
+              "height": 100
+            }
+          ]
+        },
+        "uri": "https://api.sketchfab.com/v3/users/ef08a07e6afd46138ecd0989e9a19ca1"
+      },
+      "description": "Im back !!  my friend and me make 3D dragon girl wih Blender again :D  well i hope you like this model ;)  enjoy~",
+      "faceCount": 354638,
+      "createdAt": "2017-06-03T12:48:33.795791",
+      "vertexCount": 181090,
+      "isAgeRestricted": false,
+      "archives": {
+        "glb": {
+          "textureCount": 25,
+          "size": 20453548,
+          "type": "glb",
+          "textureMaxResolution": 2048,
+          "faceCount": 354574,
+          "vertexCount": 202734
+        },
+        "gltf": {
+          "textureCount": 25,
+          "size": 15794663,
+          "type": "gltf",
+          "textureMaxResolution": 2048,
+          "faceCount": 354574,
+          "vertexCount": 202734
+        },
+        "source": {
+          "textureCount": null,
+          "size": 50077357,
+          "type": "source",
+          "textureMaxResolution": null,
+          "faceCount": null,
+          "vertexCount": null
+        },
+        "usdz": {
+          "textureCount": null,
+          "size": 8746356,
+          "type": "usdz",
+          "textureMaxResolution": null,
+          "faceCount": null,
+          "vertexCount": null
+        }
+      },
+      "license": {
+        "uid": "5b54cf13b1a4422ca439696eb152070d",
+        "label": "Editorial"
+      }
+    },
+    {
+      "uri": "https://api.sketchfab.com/v3/models/bda2c373806747a28812c9d88bf55dfa",
+      "uid": "bda2c373806747a28812c9d88bf55dfa",
+      "name": "Wrath of the Dragon",
+      "staffpickedAt": "2017-11-15T08:18:03.037807",
+      "viewCount": 30837,
+      "likeCount": 895,
+      "animationCount": 0,
+      "viewerUrl": "https://sketchfab.com/3d-models/none-bda2c373806747a28812c9d88bf55dfa",
+      "embedUrl": "https://sketchfab.com/models/bda2c373806747a28812c9d88bf55dfa/embed",
+      "commentCount": 47,
+      "isDownloadable": true,
+      "publishedAt": "2017-11-02T03:52:42.729515",
+      "tags": [
+        {
+          "name": "wizard",
+          "slug": "wizard",
+          "uri": "https://api.sketchfab.com/v3/tags/wizard"
+        },
+        {
+          "name": "castle",
+          "slug": "castle",
+          "uri": "https://api.sketchfab.com/v3/tags/castle"
+        },
+        {
+          "name": "warrior",
+          "slug": "warrior",
+          "uri": "https://api.sketchfab.com/v3/tags/warrior"
+        },
+        {
+          "name": "fortress",
+          "slug": "fortress",
+          "uri": "https://api.sketchfab.com/v3/tags/fortress"
+        },
+        {
+          "name": "lowpolycharacter",
+          "slug": "lowpolycharacter",
+          "uri": "https://api.sketchfab.com/v3/tags/lowpolycharacter"
+        },
+        {
+          "name": "medievalfantasyscene",
+          "slug": "medievalfantasyscene",
+          "uri": "https://api.sketchfab.com/v3/tags/medievalfantasyscene"
+        },
+        {
+          "name": "low-poly",
+          "slug": "low-poly",
+          "uri": "https://api.sketchfab.com/v3/tags/low-poly"
+        },
+        {
+          "name": "blender",
+          "slug": "blender",
+          "uri": "https://api.sketchfab.com/v3/tags/blender"
+        },
+        {
+          "name": "lowpoly",
+          "slug": "lowpoly",
+          "uri": "https://api.sketchfab.com/v3/tags/lowpoly"
+        },
+        {
+          "name": "blender3d",
+          "slug": "blender3d",
+          "uri": "https://api.sketchfab.com/v3/tags/blender3d"
+        },
+        {
+          "name": "dragon",
+          "slug": "dragon",
+          "uri": "https://api.sketchfab.com/v3/tags/dragon"
+        },
+        {
+          "name": "environment",
+          "slug": "environment",
+          "uri": "https://api.sketchfab.com/v3/tags/environment"
+        }
+      ],
+      "categories": [
+        {
+          "name": "characters-creatures"
+        }
+      ],
+      "thumbnails": {
+        "images": [
+          {
+            "uid": "4cd3f348ca5548679ba70d1427c14f7c",
+            "size": 228021,
+            "width": 1920,
+            "url": "https://media.sketchfab.com/models/bda2c373806747a28812c9d88bf55dfa/thumbnails/b6590262248d4ad1bfb03652fbf74886/93d57a154097404ebd00eb80e0dc4457.jpeg",
+            "height": 1080
+          },
+          {
+            "uid": "ef99b0e8b427477e8aa43f5e2af329a1",
+            "size": 75333,
+            "width": 1024,
+            "url": "https://media.sketchfab.com/models/bda2c373806747a28812c9d88bf55dfa/thumbnails/b6590262248d4ad1bfb03652fbf74886/0e2f8344ecf34addbad8bc5b911d2102.jpeg",
+            "height": 576
+          },
+          {
+            "uid": "04a0adff9b934f40ba4749f205b0e4ec",
+            "size": 45809,
+            "width": 720,
+            "url": "https://media.sketchfab.com/models/bda2c373806747a28812c9d88bf55dfa/thumbnails/b6590262248d4ad1bfb03652fbf74886/43f8d34a80f44999ab4ace6573278dec.jpeg",
+            "height": 405
+          },
+          {
+            "uid": "d075519804d942af8fdf215e44327df8",
+            "size": 10070,
+            "width": 256,
+            "url": "https://media.sketchfab.com/models/bda2c373806747a28812c9d88bf55dfa/thumbnails/b6590262248d4ad1bfb03652fbf74886/332d187e493942f1a8f63264df18f148.jpeg",
+            "height": 144
+          },
+          {
+            "uid": "58705feed7dc422b8bf0ec8de2877d5a",
+            "size": 1393,
+            "width": 64,
+            "url": "https://media.sketchfab.com/models/bda2c373806747a28812c9d88bf55dfa/thumbnails/b6590262248d4ad1bfb03652fbf74886/1228f4e11bf94b0eb8877b727bc1bbac.jpeg",
+            "height": 36
+          }
+        ]
+      },
+      "user": {
+        "uid": "dea64f234d974717a09d96cddedb130d",
+        "username": "fabian_orrego",
+        "displayName": "Fabian Orrego",
+        "profileUrl": "https://sketchfab.com/fabian_orrego",
+        "account": "basic",
+        "avatar": {
+          "uri": "https://api.sketchfab.com/v3/avatars/30e2dba9a4824def9cee8b98113ca035",
+          "images": [
+            {
+              "size": 4131,
+              "width": 100,
+              "url": "https://media.sketchfab.com/avatars/30e2dba9a4824def9cee8b98113ca035/cb466d2204124bc6af57e23980e234eb.jpeg",
+              "height": 100
+            },
+            {
+              "size": 3549,
+              "width": 90,
+              "url": "https://media.sketchfab.com/avatars/30e2dba9a4824def9cee8b98113ca035/a69df0169e364d1991144506563d2cc1.jpeg",
+              "height": 90
+            },
+            {
+              "size": 1503,
+              "width": 48,
+              "url": "https://media.sketchfab.com/avatars/30e2dba9a4824def9cee8b98113ca035/0fa49cebb70040db96565a91b5a1300d.jpeg",
+              "height": 48
+            },
+            {
+              "size": 888,
+              "width": 32,
+              "url": "https://media.sketchfab.com/avatars/30e2dba9a4824def9cee8b98113ca035/99ae7e12f6d84465ac325b490917e3ee.jpeg",
+              "height": 32
+            }
+          ]
+        },
+        "uri": "https://api.sketchfab.com/v3/users/dea64f234d974717a09d96cddedb130d"
+      },
+      "description": "This is my contribution to Medieval Fantasy Contest. My scene is about some dragons hunters who stole dragon eggs to catch the great dark dragon.\n\nAssets collection: https://skfb.ly/69XEY\n\nModeled in Blender 2.79",
+      "faceCount": 55271,
+      "createdAt": "2017-11-02T03:52:17.177018",
+      "vertexCount": 33950,
+      "isAgeRestricted": false,
+      "archives": {
+        "glb": {
+          "textureCount": 3,
+          "size": 5551292,
+          "type": "glb",
+          "textureMaxResolution": 512,
+          "faceCount": 55271,
+          "vertexCount": 139425
+        },
+        "gltf": {
+          "textureCount": 3,
+          "size": 1506354,
+          "type": "gltf",
+          "textureMaxResolution": 512,
+          "faceCount": 55271,
+          "vertexCount": 139425
+        },
+        "source": {
+          "textureCount": null,
+          "size": 2423893,
+          "type": "source",
+          "textureMaxResolution": null,
+          "faceCount": null,
+          "vertexCount": null
+        },
+        "usdz": {
+          "textureCount": null,
+          "size": 4463386,
+          "type": "usdz",
+          "textureMaxResolution": null,
+          "faceCount": null,
+          "vertexCount": null
+        }
+      },
+      "license": {
+        "uid": "322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution"
+      }
+    },
+    {
+      "uri": "https://api.sketchfab.com/v3/models/fb0053a2e59b43868e934c239bf4eb36",
+      "uid": "fb0053a2e59b43868e934c239bf4eb36",
+      "name": "Black Dragon with Idle Animation",
+      "staffpickedAt": "2015-08-25T15:17:53",
+      "viewCount": 309666,
+      "likeCount": 3080,
+      "animationCount": 1,
+      "viewerUrl": "https://sketchfab.com/3d-models/none-fb0053a2e59b43868e934c239bf4eb36",
+      "embedUrl": "https://sketchfab.com/models/fb0053a2e59b43868e934c239bf4eb36/embed",
+      "commentCount": 101,
+      "isDownloadable": true,
+      "publishedAt": "2015-08-18T16:58:03",
+      "tags": [
+        {
+          "name": "game-ready",
+          "slug": "game-ready",
+          "uri": "https://api.sketchfab.com/v3/tags/game-ready"
+        },
+        {
+          "name": "idle",
+          "slug": "idle",
+          "uri": "https://api.sketchfab.com/v3/tags/idle"
+        },
+        {
+          "name": "idle-animation",
+          "slug": "idle-animation",
+          "uri": "https://api.sketchfab.com/v3/tags/idle-animation"
+        },
+        {
+          "name": "3dhaupt",
+          "slug": "3dhaupt",
+          "uri": "https://api.sketchfab.com/v3/tags/3dhaupt"
+        },
+        {
+          "name": "black-dragon",
+          "slug": "black-dragon",
+          "uri": "https://api.sketchfab.com/v3/tags/black-dragon"
+        },
+        {
+          "name": "dennish2010",
+          "slug": "dennish2010",
+          "uri": "https://api.sketchfab.com/v3/tags/dennish2010"
+        },
+        {
+          "name": "low-poly",
+          "slug": "low-poly",
+          "uri": "https://api.sketchfab.com/v3/tags/low-poly"
+        },
+        {
+          "name": "blender",
+          "slug": "blender",
+          "uri": "https://api.sketchfab.com/v3/tags/blender"
+        },
+        {
+          "name": "blender3d",
+          "slug": "blender3d",
+          "uri": "https://api.sketchfab.com/v3/tags/blender3d"
+        },
+        {
+          "name": "animation",
+          "slug": "animation",
+          "uri": "https://api.sketchfab.com/v3/tags/animation"
+        },
+        {
+          "name": "dragon",
+          "slug": "dragon",
+          "uri": "https://api.sketchfab.com/v3/tags/dragon"
+        },
+        {
+          "name": "rigged",
+          "slug": "rigged",
+          "uri": "https://api.sketchfab.com/v3/tags/rigged"
+        },
+        {
+          "name": "noai",
+          "slug": "noai",
+          "uri": "https://api.sketchfab.com/v3/tags/noai"
+        }
+      ],
+      "categories": [
+        {
+          "name": "animals-pets"
+        },
+        {
+          "name": "characters-creatures"
+        }
+      ],
+      "thumbnails": {
+        "images": [
+          {
+            "uid": "11dd4ce1fd1f4a55b6d67d2a0d5dabaa",
+            "size": 431963,
+            "width": 1920,
+            "url": "https://media.sketchfab.com/models/fb0053a2e59b43868e934c239bf4eb36/thumbnails/8675120768994ecbb4c552505320d620/7de7329a4e0a480a8f78d6db97c25a1b.jpeg",
+            "height": 1080
+          },
+          {
+            "uid": "331fb41503334efa81f3755b8793df64",
+            "size": 80213,
+            "width": 1024,
+            "url": "https://media.sketchfab.com/models/fb0053a2e59b43868e934c239bf4eb36/thumbnails/8675120768994ecbb4c552505320d620/bca3e0cc2208449b8f42038c20ec6647.jpeg",
+            "height": 576
+          },
+          {
+            "uid": "c81bfbd14717416a9aabaf851917af95",
+            "size": 42302,
+            "width": 720,
+            "url": "https://media.sketchfab.com/models/fb0053a2e59b43868e934c239bf4eb36/thumbnails/8675120768994ecbb4c552505320d620/7a30d88c25d94fd788a29a82466a24c3.jpeg",
+            "height": 405
+          },
+          {
+            "uid": "380c2fa5d0b940b39f45e4b93226f8d7",
+            "size": 7289,
+            "width": 256,
+            "url": "https://media.sketchfab.com/models/fb0053a2e59b43868e934c239bf4eb36/thumbnails/8675120768994ecbb4c552505320d620/3aeaf9d824e343a6a848340111b7ed27.jpeg",
+            "height": 144
+          },
+          {
+            "uid": "0b51f7d625b840aaa7a7691f00115d39",
+            "size": 1325,
+            "width": 64,
+            "url": "https://media.sketchfab.com/models/fb0053a2e59b43868e934c239bf4eb36/thumbnails/8675120768994ecbb4c552505320d620/4a16dee3065c42afac4e509b131868d6.jpeg",
+            "height": 36
+          }
+        ]
+      },
+      "user": {
+        "uid": "83382125ae65434cab541af2ed626ac4",
+        "username": "dennish2010",
+        "displayName": "3DHaupt",
+        "profileUrl": "https://sketchfab.com/dennish2010",
+        "account": "basic",
+        "avatar": {
+          "uri": "https://api.sketchfab.com/v3/avatars/550dce884cec49bb9e90987e7353463d",
+          "images": [
+            {
+              "size": 3634,
+              "width": 100,
+              "url": "https://media.sketchfab.com/avatars/550dce884cec49bb9e90987e7353463d/e8a39f0af97144f4a9a2bc537d5a866d.jpeg",
+              "height": 100
+            },
+            {
+              "size": 3180,
+              "width": 90,
+              "url": "https://media.sketchfab.com/avatars/550dce884cec49bb9e90987e7353463d/c7c33c5b0ace4e5e9747ba3ef89544d3.jpeg",
+              "height": 90
+            },
+            {
+              "size": 1340,
+              "width": 48,
+              "url": "https://media.sketchfab.com/avatars/550dce884cec49bb9e90987e7353463d/063ef703f82b4c5796590f6188828449.jpeg",
+              "height": 48
+            },
+            {
+              "size": 850,
+              "width": 32,
+              "url": "https://media.sketchfab.com/avatars/550dce884cec49bb9e90987e7353463d/546d89ba90d341dfa0983131daf77294.jpeg",
+              "height": 32
+            }
+          ]
+        },
+        "uri": "https://api.sketchfab.com/v3/users/83382125ae65434cab541af2ed626ac4"
+      },
+      "description": "Here is my [black dragon design](https://goo.gl/xpvgrk) with Idle animation.\nI modeled, textured and rigged this dragon in [Blender](https://www.blender.org/) 2013.\n[![black-dragon-rigged-and-game-ready](https://goo.gl/Ve2K0R)](https://goo.gl/TlnHwP)\n\n[Test in Unity3d](https://goo.gl/DU7Hjp)\n\n\n**Here are some cool projects where this dragon has found a use**\n\n[breathing fire teaser](https://goo.gl/7oK50t) by Blue Wolf Cinema\n\n[Dragon Slayer:Reign of Fire](https://goo.gl/s3Vaoe) by Apps by ThoughtShastra\n\n[ARKit Dragon in the Backyard ](https://goo.gl/6X3fiP) by Scott Finkelstein\n\n![](https://goo.gl/KNrJ3a)\n\nDownloads:\n\n*   [Google-Drive](https://goo.gl/Xj20Io)\n*   [Blendswap](https://goo.gl/Ba9PMd)\n*   [TF3dm](https://goo.gl/hnW26N)\n*   [ShareCG](https://goo.gl/9cgNZF)\n\n[Test in Cloud Party](https://goo.gl/n7X3oP)",
+      "faceCount": 37992,
+      "createdAt": "2015-08-18T15:19:53",
+      "vertexCount": 19389,
+      "isAgeRestricted": false,
+      "archives": {
+        "glb": {
+          "textureCount": 9,
+          "size": 67688656,
+          "type": "glb",
+          "textureMaxResolution": 4096,
+          "faceCount": 37998,
+          "vertexCount": 23166
+        },
+        "gltf": {
+          "textureCount": 9,
+          "size": 64130083,
+          "type": "gltf",
+          "textureMaxResolution": 4096,
+          "faceCount": 37998,
+          "vertexCount": 23166
+        },
+        "source": {
+          "textureCount": null,
+          "size": 14792130,
+          "type": "source",
+          "textureMaxResolution": null,
+          "faceCount": null,
+          "vertexCount": null
+        },
+        "usdz": {
+          "textureCount": null,
+          "size": 16031277,
+          "type": "usdz",
+          "textureMaxResolution": null,
+          "faceCount": null,
+          "vertexCount": null
+        }
+      },
+      "license": {
+        "uid": "bbfe3f7dbcdd4122b966b85b9786a989",
+        "label": "CC Attribution-NonCommercial"
+      }
+    },
+    {
+      "uri": "https://api.sketchfab.com/v3/models/ce72d23750b0484ab4f5dcbd0749ce4f",
+      "uid": "ce72d23750b0484ab4f5dcbd0749ce4f",
+      "name": "Chinese dragon",
+      "staffpickedAt": "2022-10-13T08:53:05.008366",
+      "viewCount": 39981,
+      "likeCount": 929,
+      "animationCount": 0,
+      "viewerUrl": "https://sketchfab.com/3d-models/none-ce72d23750b0484ab4f5dcbd0749ce4f",
+      "embedUrl": "https://sketchfab.com/models/ce72d23750b0484ab4f5dcbd0749ce4f/embed",
+      "commentCount": 28,
+      "isDownloadable": false,
+      "publishedAt": "2022-10-09T11:51:46.780943",
+      "tags": [
+        {
+          "name": "hair",
+          "slug": "hair",
+          "uri": "https://api.sketchfab.com/v3/tags/hair"
+        },
+        {
+          "name": "armor",
+          "slug": "armor",
+          "uri": "https://api.sketchfab.com/v3/tags/armor"
+        },
+        {
+          "name": "challenge",
+          "slug": "challenge",
+          "uri": "https://api.sketchfab.com/v3/tags/challenge"
+        },
+        {
+          "name": "fur",
+          "slug": "fur",
+          "uri": "https://api.sketchfab.com/v3/tags/fur"
+        },
+        {
+          "name": "chinese",
+          "slug": "chinese",
+          "uri": "https://api.sketchfab.com/v3/tags/chinese"
+        },
+        {
+          "name": "character",
+          "slug": "character",
+          "uri": "https://api.sketchfab.com/v3/tags/character"
+        },
+        {
+          "name": "low-poly",
+          "slug": "low-poly",
+          "uri": "https://api.sketchfab.com/v3/tags/low-poly"
+        },
+        {
+          "name": "3d",
+          "slug": "3d",
+          "uri": "https://api.sketchfab.com/v3/tags/3d"
+        },
+        {
+          "name": "model",
+          "slug": "model",
+          "uri": "https://api.sketchfab.com/v3/tags/model"
+        },
+        {
+          "name": "dragon",
+          "slug": "dragon",
+          "uri": "https://api.sketchfab.com/v3/tags/dragon"
+        }
+      ],
+      "categories": [
+        {
+          "name": "animals-pets"
+        },
+        {
+          "name": "characters-creatures"
+        }
+      ],
+      "thumbnails": {
+        "images": [
+          {
+            "uid": "28950dfeb6c740baa718a67506356cbf",
+            "size": 407956,
+            "width": 1920,
+            "url": "https://media.sketchfab.com/models/ce72d23750b0484ab4f5dcbd0749ce4f/thumbnails/52447158546b439e88d5bd2009ba367f/27d1b0a4757140ef9938dbd85b999d36.jpeg",
+            "height": 1080
+          },
+          {
+            "uid": "c168215114074078b0516c3a022eb75d",
+            "size": 58620,
+            "width": 1024,
+            "url": "https://media.sketchfab.com/models/ce72d23750b0484ab4f5dcbd0749ce4f/thumbnails/52447158546b439e88d5bd2009ba367f/3abe949264bf4ebe96ddb320c619dead.jpeg",
+            "height": 576
+          },
+          {
+            "uid": "bcf1cfdad90e448793313e1affce5618",
+            "size": 33115,
+            "width": 720,
+            "url": "https://media.sketchfab.com/models/ce72d23750b0484ab4f5dcbd0749ce4f/thumbnails/52447158546b439e88d5bd2009ba367f/09458031d5204f0ca7f8bd4b574902d9.jpeg",
+            "height": 405
+          },
+          {
+            "uid": "0f5e4ed9b0dc4c60911bc9a90821fe0c",
+            "size": 6289,
+            "width": 256,
+            "url": "https://media.sketchfab.com/models/ce72d23750b0484ab4f5dcbd0749ce4f/thumbnails/52447158546b439e88d5bd2009ba367f/dfc48ce8514c404db78e417795e7b3c2.jpeg",
+            "height": 144
+          },
+          {
+            "uid": "c33d5424b3a74626ab33f199a1b9e3fb",
+            "size": 1227,
+            "width": 64,
+            "url": "https://media.sketchfab.com/models/ce72d23750b0484ab4f5dcbd0749ce4f/thumbnails/52447158546b439e88d5bd2009ba367f/1c43f6e1b5c54d7c8e7d286af3d30e65.jpeg",
+            "height": 36
+          }
+        ]
+      },
+      "user": {
+        "uid": "59163fca76b643a2b1f8c86ba01003c7",
+        "username": "arhirasoul",
+        "displayName": "Arhirasoul",
+        "profileUrl": "https://sketchfab.com/arhirasoul",
+        "account": "basic",
+        "avatar": {
+          "uri": "https://api.sketchfab.com/v3/avatars/b7240975bb2e4a2686da4e8531710619",
+          "images": [
+            {
+              "size": 1165,
+              "width": 32,
+              "url": "https://media.sketchfab.com/avatars/b7240975bb2e4a2686da4e8531710619/5ac1d436fd9e4f7891b6545528a4e66a.png",
+              "height": 32
+            },
+            {
+              "size": 2325,
+              "width": 48,
+              "url": "https://media.sketchfab.com/avatars/b7240975bb2e4a2686da4e8531710619/8742c0a743cb4e56a1648275169fc297.png",
+              "height": 48
+            },
+            {
+              "size": 6900,
+              "width": 90,
+              "url": "https://media.sketchfab.com/avatars/b7240975bb2e4a2686da4e8531710619/4f68cd51729e4c558f0af0b157bd33cc.png",
+              "height": 90
+            },
+            {
+              "size": 8377,
+              "width": 100,
+              "url": "https://media.sketchfab.com/avatars/b7240975bb2e4a2686da4e8531710619/a9fb36c7153544849d24a64d9e167924.png",
+              "height": 100
+            }
+          ]
+        },
+        "uri": "https://api.sketchfab.com/v3/users/59163fca76b643a2b1f8c86ba01003c7"
+      },
+      "description": "My work for Dragon's Rise: The Forgotten Realms Challenge.\nThanks to Mole Wang for the great design!",
+      "faceCount": 99007,
+      "createdAt": "2022-10-05T16:43:02.394038",
+      "vertexCount": 71927,
+      "isAgeRestricted": false,
+      "archives": {},
+      "license": null
+    }
+  ]
+}

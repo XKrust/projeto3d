@@ -70,7 +70,7 @@ Regras gerais:
 | Google Trends RSS | RSS | não | 1 |
 | Reddit | API | sim | 1 |
 | YouTube | API | sim | 1 |
-| Sketchfab | API | sim | 1 |
+| Sketchfab | API | opcional | 1 |
 | Cults3D | API | sim | 1 |
 | Printables | scraping | não | 1 |
 | Thingiverse, MyMiniFactory, Etsy | API | sim | 1b |
@@ -148,6 +148,47 @@ Regras gerais:
   401/403 vira `CollectorError` com "Chave inválida ou sem permissão (...)", via
   `get_with_retry`.
 - **Fixtures:** `backend/tests/fixtures/reddit/{token,hot}.json`.
+
+## Sketchfab
+
+`backend/app/collectors/sketchfab.py` (`SketchfabCollector`: `name="sketchfab"`,
+`label="Sketchfab"`, `kind="api"`, `platform="sketchfab"`, `needs_key=()`, 60 minutos).
+Implementa `Collector` e `ListingCounter`.
+
+- **Autenticação:** a busca (`/v3/search`) é pública. Se `settings["api_keys"]["sketchfab"]`
+  existir, vai no header `Authorization: Token <chave>` (só amplia limites de uso); sem chave,
+  nenhum header de autenticação é enviado.
+- **Tendências:** `GET https://api.sketchfab.com/v3/search?type=models&sort_by=-likeCount&date=7&count=24`,
+  seguindo o campo `next` da resposta por até 4 páginas (`MAX_TRENDING_PAGES`).
+- **Campos mapeados** por modelo:
+  - `external_id`: `uid`. `title`: `name`. `url`: `viewerUrl`.
+  - `likes`: `likeCount`. `views`: `viewCount`.
+  - `metric`: `likeCount + viewCount / 100`.
+  - `tags`: nomes (`name`) dos objetos de `tags` (a API devolve `{name, slug, uri}`, não strings).
+  - `thumb_url`: a maior imagem de `thumbnails.images` com `width <= 640`; se todas forem maiores
+    que 640px, usa a maior disponível.
+  - `price_usd`: `price`, se existir na resposta; senão `None`.
+- **`count_listings(query)`:** `GET .../v3/search?type=models&q=<query>&count=24`; se a resposta
+  trouxer um campo `count` (total explícito), usa-o direto. Senão, soma o tamanho de `results`
+  seguindo `next`, com teto de 200 (`COUNT_LISTINGS_CAP`) — ao atingir o teto, para de paginar e
+  devolve 200.
+- **Preço confirmado por chamada real (26/09/2026):** o endpoint de busca pública
+  (`GET /v3/search?type=models`, schema `ModelSearchList` da doc oficial —
+  `https://docs.sketchfab.com/data-api/v3/swagger.json`) **não traz nenhum campo de preço** em
+  nenhum dos resultados observados (24 itens da busca de tendências + 10 itens de duas páginas
+  da busca por "dragon"); confirmado também contra o schema: `price` (inteiro, unidade não
+  documentada) só aparece nos schemas `ModelDetail`/`ModelList`, usados por endpoints distintos
+  (detalhe de um modelo específico / listagem autenticada), não pelo de busca. Por isso,
+  `price_usd` é sempre `None` na prática atual deste coletor; o código lê `model.get("price")`
+  defensivamente, caso a API passe a incluir o campo na busca no futuro.
+- **Total explícito confirmado por chamada real:** a resposta da busca só traz
+  `cursors`/`next`/`previous`/`results` — **não existe** um campo de contagem total (confirmado
+  contra a doc oficial: `ModelSearchResponse` só declara `results`). O branch que usa um campo
+  `count`, se presente, é defensivo/não observado na prática; `count_listings` sempre soma via
+  paginação hoje.
+- **Fixtures**, gravadas de chamadas reais (26/09/2026, sem token):
+  - `backend/tests/fixtures/sketchfab/trending.json`: `curl "https://api.sketchfab.com/v3/search?type=models&sort_by=-likeCount&date=7&count=24"`, reduzida aos 5 primeiros resultados (mantendo o `next` real da página 2).
+  - `backend/tests/fixtures/sketchfab/search_count.json`: `curl "https://api.sketchfab.com/v3/search?type=models&q=dragon&count=5"` (5 resultados reais, com `next` real da página 2). O teste que soma até o fim da paginação usa, além dela, uma segunda página derivada dos mesmos dados reais só com `next` forçado para `null` (para fechar a paginação de forma determinística no teste; ver `tests/test_sketchfab.py`).
 
 ## Como adicionar um coletor
 
