@@ -4,10 +4,13 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from sqlmodel import Session
 
 from app.api import health
+from app.api import settings as settings_api
 from app.db import engine as default_engine
 from app.db import init_db
+from app.platforms import seed_platforms
 
 
 def create_app(engine=None) -> FastAPI:
@@ -21,12 +24,15 @@ def create_app(engine=None) -> FastAPI:
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         init_db(db_engine)
+        with Session(db_engine) as session:
+            seed_platforms(session)
         yield
 
     app = FastAPI(title="Radar 3D", lifespan=lifespan)
     app.state.engine = db_engine
 
     app.include_router(health.router, prefix="/api")
+    app.include_router(settings_api.router, prefix="/api")
 
     return app
 
