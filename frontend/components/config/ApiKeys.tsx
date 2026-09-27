@@ -34,6 +34,10 @@ const API_KEY_GROUPS: ApiKeyGroup[] = [
       { key: "etsy_shared_secret", label: "Shared secret do Etsy" },
     ],
   },
+  {
+    service: "thingiverse",
+    fields: [{ key: "thingiverse", label: "App Token do Thingiverse" }],
+  },
   { service: "gemini", fields: [{ key: "gemini", label: "Chave da API do Gemini" }] },
 ];
 

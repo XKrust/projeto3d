@@ -21,6 +21,7 @@ DEFAULTS: dict = {
         "cults3d_key": "",
         "etsy_keystring": "",
         "etsy_shared_secret": "",
+        "thingiverse": "",
         "gemini": "",
     },
     "countries": ["BR", "US", "GB", "DE", "FR", "ES", "JP"],

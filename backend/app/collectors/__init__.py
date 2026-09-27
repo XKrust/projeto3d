@@ -5,6 +5,7 @@ printables, ...) acrescenta a propria classe a `ALL_COLLECTORS`.
 """
 
 from app.collectors.base import Collector
+from app.collectors.thingiverse import ThingiverseCollector
 from app.collectors.etsy import EtsyCollector
 from app.collectors.artstation import ArtStationCollector
 from app.collectors.booth import BoothCollector
@@ -25,4 +26,5 @@ ALL_COLLECTORS: list[type[Collector]] = [
     BoothCollector,
     ArtStationCollector,
     EtsyCollector,
+    ThingiverseCollector,
 ]

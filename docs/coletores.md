@@ -74,7 +74,8 @@ Regras gerais:
 | Cults3D | API | sim | 1 |
 | Printables | scraping | não | 1 |
 | Etsy | API | sim (keystring + shared secret) | 1b |
-| Thingiverse, MyMiniFactory | API | sim | 1b |
+| Thingiverse (só sinal, não é loja) | API | sim (App Token) | 1b |
+| MyMiniFactory | API | sim | 1b |
 | BOOTH (Japão) | scraping | não | 1b |
 | ArtStation | JSON não oficial (tratado como scraping) | não | 1b |
 | MakerWorld, CGTrader | scraping | não | 1b |
@@ -441,6 +442,34 @@ isso o coletor segue as regras de scraping: robots.txt e espera de 3 a 5 s.
 - **Fixtures** montadas à mão no formato documentado: `tests/fixtures/etsy/active_a.json` (3
   anúncios, um em EUR e um sem `views`), `active_b.json` (3 anúncios, um repetido de
   `active_a`, um em GBP) e `count.json` (`count: 4821`).
+
+## Thingiverse
+
+`backend/app/collectors/thingiverse.py` (`ThingiverseCollector`: `name="thingiverse"`,
+`label="Thingiverse"`, `kind="api"`, **`platform=None`**, `needs_key=("thingiverse",)`, país
+`GLOBAL`, 60 minutos).
+
+O Thingiverse não vende modelos. Por isso ele é **sinal de demanda, não loja**: não tem
+`count_listings` nem linha em `platforms.yaml`, e nunca aparece como "melhor plataforma". Está
+em `PLATFORM_SOURCES` (`app/topics/extract.py`), então os itens dele somam no grupo "platforms"
+da demanda.
+
+**⚠️ Não validado com token real — validar e regravar a fixture assim que houver um.**
+
+- **Formato confirmado no OpenAPI oficial** (27/09/2026):
+  `https://www.thingiverse.com/swagger/docs/openapi.yaml`, com
+  `resources/search.yaml#/ByTermThings` e `schemas/thing_schema.yaml`.
+  - Autenticação `BearerAuth` (`Authorization: Bearer <App Token>`).
+  - O `sort` aceita `relevant`, `text`, `popular`, `makes` e `newest`.
+  - As rotas `/popular`, `/featured` e `/newest` estão marcadas como **deprecated**; por isso
+    o coletor usa a busca.
+- **Requisição:** `GET https://api.thingiverse.com/search/?type=things&sort=popular&per_page=30`
+  (termo vazio) → `{"total", "hits": [thing]}`.
+- **Campos:** `external_id=str(id)`, `title=name`, `url=public_url`, `thumb_url=thumbnail`,
+  `likes=like_count`, `downloads=collect_count`, `metric = like_count + 2*collect_count` e
+  `tags` (nomes dos objetos de tag). Things com `is_nsfw` verdadeiro são descartados.
+- **Fixture** montada à mão no formato do schema: `tests/fixtures/thingiverse/popular.json`
+  (5 things, um NSFW).
 
 ## Como adicionar um coletor
 

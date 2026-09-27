@@ -1,0 +1,116 @@
+{
+ "total": 5,
+ "hits": [
+  {
+   "id": 7001001,
+   "name": "Articulated Crystal Dragon",
+   "thumbnail": "https://cdn.thingiverse.com/renders/7001001_display_large.jpg",
+   "url": "https://api.thingiverse.com/things/7001001",
+   "public_url": "https://www.thingiverse.com/thing:7001001",
+   "added": "2026-09-20T10:00:00+00:00",
+   "is_published": 1,
+   "is_wip": 0,
+   "is_featured": false,
+   "is_nsfw": false,
+   "like_count": 1820,
+   "collect_count": 2410,
+   "comment_count": 3,
+   "tags": [
+    {
+     "name": "dragon",
+     "url": "https://api.thingiverse.com/tags/dragon"
+    },
+    {
+     "name": "articulated",
+     "url": "https://api.thingiverse.com/tags/articulated"
+    }
+   ]
+  },
+  {
+   "id": 7001002,
+   "name": "Frieren Staff Replica",
+   "thumbnail": "https://cdn.thingiverse.com/renders/7001002_display_large.jpg",
+   "url": "https://api.thingiverse.com/things/7001002",
+   "public_url": "https://www.thingiverse.com/thing:7001002",
+   "added": "2026-09-20T10:00:00+00:00",
+   "is_published": 1,
+   "is_wip": 0,
+   "is_featured": false,
+   "is_nsfw": false,
+   "like_count": 640,
+   "collect_count": 910,
+   "comment_count": 3,
+   "tags": [
+    {
+     "name": "frieren",
+     "url": "https://api.thingiverse.com/tags/frieren"
+    },
+    {
+     "name": "anime",
+     "url": "https://api.thingiverse.com/tags/anime"
+    },
+    {
+     "name": "cosplay",
+     "url": "https://api.thingiverse.com/tags/cosplay"
+    }
+   ]
+  },
+  {
+   "id": 7001003,
+   "name": "Cable Organizer Clip",
+   "thumbnail": "https://cdn.thingiverse.com/renders/7001003_display_large.jpg",
+   "url": "https://api.thingiverse.com/things/7001003",
+   "public_url": "https://www.thingiverse.com/thing:7001003",
+   "added": "2026-09-20T10:00:00+00:00",
+   "is_published": 1,
+   "is_wip": 0,
+   "is_featured": false,
+   "is_nsfw": false,
+   "like_count": 210,
+   "collect_count": 500,
+   "comment_count": 3,
+   "tags": []
+  },
+  {
+   "id": 7001004,
+   "name": "NSFW Figure",
+   "thumbnail": "https://cdn.thingiverse.com/renders/7001004_display_large.jpg",
+   "url": "https://api.thingiverse.com/things/7001004",
+   "public_url": "https://www.thingiverse.com/thing:7001004",
+   "added": "2026-09-20T10:00:00+00:00",
+   "is_published": 1,
+   "is_wip": 0,
+   "is_featured": false,
+   "is_nsfw": true,
+   "like_count": 999,
+   "collect_count": 999,
+   "comment_count": 3,
+   "tags": []
+  },
+  {
+   "id": 7001005,
+   "name": "Pokemon Planter",
+   "thumbnail": "https://cdn.thingiverse.com/renders/7001005_display_large.jpg",
+   "url": "https://api.thingiverse.com/things/7001005",
+   "public_url": "https://www.thingiverse.com/thing:7001005",
+   "added": "2026-09-20T10:00:00+00:00",
+   "is_published": 1,
+   "is_wip": 0,
+   "is_featured": false,
+   "is_nsfw": false,
+   "like_count": 455,
+   "collect_count": 380,
+   "comment_count": 3,
+   "tags": [
+    {
+     "name": "pokemon",
+     "url": "https://api.thingiverse.com/tags/pokemon"
+    },
+    {
+     "name": "planter",
+     "url": "https://api.thingiverse.com/tags/planter"
+    }
+   ]
+  }
+ ]
+}

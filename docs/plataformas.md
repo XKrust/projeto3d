@@ -18,4 +18,4 @@
 | etsy | Etsy | print, digital | `null` | — |
 | printables | Printables | print | 20.0 | [Termos para criadores da Prusa](https://www.prusa3d.com/page/printables-club-store-terms-and-conditions-for-creators_236503/) |
 
-**Plataformas previstas para etapas futuras:** CGTrader, TurboSquid, Fab, MyMiniFactory, MakerWorld e Thingiverse.
+**Plataformas previstas para etapas futuras:** CGTrader, TurboSquid, Fab, MyMiniFactory, MakerWorld. O Thingiverse entra só como sinal de demanda (não vende modelos), sem linha aqui.

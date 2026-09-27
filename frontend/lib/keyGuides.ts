@@ -58,6 +58,15 @@ export const KEY_GUIDES: Record<string, KeyGuide> = {
     ],
     url: "https://www.etsy.com/developers/your-apps",
   },
+  thingiverse: {
+    titulo: "Thingiverse",
+    passos: [
+      "Acesse thingiverse.com/apps/create com sua conta do Thingiverse.",
+      "Preencha o formulário com um nome qualquer e aceite os termos.",
+      "Depois de criar, copie o “App Token” mostrado na página do app e cole aqui.",
+    ],
+    url: "https://www.thingiverse.com/apps/create",
+  },
   gemini: {
     titulo: "Gemini",
     passos: [
