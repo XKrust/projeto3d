@@ -37,6 +37,18 @@ def _get_or_create_source(session: Session, name: str) -> Source:
     return source
 
 
+def _mark_error(session: Session, name: str, message: str) -> None:
+    """Desfaz qualquer alteracao pendente da fonte (ex.: itens parcialmente gravados) e
+    marca a fonte como erro, isolando a falha do resto do ciclo."""
+    session.rollback()
+    source_row = _get_or_create_source(session, name)
+    source_row.status = "error"
+    source_row.last_error = message
+    source_row.last_run = now()
+    session.add(source_row)
+    session.commit()
+
+
 def _upsert_raw_item(session: Session, *, source_name: str, day, item: CollectedItem) -> None:
     existing = session.exec(
         select(RawItem).where(
@@ -119,35 +131,27 @@ def run_cycle(
             try:
                 collector = cls(settings, client)
                 items = collector.collect()
+
+                day = today()
+                for item in items:
+                    _upsert_raw_item(session, source_name=cls.name, day=day, item=item)
+
+                source_row.status = "ok"
+                source_row.last_error = None
+                source_row.items_last_run = len(items)
+                session.add(source_row)
+                session.commit()
+                result.ran.append(cls.name)
             except CollectorError as exc:
                 message = str(exc)
                 logger.error("Coletor %s falhou: %s", cls.name, message)
-                source_row.status = "error"
-                source_row.last_error = message
-                session.add(source_row)
-                session.commit()
                 result.failed[cls.name] = message
-                continue
+                _mark_error(session, cls.name, message)
             except Exception as exc:  # nunca deixar um coletor derrubar o ciclo
                 message = f"Erro inesperado: {type(exc).__name__}"
                 logger.exception("Coletor %s falhou de forma inesperada", cls.name)
-                source_row.status = "error"
-                source_row.last_error = message
-                session.add(source_row)
-                session.commit()
                 result.failed[cls.name] = message
-                continue
-
-            day = today()
-            for item in items:
-                _upsert_raw_item(session, source_name=cls.name, day=day, item=item)
-
-            source_row.status = "ok"
-            source_row.last_error = None
-            source_row.items_last_run = len(items)
-            session.add(source_row)
-            session.commit()
-            result.ran.append(cls.name)
+                _mark_error(session, cls.name, message)
     finally:
         if owns_http:
             client.close()
