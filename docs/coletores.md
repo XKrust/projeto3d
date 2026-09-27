@@ -190,6 +190,73 @@ Implementa `Collector` e `ListingCounter`.
   - `backend/tests/fixtures/sketchfab/trending.json`: `curl "https://api.sketchfab.com/v3/search?type=models&sort_by=-likeCount&date=7&count=24"`, reduzida aos 5 primeiros resultados (mantendo o `next` real da página 2).
   - `backend/tests/fixtures/sketchfab/search_count.json`: `curl "https://api.sketchfab.com/v3/search?type=models&q=dragon&count=5"` (5 resultados reais, com `next` real da página 2). O teste que soma até o fim da paginação usa, além dela, uma segunda página derivada dos mesmos dados reais só com `next` forçado para `null` (para fechar a paginação de forma determinística no teste; ver `tests/test_sketchfab.py`).
 
+## Cults3D
+
+`backend/app/collectors/cults3d.py` (`Cults3DCollector`: `name="cults3d"`, `label="Cults3D"`,
+`kind="api"`, `platform="cults3d"`, `needs_key=("cults3d_user", "cults3d_key")`, país `GLOBAL`,
+60 minutos). Implementa `Collector` e `ListingCounter`.
+
+**⚠️ Não validado com chave real — validar com chave real e regravar as fixtures assim que
+houver uma.** A doc oficial (`https://cults3d.com/en/api`, endpoint GraphQL
+`https://cults3d.com/graphql`) fica atrás de um desafio Cloudflare que bloqueia chamada
+automatizada (`curl`/`WebFetch` retornam 403 "Just a moment..."), como o brief já antecipava.
+As queries abaixo foram escritas com base na melhor informação pública disponível:
+- [Gist oficial de exemplos](https://gist.github.com/sunny/07db54478ac030bd277c19cfe734648b),
+  publicado pelo autor da API do Cults3D (domínio `sunfox.org` usado nos exemplos de upload) —
+  fonte primária dos nomes de campo e do formato de autenticação/erro.
+- [`CheekyCodexConjurer/cults3d-api-docs`](https://github.com/CheekyCodexConjurer/cults3d-api-docs):
+  notas públicas de terceiros compiladas a partir do gist oficial e de anúncios no Discord da
+  comunidade Cults3D; usadas para confirmar `sort: BY_LIKES`/`BY_DOWNLOADS` em `creationsBatch`
+  e o campo `total` em `creationsSearchBatch`.
+
+**Requisição:** `POST https://cults3d.com/graphql` com corpo JSON `{"query": ..., "variables": ...}`
+e autenticação básica (`usuário:chave`, `settings["api_keys"]["cults3d_user"]`/`cults3d_key"]`).
+
+- **Tendências** (`creationsBatch`, ordenado por popularidade, até 100):
+  ```graphql
+  {
+    creationsBatch(sort: BY_LIKES, limit: 100) {
+      results {
+        identifier
+        name(locale: EN)
+        shortUrl
+        illustrationImageUrl
+        likesCount
+        downloadsCount
+        tags(locale: EN)
+        price(currency: USD) { cents }
+      }
+    }
+  }
+  ```
+- **Contagem** (`creationsSearchBatch`, com `total`):
+  ```graphql
+  query($query: String!) {
+    creationsSearchBatch(query: $query, limit: 1) {
+      total
+    }
+  }
+  ```
+- **Campos mapeados** por criação:
+  - `external_id`: `identifier`. `title`: `name`. `url`: `shortUrl`. `thumb_url`: `illustrationImageUrl`.
+  - `likes`: `likesCount`. `downloads`: `downloadsCount`.
+  - `metric`: `likesCount + 2 * downloadsCount`.
+  - `tags`: lista de `tags(locale: EN)` (strings, ao contrário do Sketchfab).
+  - `price_usd`: `price(currency: USD) { cents } / 100`; `None` quando `price` vem `null`
+    (criação gratuita) — confirma a ruling "converter de centavos se a API usar centavos": o
+    gist oficial usa `cents` (ex.: mutação `createDiscount`/`updateCreation`), não `value`.
+  - `country`: sempre `GLOBAL` (marketplace sem segmentação geográfica).
+- **Erros:** resposta GraphQL com `errors` (`[{"message": ...}]`, convenção padrão do protocolo)
+  gera `CollectorError(f"Erro na API do Cults3D: {errors[0]['message']}")`. 401/403 já viram
+  `CollectorError` via `get_with_retry`, antes mesmo de olhar o corpo.
+- **Fixtures** (montadas à mão, formato documentado acima, sem chamada real):
+  `backend/tests/fixtures/cults3d/trending.json` (5 criações, uma com `price: null` e outras
+  com `price.cents`) e `backend/tests/fixtures/cults3d/count.json` (`total: 842`).
+- **Passo manual pendente:** assim que houver uma chave real, repetir as duas chamadas
+  (`creationsBatch` e `creationsSearchBatch`) via GraphiQL ou `curl -u usuario:chave`, confirmar
+  os nomes de campo exatos (em especial `identifier` vs. algum `id` opaco, e `cents` vs. `value`
+  em `price`), e regravar as fixtures com a resposta real.
+
 ## Como adicionar um coletor
 
 O passo a passo é documentado junto com a implementação da Etapa 1.

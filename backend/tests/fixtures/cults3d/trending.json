@@ -1,0 +1,64 @@
+{
+  "data": {
+    "creationsBatch": {
+      "results": [
+        {
+          "identifier": "2201001",
+          "name": "Articulated Dragon (print-in-place)",
+          "shortUrl": "https://cults3d.com/en/3d-model/game/articulated-dragon-print-in-place",
+          "illustrationImageUrl": "https://fbi.cults3d.com/uploaders/00000001/illustration/dragon.jpg",
+          "likesCount": 420,
+          "downloadsCount": 1830,
+          "tags": ["dragon", "articulated", "print-in-place", "fantasy"],
+          "price": null
+        },
+        {
+          "identifier": "2201002",
+          "name": "Goblin Warband - 10 Miniatures",
+          "shortUrl": "https://cults3d.com/en/3d-model/tabletop-game/goblin-warband-10-miniatures",
+          "illustrationImageUrl": "https://fbi.cults3d.com/uploaders/00000002/illustration/goblins.jpg",
+          "likesCount": 265,
+          "downloadsCount": 90,
+          "tags": ["goblin", "rpg", "tabletop", "miniature"],
+          "price": {
+            "cents": 750
+          }
+        },
+        {
+          "identifier": "2201003",
+          "name": "Low Poly Fox",
+          "shortUrl": "https://cults3d.com/en/3d-model/art/low-poly-fox",
+          "illustrationImageUrl": "https://fbi.cults3d.com/uploaders/00000003/illustration/fox.jpg",
+          "likesCount": 512,
+          "downloadsCount": 2210,
+          "tags": ["fox", "low-poly", "decor"],
+          "price": null
+        },
+        {
+          "identifier": "2201004",
+          "name": "Modular Dungeon Tile Set",
+          "shortUrl": "https://cults3d.com/en/3d-model/tabletop-game/modular-dungeon-tile-set",
+          "illustrationImageUrl": "https://fbi.cults3d.com/uploaders/00000004/illustration/dungeon.jpg",
+          "likesCount": 198,
+          "downloadsCount": 55,
+          "tags": ["dungeon", "terrain", "rpg", "modular"],
+          "price": {
+            "cents": 1200
+          }
+        },
+        {
+          "identifier": "2201005",
+          "name": "Anime Chibi Figure",
+          "shortUrl": "https://cults3d.com/en/3d-model/art/anime-chibi-figure",
+          "illustrationImageUrl": "https://fbi.cults3d.com/uploaders/00000005/illustration/chibi.jpg",
+          "likesCount": 340,
+          "downloadsCount": 120,
+          "tags": ["anime", "chibi", "figure"],
+          "price": {
+            "cents": 300
+          }
+        }
+      ]
+    }
+  }
+}
