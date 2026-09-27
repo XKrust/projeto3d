@@ -150,3 +150,21 @@ def test_api_hype_reason_when_no_listings_anywhere(client, engine):
     release = client.get("/api/hype?country=BR").json()["releases"][0]
 
     assert release["reason"] == "Estreia em 40 dias · nenhum anúncio nas lojas medidas"
+
+
+def test_api_hype_caps_each_kind_so_films_are_not_crowded_out(client, engine):
+    animes = [_release(f"a{i}", f"Anime {i:02d}", popularity=100_000 - i) for i in range(15)]
+    _add(engine, *animes, _release("f", "Filme Unico", kind="filme", popularity=500, source="tmdb"))
+
+    releases = client.get("/api/hype?country=BR").json()["releases"]
+
+    assert "Filme Unico" in [r["title"] for r in releases]
+    assert sum(r["kind"] == "anime" for r in releases) == 10
+
+
+def test_api_hype_kind_filter_is_not_capped_per_kind(client, engine):
+    _add(engine, *[_release(f"a{i}", f"Anime {i:02d}", popularity=1000 - i) for i in range(15)])
+
+    releases = client.get("/api/hype?country=BR&kind=anime").json()["releases"]
+
+    assert len(releases) == 15

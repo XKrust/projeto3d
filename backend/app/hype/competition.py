@@ -19,8 +19,8 @@ MAX_CONSECUTIVE_FAILURES = 3
 
 
 def hype_terms(session: Session, day: date, limit: int = DEFAULT_TERMS) -> list[str]:
-    """Título (sem marca de temporada) + 2 personagens de cada lançamento, do mais
-    popular para o menos, até `limit` termos distintos."""
+    """Título (sem marca de temporada) + 2 personagens de cada lançamento, na ordem de
+    `recent_releases` (tipos intercalados), até `limit` termos distintos."""
     terms: list[str] = []
     seen: set[str] = set()
 

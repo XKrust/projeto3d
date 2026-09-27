@@ -110,3 +110,11 @@ def test_update_hype_listings_runs_once_per_day(session):
     update_hype_listings(session, {"cults3d": counter}, DAY)
 
     assert counter.queries == ["Frieren"]
+
+
+def test_hype_terms_include_other_kinds_despite_popularity_scale(session):
+    _release(session, external_id="1", title="Anime Enorme", popularity=100_000)
+    _release(session, external_id="2", title="Anime Grande", popularity=90_000)
+    _release(session, external_id="3", title="Filme Pequeno", popularity=500, kind="filme")
+
+    assert hype_terms(session, DAY, limit=2) == ["Anime Enorme", "Filme Pequeno"]

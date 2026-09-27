@@ -26,6 +26,9 @@ KINDS = ("anime", "filme", "serie", "jogo")
 PAST_DAYS = 30
 STALE_DAYS = 7
 MAX_RELEASES = 40
+# Sem filtro de tipo, cada tipo tem no máximo esta cota: as escalas de popularidade das
+# fontes não se comparam (AniList ~100 mil × TMDB/IGDB ~500).
+MAX_PER_KIND = MAX_RELEASES // len(KINDS)
 NEUTRAL_MOMENTUM = 50.0
 UNMEASURED_SATURATION = 50.0
 
@@ -92,7 +95,16 @@ def read_hype(
     )
     if kind is not None:
         query = query.where(HypeRelease.kind == kind)
-    rows = session.exec(query.order_by(HypeRelease.popularity.desc())).all()[:MAX_RELEASES]
+    rows = session.exec(query.order_by(HypeRelease.popularity.desc())).all()
+    if kind is None:
+        taken: dict[str, int] = {}
+        capped = []
+        for row in rows:
+            taken[row.kind] = taken.get(row.kind, 0) + 1
+            if taken[row.kind] <= MAX_PER_KIND:
+                capped.append(row)
+        rows = capped
+    rows = rows[:MAX_RELEASES]
 
     names = {p.slug: p.name for p in session.exec(select(Platform)).all()}
     competition = _latest_competition(session, today)

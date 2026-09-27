@@ -4,7 +4,7 @@ from datetime import date, timedelta
 from sqlmodel import select
 
 from app.constants import GLOBAL
-from app.hype.entities import base_title, hype_entities
+from app.hype.entities import base_title, hype_entities, recent_releases
 from app.models import HypeRelease, RawItem, Topic, TopicItem
 from app.topics.extract import extract_topics
 
@@ -136,3 +136,18 @@ def test_booth_japanese_title_matches_hype_topic_by_native_alias(session):
     assert [link.raw_item_id for link in links] == [item.id]
     maomao = session.exec(select(Topic).where(Topic.name == "Maomao")).one()
     assert session.exec(select(TopicItem).where(TopicItem.topic_id == maomao.id)).all()
+
+
+def test_recent_releases_interleave_kinds(session):
+    # AniList mede popularidade em ~100 mil; TMDB e IGDB em ~500. Sem intercalar,
+    # filmes e jogos nunca entrariam no corte dos N primeiros.
+    for i, pop in enumerate((100_000.0, 90_000.0, 80_000.0)):
+        _release(session, external_id=f"a{i}", title=f"Anime Numero {chr(65 + i)}", popularity=pop)
+    _release(session, external_id="f", title="Filme Grande", kind="filme", popularity=500.0)
+    _release(session, external_id="j", title="Jogo Grande", kind="jogo", popularity=400.0)
+
+    titles = [r.title for r in recent_releases(session, DAY)]
+
+    assert titles == ["Anime Numero A", "Filme Grande", "Jogo Grande", "Anime Numero B", "Anime Numero C"]
+    names = [e["name"] for e in hype_entities(session, DAY, limit=3)]
+    assert names == ["Anime Numero A", "Filme Grande", "Jogo Grande"]

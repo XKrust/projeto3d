@@ -75,10 +75,23 @@ def _unique(values: list[str], exclude: str) -> list[str]:
     return result
 
 
+def interleave_by_kind(rows: list[HypeRelease]) -> list[HypeRelease]:
+    """Intercala os tipos: o 1º de cada tipo, depois o 2º de cada... Cada fonte tem sua
+    escala de popularidade (AniList ~100 mil, TMDB e IGDB ~500), então ordenar tudo junto
+    deixaria filmes e jogos sempre atrás dos animes. `rows` vem do mais popular."""
+    by_kind: dict[str, list[HypeRelease]] = {}
+    for row in rows:
+        by_kind.setdefault(row.kind, []).append(row)
+    result: list[HypeRelease] = []
+    for rank in range(max((len(group) for group in by_kind.values()), default=0)):
+        result.extend(group[rank] for group in by_kind.values() if rank < len(group))
+    return result
+
+
 def recent_releases(session: Session, day: date) -> list[HypeRelease]:
     """Lançamentos com estreia entre 60 dias atrás e 180 dias à frente (ou sem data),
-    coletados nos últimos 7 dias, do mais popular para o menos."""
-    return session.exec(
+    coletados nos últimos 7 dias, intercalando os tipos do mais popular para o menos."""
+    rows = session.exec(
         select(HypeRelease)
         .where(
             HypeRelease.updated_day >= day - timedelta(days=STALE_DAYS),
@@ -91,6 +104,7 @@ def recent_releases(session: Session, day: date) -> list[HypeRelease]:
         )
         .order_by(HypeRelease.popularity.desc())
     ).all()
+    return interleave_by_kind(list(rows))
 
 
 def top_characters(characters_json: str) -> list[dict]:
@@ -106,7 +120,7 @@ def top_characters(characters_json: str) -> list[dict]:
 
 
 def hype_entities(session: Session, day: date, limit: int = 25) -> list[dict]:
-    """Entidades dos `limit` lançamentos mais populares de `recent_releases`."""
+    """Entidades dos `limit` primeiros lançamentos de `recent_releases`."""
     rows = recent_releases(session, day)
 
     entities: list[dict] = []
