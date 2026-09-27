@@ -51,14 +51,14 @@ def test_hype_terms_title_plus_two_characters(session):
         external_id="1",
         title="The Apothecary Diaries Season 3",
         popularity=100,
-        characters=[_char("Maomao"), _char("Jinshi"), _char("Gaoshun")],
+        characters=[_char("Anya Forger", 9000), _char("Loid Forger", 8000), _char("Yor Forger", 7000)],
     )
     _release(session, external_id="2", title="Monster Hunter Stories 3", popularity=50, kind="jogo")
 
     assert hype_terms(session, DAY) == [
         "The Apothecary Diaries",
-        "Maomao",
-        "Jinshi",
+        "Anya Forger",
+        "Loid Forger",
         "Monster Hunter Stories",
     ]
 

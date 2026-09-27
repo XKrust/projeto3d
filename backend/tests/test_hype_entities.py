@@ -4,7 +4,7 @@ from datetime import date, timedelta
 from sqlmodel import select
 
 from app.constants import GLOBAL
-from app.hype.entities import base_title, hype_entities, recent_releases
+from app.hype.entities import base_title, hype_entities, recent_releases, top_characters
 from app.models import HypeRelease, RawItem, Topic, TopicItem
 from app.topics.extract import extract_topics
 
@@ -49,18 +49,22 @@ def test_hype_entities_include_title_and_top2_characters(session):
         external_id="1",
         title="The Apothecary Diaries Season 3",
         aliases=["Kusuriya no Hitorigoto 3rd Season", "薬屋のひとりごと 第3期"],
-        characters=[_char("Maomao", "猫猫"), _char("Jinshi", "壬氏"), _char("Gaoshun", "高順")],
+        characters=[
+            _char("Anya Forger", "アーニャ・フォージャー", 9000),
+            _char("Loid Forger", "ロイド・フォージャー", 8000),
+            _char("Yor Forger", "ヨル・フォージャー", 7000),
+        ],
     )
 
     entities = {e["name"]: e for e in hype_entities(session, DAY)}
 
-    assert set(entities) == {"The Apothecary Diaries", "Maomao", "Jinshi"}
+    assert set(entities) == {"The Apothecary Diaries", "Anya Forger", "Loid Forger"}
     title = entities["The Apothecary Diaries"]
     assert title["category"] == "anime"
     assert "薬屋のひとりごと" in title["aliases"]
     assert "Kusuriya no Hitorigoto" in title["aliases"]
-    assert entities["Maomao"]["aliases"] == ["猫猫"]
-    assert entities["Maomao"]["category"] == "anime"
+    assert entities["Anya Forger"]["aliases"] == ["アーニャ・フォージャー"]
+    assert entities["Anya Forger"]["category"] == "anime"
 
 
 def test_hype_entities_skip_short_unpopular_and_duplicate_names(session):
@@ -68,7 +72,11 @@ def test_hype_entities_skip_short_unpopular_and_duplicate_names(session):
         session,
         external_id="1",
         title="Cyberpunk: Edgerunners 2",
-        characters=[_char("D", "D", 9000), _char("Talia Yang", "タリア・ヤン", 35), _char("Rebecca", None, 9000)],
+        characters=[
+            _char("D", "D", 9000),
+            _char("Talia Yang", "タリア・ヤン", 35),
+            _char("David Martinez", None, 9000),
+        ],
     )
     _release(session, external_id="2", title="Cyberpunk: Edgerunners", popularity=10.0)
 
@@ -77,7 +85,7 @@ def test_hype_entities_skip_short_unpopular_and_duplicate_names(session):
     assert names.count("Cyberpunk: Edgerunners") == 1
     assert "D" not in names  # nome curto demais: casaria com qualquer "d"
     assert "Talia Yang" not in names  # poucos favoritos
-    assert "Rebecca" in names
+    assert "David Martinez" in names
 
 
 def test_hype_entities_category_by_kind(session):
@@ -115,14 +123,14 @@ def test_booth_japanese_title_matches_hype_topic_by_native_alias(session):
         external_id="1",
         title="The Apothecary Diaries Season 3",
         aliases=["薬屋のひとりごと 第3期"],
-        characters=[_char("Maomao", "猫猫")],
+        characters=[_char("Anya Forger", "アーニャ・フォージャー")],
     )
     item = RawItem(
         source="booth",
         external_id="7657840",
         country="JP",
         day=DAY,
-        title="薬屋のひとりごと 猫猫 アクリルスタンド 3Dモデル",
+        title="薬屋のひとりごと アーニャ・フォージャー アクリルスタンド 3Dモデル",
         metric=500.0,
     )
     session.add(item)
@@ -134,8 +142,8 @@ def test_booth_japanese_title_matches_hype_topic_by_native_alias(session):
     assert topic.category == "anime"
     links = session.exec(select(TopicItem).where(TopicItem.topic_id == topic.id)).all()
     assert [link.raw_item_id for link in links] == [item.id]
-    maomao = session.exec(select(Topic).where(Topic.name == "Maomao")).one()
-    assert session.exec(select(TopicItem).where(TopicItem.topic_id == maomao.id)).all()
+    anya = session.exec(select(Topic).where(Topic.name == "Anya Forger")).one()
+    assert session.exec(select(TopicItem).where(TopicItem.topic_id == anya.id)).all()
 
 
 def test_recent_releases_interleave_kinds(session):
@@ -151,3 +159,39 @@ def test_recent_releases_interleave_kinds(session):
     assert titles == ["Anime Numero A", "Filme Grande", "Jogo Grande", "Anime Numero B", "Anime Numero C"]
     names = [e["name"] for e in hype_entities(session, DAY, limit=3)]
     assert names == ["Anime Numero A", "Filme Grande", "Jogo Grande"]
+
+
+def test_single_word_characters_are_skipped(session):
+    # "Power", "Fern" e "Stark" são palavras comuns: casariam com anúncios sem relação.
+    _release(
+        session,
+        external_id="1",
+        title="Chainsaw Man",
+        characters=[_char("Power", "パワー", 9000), _char("Fern", "フェルン", 8000), _char("Aki Hayakawa", "早川アキ", 500)],
+    )
+
+    names = [e["name"] for e in hype_entities(session, DAY)]
+
+    assert "Power" not in names
+    assert "Fern" not in names
+    assert "Aki Hayakawa" in names  # 2 palavras; entra no lugar dos de 1 palavra
+
+
+def test_short_native_character_name_is_not_an_alias(session):
+    # "レゼ" (2 caracteres) casaria com "プレゼント" (presente).
+    _release(session, external_id="1", title="Chainsaw Man", characters=[_char("Reze Bomb", "レゼ", 9000)])
+
+    entities = {e["name"]: e for e in hype_entities(session, DAY)}
+
+    assert entities["Reze Bomb"]["aliases"] == []
+
+
+def test_top_characters_rules():
+    raw = json.dumps([
+        _char("Power", None, 9000),
+        _char("早川アキ", None, 8000),
+        _char("レゼ", None, 7000),
+        _char("Anya Forger", None, 6000),
+    ])
+
+    assert [c["name"] for c in top_characters(raw)] == ["早川アキ", "Anya Forger"]

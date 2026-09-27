@@ -4,7 +4,7 @@ Cada `HypeRelease` recente e popular vira uma entidade `{name, category, aliases
 `extract_topics`, junto com as de `seed/entities.yaml`. Os títulos alternativos
 (inclusive em japonês, vindos do AniList) viram aliases. Assim, um anúncio do BOOTH
 escrito em japonês casa com o tópico em inglês. Os 2 personagens mais favoritados de
-cada anime também viram entidades.
+cada anime (com nome de 2+ palavras ou 3+ caracteres CJK) também viram entidades.
 """
 
 import json
@@ -23,6 +23,8 @@ TOP_CHARACTERS = 2
 MIN_CHARACTER_FAVOURITES = 500
 MIN_LATIN_ALIAS = 4
 MIN_CJK_ALIAS = 2
+MIN_CHARACTER_WORDS = 2
+MIN_CJK_CHARACTER = 3
 
 KIND_CATEGORY = {
     "anime": "anime",
@@ -62,6 +64,18 @@ def usable(name: str | None) -> bool:
         return False
     key = normalize(name)
     return len(key) >= (MIN_CJK_ALIAS if is_cjk(key) else MIN_LATIN_ALIAS)
+
+
+def usable_character(name: str | None) -> bool:
+    """Nome de personagem distinto o bastante: 2+ palavras ("Anya Forger") ou 3+
+    caracteres CJK ("早川アキ"). Nome de uma palavra comum ("Power", "Fern", "Stark")
+    e nativo curto ("レゼ" está dentro de "プレゼント") casariam com anúncios sem relação."""
+    if not usable(name):
+        return False
+    key = normalize(name)
+    if is_cjk(key):
+        return sum(is_cjk(ch) for ch in key) >= MIN_CJK_CHARACTER
+    return len(key.split()) >= MIN_CHARACTER_WORDS
 
 
 def _unique(values: list[str], exclude: str) -> list[str]:
@@ -108,15 +122,17 @@ def recent_releases(session: Session, day: date) -> list[HypeRelease]:
 
 
 def top_characters(characters_json: str) -> list[dict]:
-    """Os 2 personagens mais favoritados, com nome utilizável e ≥ 500 favoritos."""
+    """Os 2 personagens mais favoritados entre os de nome distinto (`usable_character`)
+    e ≥ 500 favoritos."""
     characters = sorted(
         json.loads(characters_json or "[]"), key=lambda c: -int(c.get("favourites") or 0)
-    )[:TOP_CHARACTERS]
+    )
     return [
         c
         for c in characters
-        if int(c.get("favourites") or 0) >= MIN_CHARACTER_FAVOURITES and usable(c.get("name"))
-    ]
+        if int(c.get("favourites") or 0) >= MIN_CHARACTER_FAVOURITES
+        and usable_character(c.get("name"))
+    ][:TOP_CHARACTERS]
 
 
 def hype_entities(session: Session, day: date, limit: int = 25) -> list[dict]:
@@ -152,5 +168,5 @@ def hype_entities(session: Session, day: date, limit: int = 25) -> list[dict]:
 
         for character in top_characters(row.characters_json):
             native = character.get("native")
-            add(character.get("name") or "", category, [native] if native else [])
+            add(character.get("name") or "", category, [native] if usable_character(native) else [])
     return entities

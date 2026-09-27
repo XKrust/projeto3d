@@ -119,17 +119,17 @@ def test_api_hype_drops_old_releases(client, engine):
 def test_api_hype_character_has_sale_chance(client, engine):
     _add(
         engine,
-        _release("a", "The Apothecary Diaries", characters=[_char("Maomao", 22000), _char("Jinshi", 4000)]),
-        HypeListing(term="Maomao", platform="cults3d", day=DAY, count=12),
+        _release("a", "The Apothecary Diaries", characters=[_char("Anya Forger", 22000), _char("Loid Forger", 4000)]),
+        HypeListing(term="Anya Forger", platform="cults3d", day=DAY, count=12),
     )
 
     release = client.get("/api/hype?country=BR").json()["releases"][0]
 
-    assert [c["name"] for c in release["characters"]] == ["Maomao", "Jinshi"]
-    maomao = release["characters"][0]
-    assert maomao["competition"] == {"Cults3D": 12}
-    assert maomao["sale_chance"] in {"Alta", "Média", "Baixa"}
-    assert maomao["image_url"] == "https://img/Maomao.jpg"
+    assert [c["name"] for c in release["characters"]] == ["Anya Forger", "Loid Forger"]
+    anya = release["characters"][0]
+    assert anya["competition"] == {"Cults3D": 12}
+    assert anya["sale_chance"] in {"Alta", "Média", "Baixa"}
+    assert anya["image_url"] == "https://img/Anya Forger.jpg"
 
 
 def test_api_hype_invalid_country_422(client):
