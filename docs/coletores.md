@@ -301,7 +301,7 @@ públicos que documentam essa API (não de introspecção):
   (`printables_api.py`) — fonte da query `searchPrints2` usada aqui (`SearchModels`).
 - [100prznt/PrintablesGraphQL](https://github.com/100prznt/PrintablesGraphQL)
   (`php/printdetails.php`) — mostra o schema mais completo de `PrintType`/`PrintListFragment`
-  (usado para confirmar nomes como `likesCount`, `downloadCount`, `price`, `premium`).
+  (usado para confirmar nomes como `likesCount`, `downloadCount` e `price`).
 
 Cada nome de campo usado foi **confirmado batendo a query real contra o endpoint** (não só
 copiado dos exemplos acima).
@@ -311,8 +311,7 @@ copiado dos exemplos acima).
   `collect()`/`count_listings()` via `get_with_retry`; um 404 é tratado como "sem restrições"
   (não como erro). Se algum dia esse host passar a ter um `Disallow` que bloqueie
   `/graphql/`, `is_allowed` vai detectar e `CollectorError("Bloqueado pelo robots.txt: <url>")`
-  é lançado antes de qualquer requisição à API (`fetch_html`/a query real nunca são chamados
-  nesse caso).
+  é lançado antes de qualquer requisição à API (a query real nunca é chamada nesse caso).
 - **Espera entre requisições:** 3 a 5s (aleatório) entre a checagem do robots.txt e a
   requisição real à API (`_polite_delay`, injetável/monkeypatchável nos testes via
   `printables.time.sleep`/`printables.random.uniform`).
