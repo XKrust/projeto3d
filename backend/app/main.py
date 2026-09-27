@@ -8,6 +8,7 @@ from sqlmodel import Session
 
 from app.api import health
 from app.api import settings as settings_api
+from app.api import sources as sources_api
 from app.db import engine as default_engine
 from app.db import init_db
 from app.platforms import seed_platforms
@@ -30,9 +31,11 @@ def create_app(engine=None) -> FastAPI:
 
     app = FastAPI(title="Radar 3D", lifespan=lifespan)
     app.state.engine = db_engine
+    app.state.session_factory = lambda: Session(db_engine)
 
     app.include_router(health.router, prefix="/api")
     app.include_router(settings_api.router, prefix="/api")
+    app.include_router(sources_api.router, prefix="/api")
 
     return app
 

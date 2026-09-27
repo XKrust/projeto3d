@@ -9,3 +9,4 @@
 | 2026-09-26 | Stack Python (FastAPI + uv) + Next.js | Escolha do usuário; uv evita instalar Python manualmente |
 | 2026-09-26 | Ranking por oportunidade na data de entrega | Resolve a dor central: o hype passar antes de o modelo ficar pronto |
 | 2026-09-26 | Docs divididos por assunto, com CLAUDE.md como índice | Economizar tokens |
+| 2026-09-26 | `app.clock.now()` retorna hora local com fuso (`.astimezone()`), não mais naive | O SQLModel 0.0.47 exige `tzinfo` em colunas `datetime` (ex.: `Source.last_run`); sem isso o runner não conseguia gravar o horário da última execução |

@@ -9,5 +9,10 @@ def today() -> date:
 
 
 def now() -> datetime:
-    """Data/hora local atual."""
-    return datetime.now()
+    """Data/hora local atual, com fuso horario.
+
+    O SQLModel (`UTCDateTime`) exige que valores gravados em colunas
+    `datetime` tenham `tzinfo`; `astimezone()` anexa o fuso local sem alterar
+    o horario de parede.
+    """
+    return datetime.now().astimezone()
