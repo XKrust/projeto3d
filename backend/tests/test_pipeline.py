@@ -539,3 +539,13 @@ def test_lifespan_skips_scheduler_when_disabled(engine, monkeypatch):
         pass
 
     assert started == []
+
+
+def test_run_pipeline_updates_hype_listings(session, platforms, monkeypatch):
+    calls = []
+    monkeypatch.setattr(pipeline, "update_hype_listings", lambda s, counters, day: calls.append((counters, day)))
+    counters = {"cults3d": FakeCounter()}
+
+    run_pipeline(session, counters)
+
+    assert calls == [(counters, DAY)]

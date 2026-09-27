@@ -65,4 +65,41 @@ tabela `HypeRelease` (gancho `releases()` do coletor).
   "D&D").
 - **Categoria:** anime → `anime`, filme/série → `filmes_series`, jogo → `games`.
 
-A concorrência e a chance de venda por lançamento vêm na próxima tarefa da Etapa 2.
+### Concorrência
+
+`app/hype/competition.py`, chamada em `run_pipeline` logo depois de `update_listings`.
+
+- **Termos:** `hype_terms(session, day, limit=15)`: título sem temporada + os 2 personagens,
+  do lançamento mais popular para o menos, até 15 termos distintos.
+- **Contagem:** `update_hype_listings(session, counters, day)` grava `HypeListing(term,
+  platform, day, count)` usando os mesmos contadores da saturação do radar (plataformas com
+  `count_listings` e chave).
+  - Roda 1x por dia: não repete se já houver contagem de hoje.
+  - A falha de um termo pula só aquele termo; 3 falhas seguidas abandonam a plataforma no
+    dia.
+
+### Chance de venda e API
+
+`GET /api/hype?country=BR&kind=<anime|filme|serie|jogo>` (`app/api/hype.py`).
+
+- **Lançamentos:** os de país `GLOBAL` ou do país pedido, coletados nos últimos 7 dias, com
+  estreia a partir de 30 dias atrás (ou sem data), do mais popular para o menos, no máximo
+  40.
+- **Nota por lançamento** (mesma fórmula de oportunidade do radar, `docs/score.md`):
+  - `demanda`: percentil da popularidade entre os lançamentos do mesmo tipo;
+  - `momentum`: 50 fixo (neutro, porque não há série histórica da estreia);
+  - `saturação`: percentil da soma de anúncios do termo entre os termos medidos (50 sem
+    medição);
+  - `pico` = estreia − `lead_days` (`formulas.peak_day` com `event_day`);
+  - `fit_janela` = `window_fit(pico, hoje + modeling_days)`, ou 1 sem data de estreia;
+  - `sale_chance`: Alta ≥ 70, Média 40–69, Baixa < 40, sempre exibida como estimativa.
+- **Personagens (anime):** a mesma conta, com `demanda` = percentil dos favoritos entre
+  todos os personagens da resposta e a janela do próprio lançamento.
+- **Campos por lançamento:**
+  - identificação: `title`, `term`, `kind`, `source`, `url`, `image_url`, `popularity`;
+  - datas: `release_date`, `days_to_release`, `peak`, `fit_window`;
+  - nota: `competition` (`{nome da plataforma: anúncios}`, do maior para o menor),
+    `opportunity`, `sale_chance`, `reason` e `characters`.
+- **`reason`:** frase gerada, ex. "Estreia em 40 dias · 34 anúncios no Cults3D", "Estreou há
+  5 dias · …" ou "Data de estreia a confirmar · concorrência ainda não medida".
+- **Erros:** país ou tipo inválido → 422.

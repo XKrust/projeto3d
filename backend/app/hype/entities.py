@@ -56,7 +56,7 @@ def base_title(title: str) -> str:
     return result
 
 
-def _usable(name: str | None) -> bool:
+def usable(name: str | None) -> bool:
     """Nome longo o bastante para não casar com qualquer texto ("D", "Rem")."""
     if not name:
         return False
@@ -75,10 +75,10 @@ def _unique(values: list[str], exclude: str) -> list[str]:
     return result
 
 
-def hype_entities(session: Session, day: date, limit: int = 25) -> list[dict]:
-    """Entidades dos `limit` lançamentos mais populares, com estreia entre 60 dias
-    atrás e 180 dias à frente (ou sem data) e coletados nos últimos 7 dias."""
-    rows = session.exec(
+def recent_releases(session: Session, day: date) -> list[HypeRelease]:
+    """Lançamentos com estreia entre 60 dias atrás e 180 dias à frente (ou sem data),
+    coletados nos últimos 7 dias, do mais popular para o menos."""
+    return session.exec(
         select(HypeRelease)
         .where(
             HypeRelease.updated_day >= day - timedelta(days=STALE_DAYS),
@@ -92,16 +92,33 @@ def hype_entities(session: Session, day: date, limit: int = 25) -> list[dict]:
         .order_by(HypeRelease.popularity.desc())
     ).all()
 
+
+def top_characters(characters_json: str) -> list[dict]:
+    """Os 2 personagens mais favoritados, com nome utilizável e ≥ 500 favoritos."""
+    characters = sorted(
+        json.loads(characters_json or "[]"), key=lambda c: -int(c.get("favourites") or 0)
+    )[:TOP_CHARACTERS]
+    return [
+        c
+        for c in characters
+        if int(c.get("favourites") or 0) >= MIN_CHARACTER_FAVOURITES and usable(c.get("name"))
+    ]
+
+
+def hype_entities(session: Session, day: date, limit: int = 25) -> list[dict]:
+    """Entidades dos `limit` lançamentos mais populares de `recent_releases`."""
+    rows = recent_releases(session, day)
+
     entities: list[dict] = []
     seen: set[str] = set()
 
     def add(name: str, category: str, aliases: list[str]) -> None:
         key = normalize(name)
-        if not _usable(name) or key in seen:
+        if not usable(name) or key in seen:
             return
         seen.add(key)
         entities.append(
-            {"name": name, "category": category, "aliases": _unique([a for a in aliases if _usable(a)], name)}
+            {"name": name, "category": category, "aliases": _unique([a for a in aliases if usable(a)], name)}
         )
 
     releases_used = 0
@@ -109,7 +126,7 @@ def hype_entities(session: Session, day: date, limit: int = 25) -> list[dict]:
         if releases_used >= limit:
             break
         name = base_title(row.title)
-        if not _usable(name) or normalize(name) in seen:
+        if not usable(name) or normalize(name) in seen:
             continue
         releases_used += 1
         category = KIND_CATEGORY.get(row.kind, "outros")
@@ -119,12 +136,7 @@ def hype_entities(session: Session, day: date, limit: int = 25) -> list[dict]:
             aliases.append(row.title)
         add(name, category, aliases)
 
-        characters = sorted(
-            json.loads(row.characters_json or "[]"), key=lambda c: -int(c.get("favourites") or 0)
-        )[:TOP_CHARACTERS]
-        for character in characters:
-            if int(character.get("favourites") or 0) < MIN_CHARACTER_FAVOURITES:
-                continue
+        for character in top_characters(row.characters_json):
             native = character.get("native")
             add(character.get("name") or "", category, [native] if native else [])
     return entities

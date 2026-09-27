@@ -159,3 +159,15 @@ class HypeRelease(SQLModel, table=True):
     aliases_json: str = "[]"
     characters_json: str = "[]"
     updated_day: date
+
+
+class HypeListing(SQLModel, table=True):
+    """Quantos anúncios um termo do hype (título ou personagem) tem numa plataforma no dia."""
+
+    __table_args__ = (UniqueConstraint("term", "platform", "day", name="uq_hypelisting_term_platform_day"),)
+
+    id: int | None = Field(default=None, primary_key=True)
+    term: str = Field(index=True)
+    platform: str
+    day: date
+    count: int

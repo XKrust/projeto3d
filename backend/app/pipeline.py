@@ -23,6 +23,7 @@ from app.http import make_client
 from app.models import Platform, RawItem, Topic, TopicItem, TopicListing, TopicScore, TopicSignal
 from app.scoring import formulas
 from app.settings_store import get_settings
+from app.hype.competition import update_hype_listings
 from app.topics.extract import PLATFORM_SOURCES, extract_topics
 
 logger = logging.getLogger(__name__)
@@ -268,7 +269,8 @@ def run_pipeline(
     *,
     enrich: Callable[[Session], None] | None = None,
 ) -> None:
-    """extract_topics -> update_listings (1x por dia) -> compute_scores -> enrich."""
+    """extract_topics -> update_listings (1x por dia) -> update_hype_listings (1x por
+    dia) -> compute_scores -> enrich."""
     day = clock.today()
     extract_topics(session, day)
 
@@ -276,6 +278,8 @@ def run_pipeline(
     if not has_listing_today:
         top_n = int(get_settings(session)["top_n_saturation"])
         update_listings(session, counters, day, top_n)
+    # Concorrência dos lançamentos do hype (1x por dia; a função se protege sozinha).
+    update_hype_listings(session, counters, day)
 
     compute_scores(session, day)
 

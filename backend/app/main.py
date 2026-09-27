@@ -9,6 +9,7 @@ from sqlmodel import Session
 
 from app import scheduler as scheduler_mod
 from app.api import health
+from app.api import hype as hype_api
 from app.api import radar as radar_api
 from app.api import seasonal as seasonal_api
 from app.api import settings as settings_api
@@ -51,6 +52,7 @@ def create_app(engine=None) -> FastAPI:
     app.include_router(sources_api.router, prefix="/api")
     app.include_router(radar_api.router, prefix="/api")
     app.include_router(seasonal_api.router, prefix="/api")
+    app.include_router(hype_api.router, prefix="/api")
 
     return app
 
