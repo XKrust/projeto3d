@@ -11,6 +11,7 @@
 
 | slug | nome | mercado | fee_pct | fonte |
 |---|---|---|---|---|
+| cgtrader | CGTrader | digital, print | `null` | — |
 | cults3d | Cults3D | print | `null` (não confirmado nesta etapa) | — |
 | sketchfab | Sketchfab Store | digital | `null` (não confirmado nesta etapa) | — |
 | artstation | ArtStation Marketplace | digital | `null` | — |
@@ -19,4 +20,4 @@
 | myminifactory | MyMiniFactory | print | `null` | — |
 | printables | Printables | print | 20.0 | [Termos para criadores da Prusa](https://www.prusa3d.com/page/printables-club-store-terms-and-conditions-for-creators_236503/) |
 
-**Plataformas previstas para etapas futuras:** CGTrader, TurboSquid, Fab, MyMiniFactory, MakerWorld. O Thingiverse entra só como sinal de demanda (não vende modelos), sem linha aqui.
+**Plataformas previstas para etapas futuras:** TurboSquid, Fab e MakerWorld (este bloqueado por desafio anti-robô, ver `coletores.md`). O Thingiverse entra só como sinal de demanda (não vende modelos), sem linha aqui.

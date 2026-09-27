@@ -23,6 +23,7 @@ DEFAULTS: dict = {
         "etsy_shared_secret": "",
         "thingiverse": "",
         "myminifactory": "",
+        "cgtrader": "",
         "gemini": "",
     },
     "countries": ["BR", "US", "GB", "DE", "FR", "ES", "JP"],

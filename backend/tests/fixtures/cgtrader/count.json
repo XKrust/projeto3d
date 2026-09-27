@@ -1,0 +1,41 @@
+{
+ "total": 2214,
+ "models": [
+  {
+   "id": 5100001,
+   "status": "published",
+   "author_name": "joe",
+   "url": "https://www.cgtrader.com/3d-print-models/character/fantasy/frieren-figurine",
+   "slug": "frieren-figurine",
+   "category_slug": "character",
+   "subcategory_slug": "fantasy",
+   "category_id": 1,
+   "subcategory_id": 2,
+   "title": "Frieren Figurine",
+   "downloadable": true,
+   "animated": false,
+   "rigged": false,
+   "game_ready": false,
+   "adult_content": false,
+   "ai_generated": false,
+   "type": "printable",
+   "license": "royalty_free",
+   "tags": [
+    "frieren",
+    "anime",
+    "figure"
+   ],
+   "prices": {
+    "download": 14.9
+   },
+   "files": [],
+   "availableFileExtensions": [
+    "stl"
+   ],
+   "thumbnails": [
+    "https://img-new.cgtrader.com/items/5100001/a1/5100001-1.jpg",
+    "https://img-new.cgtrader.com/items/5100001/b2/5100001-2.jpg"
+   ]
+  }
+ ]
+}

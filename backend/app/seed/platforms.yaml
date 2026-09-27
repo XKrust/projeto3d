@@ -100,3 +100,17 @@
     ES: 0.5
     JP: 0.2
   notes: ""
+
+- slug: cgtrader
+  name: CGTrader
+  markets: [digital, print]
+  fee_pct: null
+  strength:
+    BR: 0.4
+    US: 0.7
+    GB: 0.6
+    DE: 0.6
+    FR: 0.5
+    ES: 0.5
+    JP: 0.3
+  notes: ""

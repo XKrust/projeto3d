@@ -1,0 +1,181 @@
+{
+ "total": 5,
+ "models": [
+  {
+   "id": 5100001,
+   "status": "published",
+   "author_name": "joe",
+   "url": "https://www.cgtrader.com/3d-print-models/character/fantasy/frieren-figurine",
+   "slug": "frieren-figurine",
+   "category_slug": "character",
+   "subcategory_slug": "fantasy",
+   "category_id": 1,
+   "subcategory_id": 2,
+   "title": "Frieren Figurine",
+   "downloadable": true,
+   "animated": false,
+   "rigged": false,
+   "game_ready": false,
+   "adult_content": false,
+   "ai_generated": false,
+   "type": "printable",
+   "license": "royalty_free",
+   "tags": [
+    "frieren",
+    "anime",
+    "figure"
+   ],
+   "prices": {
+    "download": 14.9
+   },
+   "files": [],
+   "availableFileExtensions": [
+    "stl"
+   ],
+   "thumbnails": [
+    "https://img-new.cgtrader.com/items/5100001/a1/5100001-1.jpg",
+    "https://img-new.cgtrader.com/items/5100001/b2/5100001-2.jpg"
+   ]
+  },
+  {
+   "id": 5100002,
+   "status": "published",
+   "author_name": "joe",
+   "url": "https://www.cgtrader.com/3d-models/character/fantasy/dragon-rigged-low-poly",
+   "slug": "dragon-rigged-low-poly",
+   "category_slug": "character",
+   "subcategory_slug": "fantasy",
+   "category_id": 1,
+   "subcategory_id": 2,
+   "title": "Dragon Rigged Low Poly",
+   "downloadable": true,
+   "animated": false,
+   "rigged": false,
+   "game_ready": false,
+   "adult_content": false,
+   "ai_generated": false,
+   "type": "cg",
+   "license": "royalty_free",
+   "tags": [
+    "dragon",
+    "lowpoly",
+    "game"
+   ],
+   "prices": {
+    "download": 39.0
+   },
+   "files": [],
+   "availableFileExtensions": [
+    "fbx",
+    "obj"
+   ],
+   "thumbnails": [
+    "https://img-new.cgtrader.com/items/5100002/a1/5100002-1.jpg",
+    "https://img-new.cgtrader.com/items/5100002/b2/5100002-2.jpg"
+   ]
+  },
+  {
+   "id": 5100003,
+   "status": "published",
+   "author_name": "joe",
+   "url": "https://www.cgtrader.com/3d-models/character/fantasy/sci-fi-helmet",
+   "slug": "sci-fi-helmet",
+   "category_slug": "character",
+   "subcategory_slug": "fantasy",
+   "category_id": 1,
+   "subcategory_id": 2,
+   "title": "Sci-Fi Helmet",
+   "downloadable": true,
+   "animated": false,
+   "rigged": false,
+   "game_ready": false,
+   "adult_content": false,
+   "ai_generated": false,
+   "type": "cg",
+   "license": "royalty_free",
+   "tags": [
+    "helmet",
+    "scifi"
+   ],
+   "prices": {
+    "download": 12.0
+   },
+   "files": [],
+   "availableFileExtensions": [
+    "fbx",
+    "obj"
+   ],
+   "thumbnails": []
+  },
+  {
+   "id": 5100004,
+   "status": "published",
+   "author_name": "joe",
+   "url": "https://www.cgtrader.com/3d-print-models/character/fantasy/chess-set-stl",
+   "slug": "chess-set-stl",
+   "category_slug": "character",
+   "subcategory_slug": "fantasy",
+   "category_id": 1,
+   "subcategory_id": 2,
+   "title": "Chess Set STL",
+   "downloadable": true,
+   "animated": false,
+   "rigged": false,
+   "game_ready": false,
+   "adult_content": false,
+   "ai_generated": false,
+   "type": "printable",
+   "license": "royalty_free",
+   "tags": [
+    "chess",
+    "boardgame"
+   ],
+   "prices": {
+    "download": 6.5
+   },
+   "files": [],
+   "availableFileExtensions": [
+    "stl"
+   ],
+   "thumbnails": [
+    "https://img-new.cgtrader.com/items/5100004/a1/5100004-1.jpg",
+    "https://img-new.cgtrader.com/items/5100004/b2/5100004-2.jpg"
+   ]
+  },
+  {
+   "id": 5100005,
+   "status": "published",
+   "author_name": "joe",
+   "url": "https://www.cgtrader.com/3d-print-models/character/fantasy/pokemon-planter",
+   "slug": "pokemon-planter",
+   "category_slug": "character",
+   "subcategory_slug": "fantasy",
+   "category_id": 1,
+   "subcategory_id": 2,
+   "title": "Pokemon Planter",
+   "downloadable": true,
+   "animated": false,
+   "rigged": false,
+   "game_ready": false,
+   "adult_content": false,
+   "ai_generated": false,
+   "type": "printable",
+   "license": "royalty_free",
+   "tags": [
+    "pokemon",
+    "planter"
+   ],
+   "prices": {
+    "download": 4.99
+   },
+   "files": [],
+   "availableFileExtensions": [
+    "stl"
+   ],
+   "thumbnails": [
+    "https://img-new.cgtrader.com/items/5100005/a1/5100005-1.jpg",
+    "https://img-new.cgtrader.com/items/5100005/b2/5100005-2.jpg"
+   ]
+  }
+ ]
+}

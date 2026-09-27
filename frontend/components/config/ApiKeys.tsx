@@ -42,6 +42,10 @@ const API_KEY_GROUPS: ApiKeyGroup[] = [
     service: "myminifactory",
     fields: [{ key: "myminifactory", label: "Chave da API do MyMiniFactory" }],
   },
+  {
+    service: "cgtrader",
+    fields: [{ key: "cgtrader", label: "Chave da API do CGTrader" }],
+  },
   { service: "gemini", fields: [{ key: "gemini", label: "Chave da API do Gemini" }] },
 ];
 

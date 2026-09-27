@@ -78,7 +78,8 @@ Regras gerais:
 | MyMiniFactory | API | sim | 1b |
 | BOOTH (Japão) | scraping | não | 1b |
 | ArtStation | JSON não oficial (tratado como scraping) | não | 1b |
-| MakerWorld, CGTrader | scraping | não | 1b |
+| CGTrader | API oficial | sim | 1b |
+| MakerWorld | — (não implementado, ver abaixo) | — | 1b |
 | AniList | API | não | 2 |
 | TMDB, IGDB | API | sim | 2 |
 | frankfurter.app (câmbio) | API | não | 3 |
@@ -500,6 +501,38 @@ da demanda.
   `https://www.myminifactory.com/pages/for-developers` e diz que os clientes de API são
   criados nas configurações da conta. A página bloqueia acesso automatizado (403), então os
   passos exatos não foram conferidos.
+
+## CGTrader
+
+`backend/app/collectors/cgtrader.py` (`CGTraderCollector`: `name="cgtrader"`,
+`label="CGTrader"`, `kind="api"`, `platform="cgtrader"`, `needs_key=("cgtrader",)`, país
+`GLOBAL`, 60 minutos). Implementa `Collector` e `count_listings`.
+
+**Por que API e não scraping:** o site responde `202` com corpo vazio a acesso automatizado
+(desafio anti-robô), e o robots.txt proíbe `/search*` e `*/api/internal/*`. Por isso usamos a
+**API oficial** `https://api.cgtrader.com`, documentada em `https://api.cgtrader.com/docs`
+(consultada em 27/09/2026).
+
+**⚠️ Não validado com chave real — validar e regravar as fixtures assim que houver uma.**
+
+- **Autenticação:** a doc diz que a chave vem "from your account". Uma chamada sem token
+  responde `401` com `WWW-Authenticate: Bearer realm="Doorkeeper"`, então o coletor manda
+  `Authorization: Bearer <chave>`. Se a chave real exigir um fluxo OAuth (client
+  credentials), ajustar aqui na validação.
+- **Tendências:** `GET https://api.cgtrader.com/v1/models?sort=sales&per_page=50&page=1`, que
+  devolve `{"total", "models": [...]}` ("Example Response" de
+  `https://api.cgtrader.com/docs/_v1_models_get_43380.html`).
+- **Campos:**
+  - `external_id=str(id)`, `title`, `url`, `tags`, `thumb_url=thumbnails[0]` (`None` se a
+    lista vier vazia);
+  - `price_usd=prices.download` (a API cobra em USD);
+  - a API **não traz curtidas, vendas nem visualizações**. Como a lista vem ordenada por
+    vendas, `metric` é a posição invertida (o primeiro de N vale N), e `likes`, `downloads`
+    e `views` ficam `None`.
+- **Contagem:** `keywords=<termo>` e `per_page=1` → `total`.
+- **Fixtures** montadas à mão a partir do Example Response oficial:
+  `tests/fixtures/cgtrader/models.json` (5 modelos, um sem thumbnails) e `count.json`
+  (`total: 2214`).
 
 ## Como adicionar um coletor
 

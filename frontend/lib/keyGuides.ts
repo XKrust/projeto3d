@@ -76,6 +76,15 @@ export const KEY_GUIDES: Record<string, KeyGuide> = {
     ],
     url: "https://www.myminifactory.com/pages/for-developers",
   },
+  cgtrader: {
+    titulo: "CGTrader",
+    passos: [
+      "Entre no CGTrader com sua conta.",
+      "Nas configurações da sua conta, procure a área de chaves de API (“API keys”) e gere uma chave.",
+      "Copie a chave gerada e cole aqui. A documentação oficial da API está no link abaixo.",
+    ],
+    url: "https://api.cgtrader.com/docs/authentication.html",
+  },
   gemini: {
     titulo: "Gemini",
     passos: [
