@@ -135,4 +135,40 @@ Aplicação da resposta:
   `last_enrich_day` — o enriquecimento é tentado de novo num próximo ciclo do mesmo dia.
   `last_enrich_day` só é gravado depois de aplicar uma resposta com sucesso.
 
+## API do radar
+
+`backend/app/api/radar.py`, montada em `/api`.
+
+- `GET /api/radar/meta`: `countries` (as 7 do `constants.COUNTRIES`, para o seletor),
+  `country_groups` (`{"Europa": ["GB","DE","FR","ES"]}`, fixo), `categories`, `markets`,
+  `platforms` (`slug`/`name`/`markets` de cada `Platform` cadastrada) e `last_updated`
+  (o maior `Source.last_run`, ou `None` sem nenhuma coleta ainda).
+- `GET /api/radar?country=&platform=&market=&category=&limit=`: um item por tópico,
+  ordenado por `opportunity` decrescente.
+  1. Valida `country` contra `COUNTRIES` (`platform` contra as plataformas cadastradas,
+     `market` contra `MARKETS`, `category` contra `CATEGORIES`) — inválido é 422 com
+     "País inválido"/"Plataforma inválida"/"Mercado inválido"/"Categoria inválida".
+     `limit` aceita 1–200 (padrão 50).
+  2. Um `country` válido mas fora de `settings["countries"]` (desativado nas
+     Configurações) devolve `200 []` — não é erro, é o jeito de esconder linhas de
+     `TopicScore` que ficaram "presas" de um país removido (ver nota na Tarefa 12).
+  3. Usa o último `day` com `TopicScore` daquele país; sem nenhum, devolve `[]`.
+  4. Carrega em bloco todas as linhas de `TopicScore` desse país/dia, aplica os filtros
+     de `platform`/`market` (pela `Platform.markets_json`)/`category` (pelo `Topic`) em
+     memória. Um tópico sem nenhuma linha depois do filtro não aparece na resposta.
+  5. **Melhor plataforma:** entre as linhas restantes do tópico, a de maior
+     `opportunity · fit_platform`. O `opportunity`/`sale_chance`/`momentum_arrow`/
+     `days_to_peak` exibidos vêm dessa linha (`sale_chance`/`momentum_arrow` reaproveitam
+     `scoring/formulas.py`; `days_to_peak = (peak_day - clock.today()).days`, pode ser
+     ≤ 0).
+  6. **Preço mediano:** mediana (`statistics.median`, 2 casas) dos `RawItem.price_usd > 0`
+     ligados ao tópico via `TopicItem` na plataforma vencedora (qualquer dia); `null` sem
+     nenhum.
+  7. **Sparkline:** até 30 dias terminando no último dia com score, maior `opportunity`
+     do dia entre todas as plataformas daquele país/tópico (não só a vencedora); dias sem
+     score não entram.
+  8. As consultas de preço e sparkline são feitas uma vez para todos os tópicos da
+     página (não uma por tópico), para manter o número de consultas independente do
+     tamanho do banco.
+
 > Atualize este doc quando a estrutura real divergir.
