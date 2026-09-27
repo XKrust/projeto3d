@@ -2,14 +2,7 @@ import { ImageOff } from "lucide-react";
 import { CountUp } from "@/components/radar/CountUp";
 import { SaleChance } from "@/components/radar/SaleChance";
 import { Sparkline } from "@/components/radar/Sparkline";
-import {
-  ARROW_LABELS,
-  ARROW_SYMBOLS,
-  CATEGORY_LABELS,
-  COUNTRY_IN,
-  formatMedianPrice,
-  formatPeakLabel,
-} from "@/lib/radar-labels";
+import { ARROW_LABELS, ARROW_SYMBOLS, CATEGORY_LABELS, COUNTRY_IN, formatMedianPrice, formatPeakLabel, formatWhereToSell } from "@/lib/radar-labels";
 import type { Topic } from "@/lib/radar-types";
 
 // Destaque do topo (macroestrutura Stat-Led): a nota real do tópico nº 1 é o
@@ -54,7 +47,7 @@ export function RadarHero({ topic, country }: { topic: Topic; country: string })
           <li className="font-medium text-foreground">
             {formatPeakLabel(topic.days_to_peak)}
           </li>
-          <li>Melhor em: {topic.best_platform.name}</li>
+          <li>{formatWhereToSell(topic)}</li>
           <li className="tnum">{formatMedianPrice(topic.median_price_usd)}</li>
           <li>
             <SaleChance chance={topic.sale_chance} />

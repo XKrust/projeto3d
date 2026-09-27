@@ -14,7 +14,7 @@ from sqlmodel import Session, select
 
 from app.constants import COUNTRIES, COUNTRY_NAMES
 from app.db import get_session
-from app.models import Topic, TopicScore
+from app.models import Platform, Topic, TopicScore
 from app.settings_store import get_settings
 
 router = APIRouter()
@@ -29,11 +29,14 @@ def _best_opportunities(session: Session, country: str) -> list[tuple[float, int
     ).first()
     if last_day is None:
         return []
+    # Score antigo de loja que fechou (Sketchfab, ArtStation) não conta.
+    closed = set(session.exec(select(Platform.slug).where(Platform.sells == False)).all())  # noqa: E712
     rows_by_topic: dict[int, list[TopicScore]] = defaultdict(list)
     for row in session.exec(
         select(TopicScore).where(TopicScore.country == country, TopicScore.day == last_day)
     ).all():
-        rows_by_topic[row.topic_id].append(row)
+        if row.platform not in closed:
+            rows_by_topic[row.topic_id].append(row)
     best = []
     for topic_id, rows in rows_by_topic.items():
         row = max(sorted(rows, key=lambda r: r.platform), key=lambda r: r.opportunity * r.fit_platform)

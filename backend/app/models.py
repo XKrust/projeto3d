@@ -128,7 +128,11 @@ class Setting(SQLModel, table=True):
 
 
 class Platform(SQLModel, table=True):
-    """Cadastro de plataformas de venda (taxas, mercados, forca por pais)."""
+    """Cadastro de plataformas de venda (taxas, mercados, forca por pais).
+
+    `sells` = False: a loja fechou/migrou; o site so serve de sinal de tendencia.
+    `categories_json`: tipos de tema em que a loja e mais forte ([] = generalista).
+    `edited` = True depois de uma edicao em /config (o seed nao sobrescreve mais)."""
 
     slug: str = Field(primary_key=True)
     name: str
@@ -136,6 +140,9 @@ class Platform(SQLModel, table=True):
     fee_pct: float | None = None
     strength_json: str
     notes: str = ""
+    sells: bool = True
+    categories_json: str = "[]"
+    edited: bool = False
 
 
 class HypeRelease(SQLModel, table=True):

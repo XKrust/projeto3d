@@ -77,3 +77,9 @@ export const COUNTRY_IN: Record<string, string> = {
   FR: "na França",
   ES: "na Espanha",
 };
+
+/** "Onde vender: Cults3D · Mercado Livre · Etsy" (as 3 melhores lojas do tema). */
+export function formatWhereToSell(topic: { best_platform: { name: string }; platforms?: { name: string }[] }): string {
+  const names = topic.platforms?.length ? topic.platforms.map((p) => p.name) : [topic.best_platform.name];
+  return `Onde vender: ${names.join(" · ")}`;
+}

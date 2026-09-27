@@ -33,7 +33,6 @@ logger = logging.getLogger(__name__)
 PLATFORMS_GROUP = "platforms"
 MAX_CONSECUTIVE_COUNT_FAILURES = 3
 MOMENTUM_DAYS = 10
-PRESENCE_DAYS = 7
 NO_LISTING_SATURATION = 50.0
 
 
@@ -148,17 +147,6 @@ def _latest_listing_saturation(session: Session, day: date, platforms: list[str]
     }
 
 
-def _present_pairs(session: Session, day: date, platforms: list[str]) -> set[tuple[int, str]]:
-    """(topico, plataforma) com `TopicItem` daquela plataforma nos ultimos 7 dias."""
-    start = day - timedelta(days=PRESENCE_DAYS - 1)
-    rows = session.exec(
-        select(TopicItem.topic_id, RawItem.source)
-        .join(RawItem, RawItem.id == TopicItem.raw_item_id)
-        .where(RawItem.source.in_(platforms), RawItem.day >= start, RawItem.day <= day)
-    ).all()
-    return {(topic_id, source) for topic_id, source in rows}
-
-
 def compute_scores(session: Session, day: date) -> int:
     """Calcula e grava (upsert) `TopicScore` por (topico, pais ativo, plataforma
     com dado) em `day`. Retorna o numero de linhas gravadas. Ver `docs/score.md`."""
@@ -169,15 +157,16 @@ def compute_scores(session: Session, day: date) -> int:
     delivery = day + timedelta(days=int(settings["modeling_days"]))
     window_days = [day - timedelta(days=MOMENTUM_DAYS - 1 - i) for i in range(MOMENTUM_DAYS)]
 
-    platform_slugs_with_data = set(session.exec(select(RawItem.source).distinct()).all())
-    platforms = [p for p in session.exec(select(Platform)).all() if p.slug in platform_slugs_with_data]
+    # Toda loja que vende concorre, mesmo sem dado coletado dela (o Cults3D sem chave é
+    # onde muita gente vende). Loja fechada (`sells` falso) fica só como sinal.
+    platforms = [p for p in session.exec(select(Platform)).all() if p.sells]
     if not platforms:
         return 0
     platform_slugs = [p.slug for p in platforms]
     strengths = {p.slug: json.loads(p.strength_json) for p in platforms}
+    platform_categories = {p.slug: json.loads(p.categories_json) for p in platforms}
 
     saturation = _latest_listing_saturation(session, day, platform_slugs)
-    present = _present_pairs(session, day, platform_slugs)
 
     # Todos os sinais da janela de 10 dias, numa consulta so.
     signals = session.exec(
@@ -218,6 +207,9 @@ def compute_scores(session: Session, day: date) -> int:
         if not topic_ids:
             continue
 
+        categories = dict(
+            session.exec(select(Topic.id, Topic.category).where(Topic.id.in_(topic_ids))).all()
+        )
         raw_by_day = _raw_demand_by_day(values, source_weights)
         today_raw = raw_by_day.get(day, {})
         demand = formulas.percentile_ranks({topic_id: today_raw.get(topic_id, 0.0) for topic_id in topic_ids})
@@ -231,10 +223,11 @@ def compute_scores(session: Session, day: date) -> int:
 
             for platform in platform_slugs:
                 sat = saturation.get(platform, {}).get(topic_id, NO_LISTING_SATURATION)
+                # O filtro de mercado (impressão/digital) é aplicado na API.
                 fit_platform = formulas.platform_fit(
                     float(strengths[platform].get(country, 0.0)),
-                    True,  # market_match: o filtro de mercado e aplicado na API
-                    (topic_id, platform) in present,
+                    platform_categories[platform],
+                    categories.get(topic_id, "outros"),
                 )
                 opp = formulas.opportunity(demand[topic_id], momentum, sat, fit_window, weights)
 

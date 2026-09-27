@@ -13,12 +13,13 @@ from app.api import sources as sources_api
 from app.collectors.base import Collector, CollectedItem, CollectorError
 from app.constants import GLOBAL
 from app.main import create_app
-from app.models import RawItem, Topic, TopicItem, TopicListing, TopicScore, TopicSignal
+from app.models import Platform, RawItem, Topic, TopicItem, TopicListing, TopicScore, TopicSignal
 from app.pipeline import compute_scores, make_after, run_pipeline, update_listings
 from app.platforms import seed_platforms
 from app.settings_store import update_settings
 
 DAY = date(2026, 9, 26)
+SELLING = {"cults3d", "printables", "myminifactory", "etsy", "cgtrader", "booth", "fab", "mercadolivre"}
 
 
 @pytest.fixture(autouse=True)
@@ -31,8 +32,9 @@ def platforms(session):
     seed_platforms(session)
 
 
-def _topic(session, name):
-    topic = Topic(slug=name.lower().replace(" ", "-"), name=name, is_candidate=False, created_day=DAY)
+def _topic(session, name, category="outros"):
+    topic = Topic(slug=name.lower().replace(" ", "-"), name=name, category=category, is_candidate=False,
+                  created_day=DAY)
     session.add(topic)
     session.commit()
     session.refresh(topic)
@@ -77,8 +79,8 @@ def test_topic_with_highest_signal_has_highest_demand_in_br(session, platforms):
 
     written = compute_scores(session, DAY)
 
-    assert written == 3  # 3 topicos x BR x sketchfab
-    demand = {s.topic_id: s.demand for s in _scores(session, country="BR", platform="sketchfab")}
+    assert written == 3 * len(SELLING)  # 3 topicos x BR x lojas que vendem
+    demand = {s.topic_id: s.demand for s in _scores(session, country="BR", platform="cults3d")}
     assert demand[high.id] > demand[mid.id] > demand[low.id]
 
 
@@ -104,14 +106,14 @@ def test_topic_without_listing_has_saturation_50(session, platforms):
     c = _topic(session, "C")
     for topic in (a, b, c):
         _signal(session, topic, 10)
-    session.add(TopicListing(topic_id=a.id, platform="sketchfab", day=DAY - timedelta(days=2), count=5))
-    session.add(TopicListing(topic_id=a.id, platform="sketchfab", day=DAY, count=100))  # mais recente
-    session.add(TopicListing(topic_id=b.id, platform="sketchfab", day=DAY, count=20))
+    session.add(TopicListing(topic_id=a.id, platform="cults3d", day=DAY - timedelta(days=2), count=5))
+    session.add(TopicListing(topic_id=a.id, platform="cults3d", day=DAY, count=100))  # mais recente
+    session.add(TopicListing(topic_id=b.id, platform="cults3d", day=DAY, count=20))
     session.commit()
 
     compute_scores(session, DAY)
 
-    saturation = {s.topic_id: s.saturation for s in _scores(session, country="BR", platform="sketchfab")}
+    saturation = {s.topic_id: s.saturation for s in _scores(session, country="BR", platform="cults3d")}
     assert saturation[c.id] == 50.0
     assert saturation[a.id] == 75.0  # 100 anuncios > 20 anuncios
     assert saturation[b.id] == 25.0
@@ -130,7 +132,7 @@ def test_growing_ten_day_series_peaks_today_plus_10(session, platforms):
 
     compute_scores(session, DAY)
 
-    by_topic = {s.topic_id: s for s in _scores(session, country="BR", platform="sketchfab")}
+    by_topic = {s.topic_id: s for s in _scores(session, country="BR", platform="cults3d")}
     assert by_topic[growing.id].peak_day == DAY + timedelta(days=10)
     assert by_topic[growing.id].momentum_raw > 0
     assert by_topic[growing.id].fit_window == 1.0  # pico (hoje+10) >= entrega (hoje+7)
@@ -148,36 +150,65 @@ def test_compute_scores_twice_does_not_duplicate_rows(session, platforms):
     first = compute_scores(session, DAY)
     second = compute_scores(session, DAY)
 
-    assert first == second == 2
-    assert len(session.exec(select(TopicScore)).all()) == 2
+    assert first == second == len(SELLING)
+    assert len(session.exec(select(TopicScore)).all()) == len(SELLING)
 
 
-def test_only_platforms_with_data_are_scored(session, platforms):
-    _raw_item(session, source="cults3d", day=DAY - timedelta(days=30))
+def test_every_selling_platform_is_scored_even_without_collected_data(session, platforms):
+    # O Cults3D (sem chave) nunca é coletado, mas é onde se vende: tem que concorrer.
+    # O Sketchfab é coletado (tendência), mas a loja fechou: não concorre.
+    _raw_item(session, source="sketchfab")
     topic = _topic(session, "Tema")
     _signal(session, topic, 10)
 
     compute_scores(session, DAY)
 
-    assert {s.platform for s in _scores(session)} == {"cults3d"}
+    assert {s.platform for s in _scores(session)} == SELLING
 
 
-def test_score_fields_follow_the_formulas(session, platforms):
-    raw = _raw_item(session, source="sketchfab", day=DAY - timedelta(days=3))
+def _strength(session, slug, country="BR"):
+    return json.loads(session.get(Platform, slug).strength_json)[country]
+
+
+def test_fit_platform_is_strength_times_category_affinity(session, platforms):
+    mini = _topic(session, "Miniatura", category="rpg_miniaturas")
+    _signal(session, mini, 10)
+
+    compute_scores(session, DAY)
+
+    fit = {s.platform: s.fit_platform for s in _scores(session, country="BR", topic=mini)}
+    # MyMiniFactory é forte em miniaturas; Cults3D é generalista; Etsy não é de miniatura.
+    assert fit["myminifactory"] == pytest.approx(_strength(session, "myminifactory"))
+    assert fit["cults3d"] == pytest.approx(_strength(session, "cults3d"))
+    assert fit["etsy"] == pytest.approx(_strength(session, "etsy") * 0.7)
+
+
+def test_collected_items_do_not_change_where_to_sell(session, platforms):
+    # Ter itens coletados de uma loja dizia mais sobre o que o app consegue ler do que
+    # sobre onde se vende; não pesa mais no fit.
+    raw = _raw_item(session, source="printables", day=DAY - timedelta(days=3))
     present = _topic(session, "Presente")
     absent = _topic(session, "Ausente")
     session.add(TopicItem(topic_id=present.id, raw_item_id=raw.id))
     session.commit()
-    _signal(session, present, 10, source="sketchfab")
-    _signal(session, absent, 10, source="cults3d")
+    _signal(session, present, 10)
+    _signal(session, absent, 10)
 
     compute_scores(session, DAY)
 
-    by_topic = {s.topic_id: s for s in _scores(session, country="BR", platform="sketchfab")}
-    # forca do Sketchfab no BR = 0.5 (seed); presente -> 1.0, ausente -> 0.5
-    assert by_topic[present.id].fit_platform == pytest.approx(0.5)
-    assert by_topic[absent.id].fit_platform == pytest.approx(0.25)
+    fit = {s.topic_id: s.fit_platform for s in _scores(session, country="BR", platform="printables")}
+    assert fit[present.id] == fit[absent.id]
 
+
+def test_score_fields_follow_the_formulas(session, platforms):
+    present = _topic(session, "Presente")
+    other = _topic(session, "Outro")
+    _signal(session, present, 10, source="sketchfab")
+    _signal(session, other, 10, source="cults3d")
+
+    compute_scores(session, DAY)
+
+    by_topic = {s.topic_id: s for s in _scores(session, country="BR", platform="cults3d")}
     score = by_topic[present.id]
     # sketchfab + cults3d somam no grupo "platforms": empate -> demanda 50
     assert score.demand == 50.0

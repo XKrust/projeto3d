@@ -169,23 +169,23 @@ def peak_day(
     return today
 
 
-def platform_fit(strength: float, market_match: bool, present: bool) -> float:
-    """
-    Calculate platform fit for market.
+OFF_CATEGORY_AFFINITY = 0.7
 
-    Formula: strength * (1 if market_match else 0) * (1.0 if present else 0.5)
+
+def platform_fit(strength: float, categories: list[str], category: str) -> float:
+    """
+    Quanto a loja combina com o tema no país.
+
+    Formula: strength * afinidade, onde afinidade = 1 se a loja é generalista
+    (`categories` vazio) ou forte na categoria do tema, e 0.7 se não.
 
     Args:
-        strength: Platform strength (0-1)
-        market_match: Whether platform matches target market
-        present: Whether platform is already present in market
-
-    Returns:
-        Fit score
+        strength: Força de venda da loja no país (0-1)
+        categories: Tipos de tema em que a loja é mais forte ([] = generalista)
+        category: Categoria do tema
     """
-    match_factor = 1 if market_match else 0
-    presence_factor = 1.0 if present else 0.5
-    return strength * match_factor * presence_factor
+    affinity = 1.0 if not categories or category in categories else OFF_CATEGORY_AFFINITY
+    return strength * affinity
 
 
 def sale_chance(opp: float) -> str:

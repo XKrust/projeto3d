@@ -10,9 +10,23 @@ from app import models  # noqa: F401  garante que as tabelas sejam registradas n
 engine = create_engine(DB_URL, connect_args={"check_same_thread": False})
 
 
+# Colunas criadas depois da primeira versao do banco: (tabela, coluna, definicao SQL).
+# `create_all` nao altera tabela existente, entao elas entram com ALTER TABLE.
+_ADDED_COLUMNS = [
+    ("platform", "sells", "BOOLEAN NOT NULL DEFAULT 1"),
+    ("platform", "categories_json", "VARCHAR NOT NULL DEFAULT '[]'"),
+    ("platform", "edited", "BOOLEAN NOT NULL DEFAULT 0"),
+]
+
+
 def init_db(engine) -> None:
-    """Cria as tabelas que ainda nao existem no banco."""
+    """Cria as tabelas que ainda nao existem e acrescenta as colunas novas."""
     SQLModel.metadata.create_all(engine)
+    with engine.begin() as conn:
+        for table, column, definition in _ADDED_COLUMNS:
+            existing = {row[1] for row in conn.exec_driver_sql(f"PRAGMA table_info({table})")}
+            if column not in existing:
+                conn.exec_driver_sql(f"ALTER TABLE {table} ADD COLUMN {column} {definition}")
 
 
 def get_session() -> Iterator[Session]:

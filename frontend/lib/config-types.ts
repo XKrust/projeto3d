@@ -40,4 +40,7 @@ export type PlatformConfig = {
   fee_pct: number | null;
   strength: Record<string, number>;
   notes: string;
+  /** false = a loja fechou/migrou; o site vale só como sinal de tendência. */
+  sells: boolean;
+  categories: string[];
 };

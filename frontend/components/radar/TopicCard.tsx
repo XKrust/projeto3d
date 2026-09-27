@@ -1,13 +1,7 @@
 import { ImageOff } from "lucide-react";
 import { SaleChance } from "@/components/radar/SaleChance";
 import { Sparkline } from "@/components/radar/Sparkline";
-import {
-  ARROW_LABELS,
-  ARROW_SYMBOLS,
-  CATEGORY_LABELS,
-  formatMedianPrice,
-  formatPeakLabel,
-} from "@/lib/radar-labels";
+import { ARROW_LABELS, ARROW_SYMBOLS, CATEGORY_LABELS, formatMedianPrice, formatPeakLabel, formatWhereToSell } from "@/lib/radar-labels";
 import type { Topic } from "@/lib/radar-types";
 
 // Uma linha do ranking, do nº 2 em diante (o nº 1 fica no destaque do topo).
@@ -64,7 +58,7 @@ export function TopicCard({ topic, rank }: { topic: Topic; rank: number }) {
 
       <ul className="col-span-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-muted-foreground lg:col-span-1 lg:flex-col lg:items-start lg:gap-1">
         <li className="text-foreground">{formatPeakLabel(topic.days_to_peak)}</li>
-        <li>Melhor em: {topic.best_platform.name}</li>
+        <li>{formatWhereToSell(topic)}</li>
         <li className="tnum">{formatMedianPrice(topic.median_price_usd)}</li>
         <li>
           <SaleChance chance={topic.sale_chance} />

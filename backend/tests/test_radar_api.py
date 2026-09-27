@@ -100,8 +100,9 @@ def test_meta_lists_constants_and_platforms(client, platforms):
     assert body["country_groups"] == {"Europa": ["GB", "DE", "FR", "ES"]}
     assert "toys_memes" in body["categories"]
     assert body["markets"] == ["print", "digital"]
+    # Só as lojas que vendem aparecem no filtro (Sketchfab e ArtStation viraram só sinal).
     slugs = {p["slug"] for p in body["platforms"]}
-    assert slugs == {"cults3d", "sketchfab", "printables", "booth", "artstation", "etsy", "myminifactory", "cgtrader"}
+    assert slugs == {"cults3d", "printables", "myminifactory", "etsy", "cgtrader", "booth", "fab", "mercadolivre"}
     assert body["last_updated"] is None
 
 
@@ -247,23 +248,23 @@ def test_days_to_peak_can_be_non_positive(session, client, platforms):
 # ---------------------------------------------------------------- filters
 
 
-def test_market_filter_only_returns_sketchfab_rows(session, client, platforms):
+def test_market_filter_only_returns_digital_rows(session, client, platforms):
     cults_only = _topic(session, "So Impressao")
     digital_only = _topic(session, "So Digital")
     _score(session, cults_only, platform="cults3d", opportunity=90.0)
-    _score(session, digital_only, platform="sketchfab", opportunity=50.0)
+    _score(session, digital_only, platform="fab", opportunity=50.0)
 
     r = client.get("/api/radar", params={"country": "BR", "market": "digital"})
     body = r.json()
     assert len(body) == 1
     assert body[0]["name"] == "So Digital"
-    assert body[0]["best_platform"]["slug"] == "sketchfab"
+    assert body[0]["best_platform"]["slug"] == "fab"
 
 
 def test_platform_filter(session, client, platforms):
     topic = _topic(session, "Labubu")
     _score(session, topic, platform="cults3d", opportunity=90.0)
-    _score(session, topic, platform="sketchfab", opportunity=95.0)
+    _score(session, topic, platform="fab", opportunity=95.0)
 
     r = client.get("/api/radar", params={"country": "BR", "platform": "cults3d"})
     body = r.json()
@@ -288,19 +289,19 @@ def test_filter_leaving_no_row_omits_topic(session, client, platforms):
     topic = _topic(session, "Labubu")
     _score(session, topic, platform="cults3d", opportunity=90.0)
 
-    r = client.get("/api/radar", params={"country": "BR", "platform": "sketchfab"})
+    r = client.get("/api/radar", params={"country": "BR", "platform": "fab"})
     assert r.json() == []
 
 
 def test_best_platform_is_highest_opportunity_times_fit(session, client, platforms):
     topic = _topic(session, "Labubu")
     _score(session, topic, platform="cults3d", opportunity=80.0, fit_platform=0.5)
-    _score(session, topic, platform="sketchfab", opportunity=80.0, fit_platform=1.0)
+    _score(session, topic, platform="fab", opportunity=80.0, fit_platform=1.0)
 
     r = client.get("/api/radar", params={"country": "BR"})
     body = r.json()
     assert len(body) == 1
-    assert body[0]["best_platform"]["slug"] == "sketchfab"
+    assert body[0]["best_platform"]["slug"] == "fab"
 
 
 def test_limit_param(session, client, platforms):
@@ -383,8 +384,34 @@ def test_sparkline_skips_days_without_scores(session, client, platforms):
 def test_sparkline_takes_max_opportunity_per_day_across_platforms(session, client, platforms):
     topic = _topic(session, "Labubu")
     _score(session, topic, platform="cults3d", day=DAY, opportunity=10.0)
-    _score(session, topic, platform="sketchfab", day=DAY, opportunity=30.0)
+    _score(session, topic, platform="fab", day=DAY, opportunity=30.0)
 
     r = client.get("/api/radar", params={"country": "BR"})
     sparkline = r.json()[0]["sparkline"]
     assert sparkline == [{"day": DAY.isoformat(), "value": 30.0}]
+
+
+def test_top3_platforms_to_sell_ordered_by_opportunity_times_fit(session, client, platforms):
+    topic = _topic(session, "Labubu")
+    _score(session, topic, platform="cults3d", opportunity=80.0, fit_platform=0.9)
+    _score(session, topic, platform="etsy", opportunity=80.0, fit_platform=0.7)
+    _score(session, topic, platform="mercadolivre", opportunity=80.0, fit_platform=0.8)
+    _score(session, topic, platform="printables", opportunity=80.0, fit_platform=0.3)
+
+    item = client.get("/api/radar", params={"country": "BR"}).json()[0]
+
+    assert [p["slug"] for p in item["platforms"]] == ["cults3d", "mercadolivre", "etsy"]
+    assert item["platforms"][1] == {"slug": "mercadolivre", "name": "Mercado Livre"}
+    assert item["best_platform"] == item["platforms"][0]
+
+
+def test_old_scores_of_closed_stores_are_ignored(session, client, platforms):
+    # Linhas de score antigas (de antes da loja fechar) não podem virar recomendação.
+    topic = _topic(session, "Labubu")
+    _score(session, topic, platform="sketchfab", opportunity=99.0, fit_platform=1.0)
+    _score(session, topic, platform="cults3d", opportunity=60.0, fit_platform=0.8)
+
+    item = client.get("/api/radar", params={"country": "BR"}).json()[0]
+
+    assert item["best_platform"]["slug"] == "cults3d"
+    assert "sketchfab" not in [p["slug"] for p in item["platforms"]]

@@ -27,7 +27,7 @@ test.describe("/radar", () => {
 
     await expect(page.getByText("Goku Super Saiyajin")).toBeVisible();
     await expect(page.getByText(/estimativa/).first()).toBeVisible();
-    await expect(page.getByText("Melhor em: Cults3D")).toBeVisible();
+    await expect(page.getByText("Onde vender: Cults3D · Mercado Livre · Etsy")).toBeVisible();
     await expect(page.getByText("Pico em 10 dias")).toBeVisible();
     await expect(page.getByText("Pico agora")).toBeVisible();
     await expect(page.getByText("Preço mediano: US$ 4,50")).toBeVisible();

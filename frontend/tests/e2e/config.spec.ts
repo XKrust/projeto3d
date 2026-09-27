@@ -99,4 +99,12 @@ test.describe("/config", () => {
     await expect(feeInput).toHaveValue("");
     await expect(feeInput).toHaveAttribute("placeholder", "—");
   });
+
+  test("loja fechada sai da tabela e aparece como só sinal de tendência", async ({ page }) => {
+    await page.goto("/config");
+
+    await expect(page.getByLabel("Força de Cults3D em Brasil")).toBeVisible();
+    await expect(page.getByLabel("Força de Sketchfab em Brasil")).toHaveCount(0);
+    await expect(page.getByText(/Sketchfab não vende(m)? mais/)).toBeVisible();
+  });
 });

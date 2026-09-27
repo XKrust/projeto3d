@@ -22,13 +22,17 @@ COUNTRY_GROUPS = {"Europa": ["GB", "DE", "FR", "ES"]}
 SPARKLINE_DAYS = 30
 
 
+TOP_PLATFORMS = 3
+
+
 def _platforms_by_slug(session: Session) -> dict[str, Platform]:
-    return {p.slug: p for p in session.exec(select(Platform)).all()}
+    """Só as lojas que vendem: Sketchfab e ArtStation (lojas fechadas) ficam de fora."""
+    return {p.slug: p for p in session.exec(select(Platform).where(Platform.sells)).all()}
 
 
 @router.get("/radar/meta")
 def read_meta(session: Session = Depends(get_session)) -> dict:
-    platforms = session.exec(select(Platform)).all()
+    platforms = _platforms_by_slug(session).values()
     last_updated = session.exec(select(func.max(Source.last_run))).first()
     return {
         "countries": COUNTRIES,
@@ -94,6 +98,8 @@ def read_radar(
     }
 
     def _row_passes_filters(row: TopicScore) -> bool:
+        if row.platform not in platforms_by_slug:  # score antigo de loja que fechou
+            return False
         if platform is not None and row.platform != platform:
             return False
         if market is not None:
@@ -112,12 +118,15 @@ def read_radar(
             rows_by_topic[row.topic_id].append(row)
 
     best_rows: dict[int, TopicScore] = {}
+    ranked_rows: dict[int, list[TopicScore]] = {}
     for topic_id, topic_rows in rows_by_topic.items():
-        # Ordena por slug da plataforma antes do max() para que um empate em
-        # opportunity * fit_platform sempre resolva para a mesma plataforma
-        # (a primeira em ordem alfabetica), nao para a ordem de retorno do banco.
+        # Ordena por slug antes para que um empate em opportunity * fit_platform sempre
+        # resolva para a mesma plataforma (a primeira em ordem alfabetica), nao para a
+        # ordem de retorno do banco (sorted é estável).
         candidates = sorted(topic_rows, key=lambda r: r.platform)
-        best_rows[topic_id] = max(candidates, key=lambda r: r.opportunity * r.fit_platform)
+        ranked = sorted(candidates, key=lambda r: r.opportunity * r.fit_platform, reverse=True)
+        ranked_rows[topic_id] = ranked
+        best_rows[topic_id] = ranked[0]
 
     ordered_topic_ids = sorted(
         best_rows.keys(), key=lambda tid: best_rows[tid].opportunity, reverse=True
@@ -181,6 +190,11 @@ def read_radar(
                 "momentum_arrow": momentum_arrow(best_row.momentum_raw),
                 "days_to_peak": (best_row.peak_day - today).days,
                 "best_platform": {"slug": best_platform.slug, "name": best_platform.name},
+                # As 3 melhores lojas para vender o tema, da melhor para a pior.
+                "platforms": [
+                    {"slug": r.platform, "name": platforms_by_slug[r.platform].name}
+                    for r in ranked_rows[topic_id][:TOP_PLATFORMS]
+                ],
                 "median_price_usd": median_price_usd,
                 "sparkline": sparkline,
             }

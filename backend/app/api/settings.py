@@ -34,6 +34,8 @@ def _platform_to_dict(platform: Platform) -> dict:
         "fee_pct": platform.fee_pct,
         "strength": json.loads(platform.strength_json),
         "notes": platform.notes,
+        "sells": platform.sells,
+        "categories": json.loads(platform.categories_json),
     }
 
 
@@ -70,6 +72,8 @@ def write_platform(
     if "notes" in patch:
         platform.notes = patch["notes"]
 
+    # A partir daqui o arquivo de seed não sobrescreve mais a edição do usuário.
+    platform.edited = True
     session.add(platform)
     session.commit()
     session.refresh(platform)

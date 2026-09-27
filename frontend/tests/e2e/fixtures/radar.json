@@ -11,12 +11,38 @@
     "estimate": true,
     "momentum_arrow": "up",
     "days_to_peak": 10,
-    "best_platform": { "slug": "cults3d", "name": "Cults3D" },
+    "best_platform": {
+      "slug": "cults3d",
+      "name": "Cults3D"
+    },
     "median_price_usd": 4.5,
     "sparkline": [
-      { "day": "2026-09-01", "value": 40.0 },
-      { "day": "2026-09-02", "value": 45.0 },
-      { "day": "2026-09-03", "value": 50.0 }
+      {
+        "day": "2026-09-01",
+        "value": 40.0
+      },
+      {
+        "day": "2026-09-02",
+        "value": 45.0
+      },
+      {
+        "day": "2026-09-03",
+        "value": 50.0
+      }
+    ],
+    "platforms": [
+      {
+        "slug": "cults3d",
+        "name": "Cults3D"
+      },
+      {
+        "slug": "mercadolivre",
+        "name": "Mercado Livre"
+      },
+      {
+        "slug": "etsy",
+        "name": "Etsy"
+      }
     ]
   },
   {
@@ -31,8 +57,21 @@
     "estimate": true,
     "momentum_arrow": "flat",
     "days_to_peak": 0,
-    "best_platform": { "slug": "printables", "name": "Printables" },
+    "best_platform": {
+      "slug": "printables",
+      "name": "Printables"
+    },
     "median_price_usd": null,
-    "sparkline": []
+    "sparkline": [],
+    "platforms": [
+      {
+        "slug": "printables",
+        "name": "Printables"
+      },
+      {
+        "slug": "cults3d",
+        "name": "Cults3D"
+      }
+    ]
   }
 ]

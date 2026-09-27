@@ -11,7 +11,7 @@ O score é calculado por (tópico, país, plataforma, dia). Os pesos ficam em `c
 - **entrega** = hoje + tempo de modelagem do usuário (padrão de 7 dias).
 - **fit_janela** = 1 se pico ≥ entrega. Senão, `0.5^(dias_atraso/7)`.
 - **oportunidade** = `(0.40·demanda + 0.25·momentum + 0.35·(100−saturação)) · fit_janela`.
-- **fit_plataforma** = força da plataforma no país × compatibilidade de mercado × presença do tema na plataforma.
+- **fit_plataforma** = força de venda da loja no país × afinidade da loja com o tipo de tema (1 se a loja é generalista ou forte na categoria, 0.7 se não).
 - **Chance de venda:** ≥70 é Alta, 40–69 é Média, <40 é Baixa. Sempre rotulada como "estimativa".
 
 ## Como o cálculo roda
@@ -38,14 +38,19 @@ Função: `backend/app/pipeline.py:compute_scores(session, day)`.
 - **momentum:** usa a série de 10 dias da demanda bruta (do mais antigo até hoje). Um dia sem
   sinal conta como 0. `TopicScore.momentum` guarda a nota de 0–100 e
   `TopicScore.momentum_raw` guarda o valor bruto.
-- **Plataformas:** só entram as plataformas cadastradas que já têm algum item coletado.
+- **Plataformas:** entram todas as lojas com `sells` verdadeiro, **mesmo sem item coletado**
+  (Cults3D sem chave continua concorrendo). Loja fechada (Sketchfab, ArtStation) não entra:
+  o site vale só como sinal de demanda.
 - **saturação:** percentil da contagem de anúncios mais recente (`TopicListing`) entre os
   tópicos daquela plataforma. Sem contagem, vale 50.
 - **pico previsto:** por enquanto, sempre a regra orgânica. Os eventos entram na Etapa 2.
-- **fit_plataforma:** força da plataforma no país (`Platform.strength_json`) × 1 × presença.
-  A presença vale 1.0 se o tópico teve item daquela plataforma nos últimos 7 dias, e 0.5 se
-  não teve. A compatibilidade de mercado é gravada como 1, porque o filtro de mercado é
-  aplicado na API.
+- **fit_plataforma:** `formulas.platform_fit(força no país, categories da loja, categoria do
+  tema)`. A força vem de `Platform.strength_json` (estimativa por pesquisa, fontes em
+  `notes`). Ter item coletado da loja **não** pesa mais: isso dizia o que o app consegue ler,
+  não onde se vende. O filtro de mercado é aplicado na API.
+- **Radar:** cada tema traz `best_platform` e `platforms`, as 3 lojas com maior
+  `opportunity × fit_platform` ("Onde vender: 1ª · 2ª · 3ª"). Scores antigos de loja fechada
+  são ignorados no radar e na tela de países.
 - Rodar de novo no mesmo dia atualiza as linhas existentes, sem duplicar.
 
 ## Chance de venda por país (tela inicial)

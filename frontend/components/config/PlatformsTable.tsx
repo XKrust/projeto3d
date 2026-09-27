@@ -22,6 +22,9 @@ export function PlatformsTable({
   platforms: PlatformConfig[];
   countries: string[];
 }) {
+  // Loja fechada não tem força de venda para editar; aparece só no aviso abaixo.
+  const selling = platforms.filter((platform) => platform.sells !== false);
+  const closed = platforms.filter((platform) => platform.sells === false);
   const [edited, setEdited] = useState<Record<string, PlatformConfig>>({});
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -89,7 +92,7 @@ export function PlatformsTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {platforms.map((platform) => {
+          {selling.map((platform) => {
             const value = currentValue(platform);
             return (
               <TableRow key={platform.slug}>
@@ -130,6 +133,14 @@ export function PlatformsTable({
           })}
         </TableBody>
       </Table>
+      {closed.length > 0 && (
+        <p className="text-sm text-muted-foreground">
+          {closed.map((platform) => platform.name).join(" e ")}{" "}
+          {closed.length === 1 ? "não vende" : "não vendem"} mais (as lojas passaram para a
+          Fab). O app usa esses sites só como sinal de tendência, nunca como recomendação de
+          venda.
+        </p>
+      )}
       <div className="flex items-center gap-2">
         <Button
           onClick={handleSave}

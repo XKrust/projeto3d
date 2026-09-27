@@ -3,6 +3,7 @@ from datetime import date, timedelta
 from sqlmodel import Session
 
 from app.models import Topic, TopicScore
+from app.platforms import seed_platforms
 from app.settings_store import update_settings
 
 DAY = date(2026, 9, 27)
@@ -101,3 +102,13 @@ def test_inactive_country_has_null_chance_even_with_old_scores(client, engine):
     assert us["active"] is False
     assert us["chance"] is None
     assert us["top_topic"] is None
+
+
+def test_closed_store_scores_do_not_count(client, engine):
+    with Session(engine) as session:
+        seed_platforms(session)
+        topic = _topic(session, "Frieren")
+        _score(session, topic, platform="sketchfab", opportunity=95.0)
+        _score(session, topic, platform="cults3d", opportunity=60.0)
+
+    assert _countries(client)["BR"]["chance"] == 60

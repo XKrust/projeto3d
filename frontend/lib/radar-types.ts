@@ -36,6 +36,8 @@ export type Topic = {
   momentum_arrow: MomentumArrow;
   days_to_peak: number;
   best_platform: Platform;
+  /** As 3 melhores lojas para vender o tema, da melhor para a pior. */
+  platforms: Platform[];
   median_price_usd: number | null;
   sparkline: SparklinePoint[];
 };

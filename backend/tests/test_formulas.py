@@ -190,31 +190,16 @@ class TestPeakDay:
 
 
 class TestPlatformFit:
-    """Tests for platform_fit function."""
+    """fit = força no país × afinidade da loja com o tipo de tema."""
 
-    def test_all_positive(self):
-        """All positive factors."""
-        result = platform_fit(0.8, market_match=True, present=True)
-        # 0.8 * 1 * 1.0 = 0.8
-        assert result == 0.8
+    def test_generalist_store_fits_every_category(self):
+        assert platform_fit(0.8, [], "anime") == 0.8
 
-    def test_no_match(self):
-        """No market match zeros out."""
-        result = platform_fit(0.8, market_match=False, present=True)
-        # 0.8 * 0 * 1.0 = 0.0
-        assert result == 0.0
+    def test_category_the_store_is_strong_in(self):
+        assert platform_fit(0.8, ["rpg_miniaturas"], "rpg_miniaturas") == 0.8
 
-    def test_not_present(self):
-        """Not present reduces by half."""
-        result = platform_fit(0.8, market_match=True, present=False)
-        # 0.8 * 1 * 0.5 = 0.4
-        assert result == 0.4
-
-    def test_no_match_not_present(self):
-        """No match and not present."""
-        result = platform_fit(0.8, market_match=False, present=False)
-        # 0.8 * 0 * 0.5 = 0.0
-        assert result == 0.0
+    def test_category_outside_the_store_strengths(self):
+        assert platform_fit(0.8, ["rpg_miniaturas"], "decoracao") == pytest.approx(0.56)
 
 
 class TestSaleChance:

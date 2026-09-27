@@ -26,3 +26,6 @@
 | 2026-09-27 | Personagem só vira termo com nome de 2+ palavras (ou 3+ caracteres CJK) | Nomes de uma palavra ("Power", "Fern") e nativos curtos ("レゼ") casavam com anúncios sem relação; perder alguns nomes únicos é melhor que inflar números |
 | 2026-09-27 | Procura sazonal: cada fonte vira percentil antes de somar, sem AniList/TMDB/IGDB, e ideia só com anúncios não ganha nota | Vídeos virais e títulos de estreia distorciam o top 5; contagem de anúncios sozinha não mede procura |
 | 2026-09-27 | País inativo mostra chance nula na tela inicial | A nota antiga para de ser atualizada quando o país é desativado |
+| 2026-09-27 | Recomendação de loja por força de venda pesquisada × afinidade com o tipo de tema; todas as lojas que vendem concorrem, mesmo sem coleta | O app recomendava Sketchfab/ArtStation só porque conseguia lê-los; o usuário nunca vendeu lá e vende no Cults3D (sem chave, nunca entrava) |
+| 2026-09-27 | Sketchfab e ArtStation viram só sinal de tendência (`sells: false`); entram Fab e Mercado Livre | A Sketchfab Store fechou em 10/2024 e o ArtStation Marketplace migrou para a Fab em 2025 |
+| 2026-09-27 | Radar mostra as 3 melhores lojas por tema, sem filtro "onde eu vendo" | Pedido do usuário: pode existir loja boa num país que ele não conhece |
