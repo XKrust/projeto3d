@@ -314,7 +314,8 @@ def test_update_listings_uses_opportunity_of_last_scored_day(session):
     assert counter.queries == ["B", "C"]
 
 
-def test_update_listings_upserts_same_day(session):
+def test_update_listings_counts_only_once_per_day(session):
+    # Regra de scraping educado: no máximo 1 contagem por dia (DailyAttempt).
     topic = _topic(session, "Tema")
     _signal(session, topic, 10)
 
@@ -322,7 +323,7 @@ def test_update_listings_upserts_same_day(session):
     update_listings(session, {"sketchfab": FakeCounter({"Tema": 9})}, DAY, 50)
 
     rows = session.exec(select(TopicListing)).all()
-    assert [(row.count) for row in rows] == [9]
+    assert [(row.count) for row in rows] == [1]
 
 
 # ---------------------------------------------------------------- run_pipeline / make_after

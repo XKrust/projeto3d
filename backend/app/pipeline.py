@@ -23,6 +23,7 @@ from app.http import make_client
 from app.models import Platform, RawItem, Topic, TopicItem, TopicListing, TopicScore, TopicSignal
 from app.scoring import formulas
 from app.settings_store import get_settings
+from app.daily import claim_daily
 from app.hype.competition import update_hype_listings
 from app.hype.seasonal_ideas import update_seasonal_listings, update_seasonal_signals
 from app.topics.extract import PLATFORM_SOURCES, extract_topics
@@ -67,7 +68,7 @@ def update_listings(session: Session, counters: dict[str, ListingCounter], day: 
     seguidas, a plataforma e abandonada no dia (fonte fora do ar ou chave
     invalida). Retorna o numero de linhas gravadas."""
     topic_ids = _top_topic_ids(session, day, top_n)
-    if not topic_ids or not counters:
+    if not topic_ids or not counters or not claim_daily(session, "radar_listings", day):
         return 0
 
     topics = {t.id: t for t in session.exec(select(Topic).where(Topic.id.in_(topic_ids))).all()}

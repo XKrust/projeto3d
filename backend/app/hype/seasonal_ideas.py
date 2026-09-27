@@ -17,6 +17,7 @@ from sqlmodel import Session, select
 
 from app.collectors.base import ListingCounter
 from app.constants import GLOBAL
+from app.daily import claim_daily
 from app.hype.seasonal import event_ideas, load_events, upcoming_events
 from app.models import RawItem, SeasonalIdeaSignal, SeasonalListing
 from app.settings_store import get_settings
@@ -100,6 +101,8 @@ def update_seasonal_listings(
     """Grava `SeasonalListing` de hoje (1x por dia). A falha de um termo só pula aquele
     termo; 3 falhas seguidas abandonam a plataforma no dia."""
     if not counters or session.exec(select(SeasonalListing.id).where(SeasonalListing.day == day)).first():
+        return 0
+    if not claim_daily(session, "seasonal_listings", day):
         return 0
     terms = _upcoming_terms(session, day, lead_days, modeling_days)
     written = 0

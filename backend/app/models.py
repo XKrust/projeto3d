@@ -196,3 +196,14 @@ class SeasonalListing(SQLModel, table=True):
     platform: str
     day: date
     count: int
+
+
+class DailyAttempt(SQLModel, table=True):
+    """Marca que uma tarefa diária (contagem de anúncios) já foi tentada no dia,
+    mesmo que tudo tenha falhado — assim ela não repete a cada ciclo de 10 minutos."""
+
+    __table_args__ = (UniqueConstraint("task", "day", name="uq_dailyattempt_task_day"),)
+
+    id: int | None = Field(default=None, primary_key=True)
+    task: str
+    day: date

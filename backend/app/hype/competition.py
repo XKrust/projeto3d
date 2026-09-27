@@ -8,6 +8,7 @@ from datetime import date
 from sqlmodel import Session, select
 
 from app.collectors.base import ListingCounter
+from app.daily import claim_daily
 from app.hype.entities import base_title, recent_releases, top_characters, usable
 from app.models import HypeListing
 
@@ -45,7 +46,7 @@ def update_hype_listings(
     houver contagem de hoje. A falha de um termo só pula aquele termo; 3 falhas seguidas
     abandonam a plataforma no dia. Retorna o número de linhas gravadas."""
     already = session.exec(select(HypeListing.id).where(HypeListing.day == day)).first()
-    if already is not None or not counters:
+    if already is not None or not counters or not claim_daily(session, "hype_listings", day):
         return 0
 
     terms = hype_terms(session, day, limit)

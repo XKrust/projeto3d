@@ -367,3 +367,36 @@
 - **Curva do Google Trends de anos anteriores no /sazonal.** Não há API oficial. O endpoint "explore" bloqueia acesso automatizado, e contornar isso viola a regra de scraping educado. Revisitar se surgir fonte oficial.
 - **Views de trailers no YouTube.** A busca custa 100 unidades da cota diária de 10 mil por termo. Fica para depois, opcional quando houver chave do YouTube.
 - Validar TMDB e IGDB com chaves reais: passo manual quando o usuário tiver as chaves.
+
+---
+
+## Pendências da revisão final (27/09/2026), para a próxima sessão
+
+A revisão independente da branch aprovou com correções. Já corrigido: contagens de anúncios
+(radar, hype, sazonal) rodam no máximo 1x por dia mesmo quando tudo falha (`DailyAttempt`,
+`app/daily.py`). Falta, em ordem de prioridade:
+
+1. **Sazonal, linha atrasada:** "Comece até 14/09" mostra meta no passado. Trocar por
+   "Prazo ideal já passou · evento em N dias" (`EventRow.tsx`) e ajustar `sazonal.spec.ts`.
+2. **/hype mistura escalas de popularidade** (AniList ~100k × TMDB ~500 × IGDB ~500): cortar
+   os N melhores **por tipo** em `api/hype.py`, `recent_releases` (entities) e `hype_terms`,
+   senão filmes e jogos nunca têm concorrência medida nem viram entidades.
+3. **Falsos casamentos de personagem:** nomes de uma palavra comum ("Power", "Fern", "Stark")
+   e nativos curtos ("レゼ" casa com "プレゼント"). Exigir nome com 2+ palavras e nativo com
+   ≥ 3 caracteres CJK, com testes.
+4. **Sinal sazonal:** tirar `anilist`/`tmdb`/`igdb` do haystack, converter cada fonte em
+   percentil antes de somar (como no radar) e trocar keywords genéricas (turkey, santa,
+   football, heart, mask, lamp, 星, 竹) por frases.
+5. **Top 5 sem procura:** se o sinal de todas as ideias medidas for 0, não dar nota (hoje
+   vira "Média").
+6. **Textos:** o destaque do Hype diz "estreia sem data confirmada" para quem já estreou
+   (`HypeHero.tsx`), e o `aria-label` da tela de países não diz "(estimativa)"
+   (`app/page.tsx`).
+7. **Menores:**
+   - `base_title` corta dígito de títulos ("Kaiju No. 8", "Persona 5"): aplicar só a anime
+     com marca de temporada;
+   - `?country=XX` inválido na URL: validar e cair no país guardado;
+   - país inativo com % antiga: devolver `null`;
+   - avisos do lint;
+   - Fête des Mères em ano de Pentecostes;
+   - ideias com o mesmo nome e keywords diferentes.
