@@ -1,0 +1,27 @@
+{
+  "country": "BR",
+  "releases": [
+    {
+      "id": 1, "title": "The Apothecary Diaries Season 3", "term": "The Apothecary Diaries", "kind": "anime", "source": "anilist",
+      "release_date": "2026-10-02", "days_to_release": 5, "peak": "2026-09-11", "fit_window": 0.2, "image_url": null,
+      "url": "https://anilist.co/anime/195516", "popularity": 74305, "competition": {"Cults3D": 34, "BOOTH": 7},
+      "opportunity": 38.4, "sale_chance": "Baixa", "reason": "Estreia em 5 dias · 34 anúncios no Cults3D",
+      "characters": [
+        {"name": "Maomao", "image_url": null, "favourites": 22459, "competition": {"Cults3D": 12}, "opportunity": 44.0, "sale_chance": "Média"},
+        {"name": "Jinshi", "image_url": null, "favourites": 4673, "competition": {}, "opportunity": 30.0, "sale_chance": "Baixa"}
+      ]
+    },
+    {
+      "id": 2, "title": "Vingadores: Guerras Secretas", "term": "Vingadores: Guerras Secretas", "kind": "filme", "source": "tmdb",
+      "release_date": "2026-12-18", "days_to_release": 82, "peak": "2026-11-27", "fit_window": 1.0, "image_url": null,
+      "url": "https://www.themoviedb.org/movie/1100002", "popularity": 980.1, "competition": {},
+      "opportunity": 78.5, "sale_chance": "Alta", "reason": "Estreia em 82 dias · concorrência ainda não medida", "characters": []
+    },
+    {
+      "id": 3, "title": "Jogo Sem Data", "term": "Jogo Sem Data", "kind": "jogo", "source": "igdb",
+      "release_date": null, "days_to_release": null, "peak": null, "fit_window": 1.0, "image_url": null,
+      "url": null, "popularity": 15, "competition": {},
+      "opportunity": 52.0, "sale_chance": "Média", "reason": "Data de estreia a confirmar · concorrência ainda não medida", "characters": []
+    }
+  ]
+}
