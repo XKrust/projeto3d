@@ -1,0 +1,69 @@
+{
+  "data": {
+    "result": {
+      "items": [
+        {
+          "id": "413203",
+          "name": "Articulated Night Spirit (Dragon)",
+          "slug": "articulated-night-spirit-dragon",
+          "likesCount": 14187,
+          "downloadCount": 150510,
+          "premium": false,
+          "price": null,
+          "image": {
+            "filePath": "media/prints/413203/images/3462216_1f951c31-7a55-4542-822c-1792f736de19/20230306_120910.jpg"
+          }
+        },
+        {
+          "id": "538160",
+          "name": "Articulated Bone Dragon",
+          "slug": "articulated-bone-dragon",
+          "likesCount": 13977,
+          "downloadCount": 114851,
+          "premium": false,
+          "price": null,
+          "image": {
+            "filePath": "media/prints/538160/images/5335973_90d97eb3-e844-4917-9f31-838d71a84dc8_2736cd68-d1c3-4b71-b2ef-23928482ee48/bone-dragon-photo.png"
+          }
+        },
+        {
+          "id": "835659",
+          "name": "Water Dragon - Articulated Dragon",
+          "slug": "water-dragon-articulated-dragon",
+          "likesCount": 9520,
+          "downloadCount": 128617,
+          "premium": false,
+          "price": null,
+          "image": {
+            "filePath": "media/prints/cd34e7ac-950f-49a9-9380-738c8cb7e5fd/images/11497474_da5195d1-a0c1-4ba5-989d-560edcb45275_c027a7a8-b2db-42ca-8e87-71f9442a7701/water-dragon2.jpg"
+          }
+        },
+        {
+          "id": "159912",
+          "name": "The Original Dragon Egg - New & Improved for 2025",
+          "slug": "the-original-dragon-egg-new-improved-for-2025",
+          "likesCount": 11770,
+          "downloadCount": 66052,
+          "premium": false,
+          "price": null,
+          "image": {
+            "filePath": "media/prints/159912/images/9176123_7bbd1b9b-9a8b-4594-a2ae-b5eb8e040c48_a8d61b98-c8f4-4e0a-b95e-4fc7049f5faf/download.gif"
+          }
+        },
+        {
+          "id": "404447",
+          "name": "Flying Night Dragon",
+          "slug": "flying-night-dragon",
+          "likesCount": 8896,
+          "downloadCount": 47313,
+          "premium": false,
+          "price": null,
+          "image": {
+            "filePath": "media/prints/404447/images/3647899_e7347ec6-7565-4570-8367-960303d20875/img_20230403_142143.jpg"
+          }
+        }
+      ],
+      "totalCount": 9406
+    }
+  }
+}

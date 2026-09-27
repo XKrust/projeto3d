@@ -11,9 +11,13 @@ Os detalhes são atualizados ao implementar a Etapa 1.
 
 ## Setup de desenvolvimento (para quem mexe no código)
 
-Coletores que fazem scraping de página renderizada (ex.: Printables) usam Playwright com
-Chromium headless. Depois de instalar as dependências do backend (`uv sync`), baixe o
-navegador uma vez:
+Nenhum passo extra de setup é necessário na Etapa 1: o coletor do Printables usa o endpoint
+GraphQL público da própria API do site (não scraping de página renderizada), então não
+depende de Chromium/Playwright — ver `docs/coletores.md`.
+
+A partir da **Etapa 1b** (scrapers de página renderizada como ArtStation, MakerWorld, CGTrader,
+BOOTH), instale o navegador do Playwright depois de instalar as dependências do backend
+(`uv sync`):
 
 ```
 cd backend && uv run playwright install chromium

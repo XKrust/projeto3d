@@ -266,53 +266,85 @@ fonte.
 
 **Achado documentado:** `urllib.robotparser` decide pela **primeira regra que casa, na ordem
 em que aparece no arquivo** — ele não implementa a convenção "regra mais específica vence"
-que o Google e a maioria dos crawlers modernos usam. O robots.txt real do Printables (ver
-abaixo) tem `Allow: /` **antes** de `Disallow: /world/`; como `Allow: /` já casa com qualquer
-caminho, `is_allowed` (com esse parser) devolve `True` inclusive para URLs em `/world/`. Isso
-é uma particularidade do parser padrão do Python com este arquivo real, não um bug do nosso
-código — `tests/test_robots.py` caracteriza esse comportamento explicitamente
+que o Google e a maioria dos crawlers modernos usam. O robots.txt real de `www.printables.com`
+(salvo em `backend/tests/fixtures/printables/robots.txt`, usado só para caracterizar esse
+comportamento no teste) tem `Allow: /` **antes** de `Disallow: /world/`; como `Allow: /` já
+casa com qualquer caminho, `is_allowed` (com esse parser) devolve `True` inclusive para URLs em
+`/world/`. Isso é uma particularidade do parser padrão do Python com este arquivo real, não um
+bug do nosso código — `tests/test_robots.py` caracteriza esse comportamento explicitamente
 (`test_real_printables_robots_allows_everything_due_to_rule_order`) para não ser redescoberto
 por engano depois. O teste do caminho "bloqueado" de `is_allowed` usa por isso um robots.txt
-genérico (`Disallow: /private/` como única regra), não o real do Printables.
+genérico (`Disallow: /private/` como única regra). **Nota:** esse é o robots.txt do site
+`www.printables.com`; o `PrintablesCollector` (abaixo) não acessa esse host — ele checa o
+robots.txt de `api.printables.com`, que devolve 404 (sem regras, tudo liberado).
 
-## Printables — BLOQUEADO (Tarefa 9, ver `task-9-report.md`)
+## Printables
 
-**Não implementado.** `app/collectors/printables.py`, `tests/test_printables.py` e as fixtures
-`tests/fixtures/printables/{trending.html,search.html}` **não foram criados** nesta etapa.
+`backend/app/collectors/printables.py` (`PrintablesCollector`: `name="printables"`,
+`label="Printables"`, `kind="scrape"` (fonte não oficial, sem API pública documentada),
+`platform="printables"`, `needs_key=()`, país `GLOBAL`, 1440 minutos). Implementa `Collector`
+e `count_listings` (protocolo `ListingCounter`).
 
-- **Robots.txt confirmado por chamada real** (`curl -A "Radar3D/0.1 (uso pessoal)"
-  https://www.printables.com/robots.txt`, 26/09/2026), salvo em
-  `backend/tests/fixtures/printables/robots.txt`:
-  ```
-  User-agent: *
-  Allow: /
-  Disallow: /world/
+**Site bloqueado por Cloudflare, API GraphQL do próprio frontend não.** `www.printables.com`
+fica atrás de um desafio Cloudflare que bloqueia acesso automatizado (HTTP simples devolve 403
+"Just a moment..." em `/`, `/model`, `/en/model`, `/model?ordering=...` e
+`/search/models?q=dragon`; um Chromium headless real via Playwright, sem nenhuma técnica de
+evasão de bot-detection, ficou preso na mesma página de desafio por mais de 40s sem nunca
+resolvê-la — por isso a Tarefa 9 não usa Playwright/scraping de HTML para esta fonte). Só que
+o endpoint GraphQL que o próprio frontend do site usa,
+**`POST https://api.printables.com/graphql/`**, responde normalmente (200, sem desafio) —
+confirmado por chamada real, 26/09/2026. É uma **API não oficial, sem documentação pública, e
+pode mudar sem aviso**; a introspecção do schema está desabilitada nesse endpoint
+(`GraphQL introspection has been disabled`). O formato de query usado abaixo vem de projetos
+públicos que documentam essa API (não de introspecção):
+- [GhostTypes/printables-cli-api](https://github.com/GhostTypes/printables-cli-api)
+  (`printables_api.py`) — fonte da query `searchPrints2` usada aqui (`SearchModels`).
+- [100prznt/PrintablesGraphQL](https://github.com/100prznt/PrintablesGraphQL)
+  (`php/printdetails.php`) — mostra o schema mais completo de `PrintType`/`PrintListFragment`
+  (usado para confirmar nomes como `likesCount`, `downloadCount`, `price`, `premium`).
 
-  Sitemap: https://www.printables.com/sitemap.xml
-  ```
-  (ver a seção acima sobre a particularidade do `urllib.robotparser` com este arquivo).
-- **Todo o restante do site está atrás de um desafio Cloudflare** ("Just a moment...", página
-  de challenge JS) que bloqueia acesso automatizado, tanto por HTTP simples quanto por
-  Chromium headless via Playwright:
-  - `curl` com o User-Agent do projeto em `/`, `/model`, `/en/model`, `/model?ordering=...` e
-    `/search/models?q=dragon` devolveu **403** com o HTML do desafio Cloudflare em todos os
-    casos.
-  - Um Chromium headless real (Playwright, `page.goto(..., wait_until="load")`, sem nenhuma
-    técnica de evasão de bot-detection) navegou até `https://www.printables.com/` e ficou preso
-    na página "Just a moment..." por mais de 40 segundos de espera (6 checagens de 5 em 5s),
-    sem nunca resolver o desafio e chegar ao conteúdo real.
-  - Por isso não foi possível nem confirmar a URL real da página de tendências/busca, nem
-    gravar fixtures HTML reais — e as regras da Tarefa 9 e das restrições globais proíbem
-    inventar HTML de fixture ou adivinhar seletores/URLs sem confirmação real. Tentar contornar
-    a proteção anti-bot da Cloudflare (fingerprint spoofing, `navigator.webdriver`, etc.) está
-    fora do escopo aceitável deste projeto.
-- **Consequência:** `PrintablesCollector` não está em `ALL_COLLECTORS`; a fonte "Printables"
-  continua listada na tabela de Fontes acima como pendente. `is_allowed`/`robots.py` (que não
-  dependem de acessar a página em si) foram implementados e testados normalmente.
-- **Próximo passo sugerido:** obter uma gravação manual da página (ex.: HTML exportado por uma
-  pessoa navegando de verdade, ou uma sessão de navegador não automatizada) para servir de
-  fixture real, ou revisitar esta fonte mais adiante (Etapa 1b), caso surja uma forma legítima
-  de acessá-la (ex.: uma API pública).
+Cada nome de campo usado foi **confirmado batendo a query real contra o endpoint** (não só
+copiado dos exemplos acima).
+
+- **Robots.txt:** `GET https://api.printables.com/robots.txt` devolve **404** (sem regras) —
+  `is_allowed` com um robots.txt vazio libera qualquer URL. Buscado uma vez por chamada de
+  `collect()`/`count_listings()` via `get_with_retry`; um 404 é tratado como "sem restrições"
+  (não como erro). Se algum dia esse host passar a ter um `Disallow` que bloqueie
+  `/graphql/`, `is_allowed` vai detectar e `CollectorError("Bloqueado pelo robots.txt: <url>")`
+  é lançado antes de qualquer requisição à API (`fetch_html`/a query real nunca são chamados
+  nesse caso).
+- **Espera entre requisições:** 3 a 5s (aleatório) entre a checagem do robots.txt e a
+  requisição real à API (`_polite_delay`, injetável/monkeypatchável nos testes via
+  `printables.time.sleep`/`printables.random.uniform`).
+- **Tendências (`collect()`):** a query `SearchModels` (`searchPrints2`) chamada com
+  `query=""`, `ordering: popular` e `limit=24` — não existe uma query de "trending" dedicada
+  confirmada; buscar sem termo, ordenado por popularidade (fórmula própria do Printables,
+  não documentada), é o equivalente mais próximo disponível nesta API.
+- **Contagem (`count_listings(query)`):** a mesma query com o termo de busca,
+  `ordering: best_match` e `limit=1`; o campo **`totalCount`** da resposta já traz o total
+  exato — **sem precisar paginar** (diferente do Sketchfab, que não expõe um total explícito).
+- **Campos mapeados** por modelo (`parse_trending(data: dict) -> list[CollectedItem]`, sobre o
+  JSON já decodificado, com o envelope `{"data": {"result": {...}}}`):
+  - `external_id`: `id` (convertido para `str`). `title`: `name`.
+  - `url`: `https://www.printables.com/model/<id>-<slug>` (padrão de URL confirmado no código
+    do `printables-cli-api`).
+  - `thumb_url`: `https://media.printables.com/<image.filePath>` (`None` se não houver
+    imagem).
+  - `likes`: `likesCount`. `downloads`: `downloadCount`.
+  - `metric`: `likesCount + 2 * downloadCount`.
+  - `price_usd`: `price`, se existir; **nunca observado como não-nulo** em nenhuma chamada
+    real (tendências nem buscas por termos tipicamente premium, ex. "premium miniature"), lido
+    defensivamente — a unidade/moeda fica sem confirmação por falta de exemplo real.
+  - `country`: sempre `GLOBAL` (marketplace sem segmentação geográfica).
+- **`parse_count(data: dict) -> int`:** devolve `data["data"]["result"]["totalCount"]`.
+- **Fixtures**, gravadas de chamadas reais ao GraphQL (26/09/2026):
+  - `backend/tests/fixtures/printables/trending.json`: `searchPrints2(query="", ordering:
+    popular, limit=24)`, reduzida aos 5 primeiros itens.
+  - `backend/tests/fixtures/printables/search.json`: `searchPrints2(query="dragon", ordering:
+    best_match, limit=5)`, 5 itens reais e `totalCount: 9406` (real no momento da chamada —
+    varia com o tempo, não é uma constante do produto).
+  - `backend/tests/fixtures/printables/robots.txt`: robots.txt real de `www.printables.com`
+    (usado só no teste de `is_allowed`, não pelo `PrintablesCollector` — ver seção acima).
 
 ## Como adicionar um coletor
 

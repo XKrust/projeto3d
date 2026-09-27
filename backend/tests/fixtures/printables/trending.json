@@ -1,0 +1,69 @@
+{
+  "data": {
+    "result": {
+      "items": [
+        {
+          "id": "152592",
+          "name": "Honeycomb storage wall",
+          "slug": "honeycomb-storage-wall",
+          "likesCount": 62119,
+          "downloadCount": 282400,
+          "premium": false,
+          "price": null,
+          "image": {
+            "filePath": "media/prints/152592/images/1442410_b64ad22a-1849-42fe-b6ad-f3227f4bb652/resize_img_5848.jpg"
+          }
+        },
+        {
+          "id": "3161",
+          "name": "3D BENCHY",
+          "slug": "3d-benchy",
+          "likesCount": 22553,
+          "downloadCount": 575215,
+          "premium": false,
+          "price": null,
+          "image": {
+            "filePath": "media/prints/3161/images/20206_70fde6a0-6da1-4522-ba46-25f1bece7199/benchy.jpg"
+          }
+        },
+        {
+          "id": "981111",
+          "name": "Dummy 13 - version 1.0!",
+          "slug": "dummy-13-version-10",
+          "likesCount": 31436,
+          "downloadCount": 319145,
+          "premium": false,
+          "price": null,
+          "image": {
+            "filePath": "media/prints/981111/images/7608415_5e574d64-9213-459b-9de4-6aa2f00f1884_d36b0ddc-c7d9-4446-9cae-7d8fdd970e08/rainbow-text.jpg"
+          }
+        },
+        {
+          "id": "258431",
+          "name": "Rugged Box (Parametric)",
+          "slug": "rugged-box-parametric",
+          "likesCount": 36103,
+          "downloadCount": 166581,
+          "premium": false,
+          "price": null,
+          "image": {
+            "filePath": "media/prints/258431/images/2362183_fd1aff76-7db1-4c13-9908-66b64e2ff041/rugged-box-parametric-01.png"
+          }
+        },
+        {
+          "id": "122894",
+          "name": "HexScraper - Printbed scraper",
+          "slug": "hexscraper-printbed-scraper",
+          "likesCount": 37278,
+          "downloadCount": 253253,
+          "premium": false,
+          "price": null,
+          "image": {
+            "filePath": "media/prints/122894/images/1235834_2ada85c2-a7da-4392-8a08-2d4ada2c8299/img_8795.jpeg"
+          }
+        }
+      ],
+      "totalCount": 10000
+    }
+  }
+}
