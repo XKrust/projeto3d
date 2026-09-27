@@ -21,7 +21,12 @@ Função: `backend/app/pipeline.py:compute_scores(session, day)`.
 - **Sinais do país:** para o país `c`, entram os sinais de `c` e os de `GLOBAL`. Um tópico sem
   nenhum sinal de `c`/`GLOBAL` nos últimos 10 dias não ganha linha de score em `c`.
 - **Grupos de fonte:** `google_trends`, `youtube` e `reddit` são grupos separados.
-  `sketchfab`, `cults3d` e `printables` somam no grupo `platforms`. Os pesos são os
+  As fontes de `PLATFORM_SOURCES` (`sketchfab`, `cults3d`, `printables`, `booth`,
+  `artstation`, `etsy`, `thingiverse`, `myminifactory` e `cgtrader`) formam o grupo
+  `platforms`. Cada uma mede numa escala própria: favoritos do BOOTH na casa das dezenas de
+  milhares, posição no ranking do CGTrader de 1 a 50. Por isso, antes de somar, o valor de
+  cada fonte vira **percentil entre os tópicos que têm sinal daquela fonte no dia**. O valor
+  do grupo é a soma desses percentis, e assim cada fonte pesa igual. Os pesos são os
   `source_weights` da config (padrão: Trends 0.35, YouTube 0.25, Reddit 0.15, plataformas
   0.25).
 - **Demanda bruta de um dia:** para cada grupo, calcula o percentil do valor do dia entre os

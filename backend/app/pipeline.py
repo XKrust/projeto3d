@@ -94,10 +94,6 @@ def update_listings(session: Session, counters: dict[str, ListingCounter], day: 
 # ---------------------------------------------------------------- scores
 
 
-def _source_group(source: str) -> str:
-    return PLATFORMS_GROUP if source in PLATFORM_SOURCES else source
-
-
 def _raw_demand_by_day(
     values: dict[date, dict[int, dict[str, float]]], source_weights: dict[str, float]
 ) -> dict[date, dict[int, float]]:
@@ -188,9 +184,22 @@ def compute_scores(session: Session, day: date) -> int:
     for country in countries:
         # dia -> topico -> grupo de fonte -> valor (pais + GLOBAL somados)
         values: dict[date, dict[int, dict[str, float]]] = defaultdict(lambda: defaultdict(lambda: defaultdict(float)))
+        # dia -> fonte de plataforma -> topico -> valor bruto
+        platform_raw: dict[date, dict[str, dict[int, float]]] = defaultdict(lambda: defaultdict(lambda: defaultdict(float)))
         for signal in signals:
-            if signal.country in (country, GLOBAL):
-                values[signal.day][signal.topic_id][_source_group(signal.source)] += signal.value
+            if signal.country not in (country, GLOBAL):
+                continue
+            if signal.source in PLATFORM_SOURCES:
+                platform_raw[signal.day][signal.source][signal.topic_id] += signal.value
+            else:
+                values[signal.day][signal.topic_id][signal.source] += signal.value
+        # Cada fonte de plataforma mede numa escala propria (favoritos, downloads, posicao no
+        # ranking...): vira percentil entre os topicos daquela fonte antes de somar no grupo
+        # "platforms", para nenhuma fonte decidir sozinha pela escala.
+        for day_, by_source in platform_raw.items():
+            for by_topic in by_source.values():
+                for topic_id, rank in formulas.percentile_ranks(dict(by_topic)).items():
+                    values[day_][topic_id][PLATFORMS_GROUP] += rank
 
         topic_ids = {topic_id for by_topic in values.values() for topic_id in by_topic}
         if not topic_ids:

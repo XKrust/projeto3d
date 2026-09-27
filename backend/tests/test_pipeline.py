@@ -189,6 +189,24 @@ def test_score_fields_follow_the_formulas(session, platforms):
     assert score.opportunity == pytest.approx(round(0.40 * 50 + 0.25 * 100 + 0.35 * 50, 1))
 
 
+def test_platform_sources_weigh_equally_regardless_of_scale(session, platforms):
+    # BOOTH mede favoritos (dezenas de milhares); CGTrader, a posicao no ranking (1 a 50).
+    # Cada topico lidera uma fonte: a demanda dos dois tem que empatar.
+    _raw_item(session, source="booth", country="JP")
+    _raw_item(session, source="cgtrader")
+    a = _topic(session, "Tema A")
+    b = _topic(session, "Tema B")
+    _signal(session, a, 50000, source="booth", country="JP")
+    _signal(session, a, 1, source="cgtrader", country=GLOBAL)
+    _signal(session, b, 40000, source="booth", country="JP")
+    _signal(session, b, 50, source="cgtrader", country=GLOBAL)
+
+    compute_scores(session, DAY)
+
+    demand = {s.topic_id: s.demand for s in _scores(session, country="JP", platform="booth")}
+    assert demand[a.id] == demand[b.id]
+
+
 # ---------------------------------------------------------------- update_listings
 
 
