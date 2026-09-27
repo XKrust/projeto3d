@@ -4,6 +4,7 @@ Cada modulo de coletor (google_trends, youtube, reddit, sketchfab, cults3d,
 printables, ...) acrescenta a propria classe a `ALL_COLLECTORS`.
 """
 
+from app.collectors.anilist import AniListCollector
 from app.collectors.base import Collector
 from app.collectors.cgtrader import CGTraderCollector
 from app.collectors.myminifactory import MyMiniFactoryCollector
@@ -31,4 +32,5 @@ ALL_COLLECTORS: list[type[Collector]] = [
     ThingiverseCollector,
     MyMiniFactoryCollector,
     CGTraderCollector,
+    AniListCollector,
 ]

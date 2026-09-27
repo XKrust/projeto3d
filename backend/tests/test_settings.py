@@ -58,3 +58,9 @@ def test_get_settings_via_api_masks_keys(client):
     r = client.get("/api/settings")
     assert r.status_code == 200
     assert r.json()["api_keys"]["gemini"] == "••••1234"
+
+
+def test_default_source_weights_include_anilist(session):
+    from app.settings_store import get_settings
+
+    assert get_settings(session)["source_weights"]["anilist"] == 0.10

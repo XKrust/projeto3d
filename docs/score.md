@@ -28,7 +28,8 @@ Função: `backend/app/pipeline.py:compute_scores(session, day)`.
   cada fonte vira **percentil entre os tópicos que têm sinal daquela fonte no dia**. O valor
   do grupo é a soma desses percentis, e assim cada fonte pesa igual. Os pesos são os
   `source_weights` da config (padrão: Trends 0.35, YouTube 0.25, Reddit 0.15, plataformas
-  0.25).
+  0.25, AniList 0.10 — somam mais de 1 de propósito: os pesos são renormalizados sobre os
+  grupos presentes no dia).
 - **Demanda bruta de um dia:** para cada grupo, calcula o percentil do valor do dia entre os
   tópicos com sinal naquele dia. Um tópico sem aquele grupo conta como 0. Depois faz a média
   ponderada pelos `source_weights`, só com os grupos que têm algum dado no dia. Assim, uma

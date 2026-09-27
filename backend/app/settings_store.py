@@ -35,6 +35,9 @@ DEFAULTS: dict = {
         "youtube": 0.25,
         "reddit": 0.15,
         "platforms": 0.25,
+        # AniList (Etapa 2): popularidade de animes que estreiam. Os pesos sao
+        # renormalizados pelos grupos presentes no dia (ver pipeline).
+        "anilist": 0.10,
     },
     "gemini_model": "gemini-2.5-flash",
     "top_n_saturation": 50,

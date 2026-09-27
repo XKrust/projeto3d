@@ -97,7 +97,7 @@ Regras gerais:
 | ArtStation | JSON não oficial (tratado como scraping) | não | 1b |
 | CGTrader | API oficial | sim | 1b |
 | MakerWorld | — (não implementado, ver abaixo) | — | 1b |
-| AniList | API | não | 2 |
+| AniList | API (GraphQL) | não | 2 |
 | TMDB, IGDB | API | sim | 2 |
 | frankfurter.app (câmbio) | API | não | 3 |
 
@@ -561,6 +561,32 @@ da demanda.
 - **Fixtures** montadas à mão a partir do Example Response oficial:
   `tests/fixtures/cgtrader/models.json` (5 modelos, um sem thumbnails) e `count.json`
   (`total: 2214`).
+
+## AniList
+
+`backend/app/collectors/anilist.py` (`AniListCollector`: `name="anilist"`, `label="AniList"`,
+`kind="api"`, sem chave, país `GLOBAL`, 360 minutos). É coletor de hype: devolve
+`CollectedItem` (sinal de demanda) e `Release` (via `releases()`).
+
+- **Requisição:** `POST https://graphql.anilist.co` com a query `Page.media(type: ANIME,
+  status_in: [NOT_YET_RELEASED, RELEASING], startDate_greater: <hoje−90 dias como AAAAMMDD>,
+  sort: POPULARITY_DESC, isAdult: false)`, `perPage: 50`, e os 3 personagens com mais
+  favoritos (`characters(sort: FAVOURITES_DESC, perPage: 3)`).
+  - O filtro de 90 dias tira séries antigas ainda "em exibição" (ONE PIECE desde 1999,
+    Detective Conan desde 1996), que não são hype.
+- **Release:**
+  - `kind="anime"`; `title` = título em inglês, senão romaji, senão nativo;
+  - `aliases` = os outros títulos, inclusive o japonês;
+  - `release_date` = `startDate` só quando ano, mês e dia existem, senão `None`;
+  - `popularity`, `url=siteUrl`, `image_url=coverImage.large`;
+  - `characters` = até 3 `{name, native, favourites, image_url}`.
+- **CollectedItem:** um por anime, com `title`, `tags` = aliases e
+  `metric = popularity / 1000`. Entra no radar como o grupo de fonte próprio `anilist`
+  (peso padrão `source_weights.anilist = 0.10`, renormalizado com os demais grupos do dia).
+- **Erros:** resposta com `errors` → `CollectorError("Erro na API do AniList: <mensagem>")`.
+  429/5xx têm retry via `get_with_retry`.
+- **Fixture:** `tests/fixtures/anilist/page.json`, chamada real de 27/09/2026 com a query
+  final e `perPage: 5`.
 
 ## MakerWorld (não implementado)
 
