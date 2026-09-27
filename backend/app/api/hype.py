@@ -62,6 +62,8 @@ def _reason(days_to_release: int | None, competition: dict[str, int]) -> str:
     if not competition:
         return f"{timing} · concorrência ainda não medida"
     platform, count = next(iter(competition.items()))
+    if count == 0:
+        return f"{timing} · nenhum anúncio nas lojas medidas"
     return f"{timing} · {count} anúncios no {platform}"
 
 

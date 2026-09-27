@@ -19,7 +19,7 @@ test.describe("smoke (servidores reais)", () => {
     "Defina RADAR_SMOKE=1 para rodar este teste contra o backend e o frontend reais."
   );
 
-  const rotas = ["/radar", "/config", "/sazonal", "/hype", "/analisar"];
+  const rotas = ["/", "/radar", "/config", "/sazonal", "/hype", "/analisar"];
 
   for (const rota of rotas) {
     test(`${rota} carrega sem erro no console`, async ({ page }) => {
@@ -40,7 +40,7 @@ test.describe("smoke (servidores reais)", () => {
     });
   }
 
-  test("/config lista as 12 fontes", async ({ page }) => {
+  test("/config lista as 15 fontes", async ({ page }) => {
     await page.goto("/config");
     await page.waitForLoadState("networkidle");
 
@@ -57,6 +57,9 @@ test.describe("smoke (servidores reais)", () => {
       "Thingiverse",
       "MyMiniFactory",
       "CGTrader",
+      "AniList",
+      "TMDB",
+      "IGDB (jogos)",
     ]) {
       await expect(page.getByText(fonte).first()).toBeVisible();
     }

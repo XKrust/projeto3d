@@ -137,3 +137,16 @@ def test_api_hype_invalid_country_422(client):
 
     assert response.status_code == 422
     assert response.json()["detail"] == "País inválido"
+
+
+def test_api_hype_reason_when_no_listings_anywhere(client, engine):
+    _add(
+        engine,
+        _release("a", "Anime Nichado", days=40),
+        HypeListing(term="Anime Nichado", platform="cults3d", day=DAY, count=0),
+        HypeListing(term="Anime Nichado", platform="booth", day=DAY, count=0),
+    )
+
+    release = client.get("/api/hype?country=BR").json()["releases"][0]
+
+    assert release["reason"] == "Estreia em 40 dias · nenhum anúncio nas lojas medidas"
