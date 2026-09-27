@@ -1,16 +1,6 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("esqueleto do frontend", () => {
-  test("/sazonal mostra o texto de Em Breve", async ({ page }) => {
-    await page.goto("/sazonal");
-    await expect(page.getByText("Chega na Etapa")).toBeVisible();
-  });
-
-  test("/hype mostra o texto de Em Breve", async ({ page }) => {
-    await page.goto("/hype");
-    await expect(page.getByText("Chega na Etapa")).toBeVisible();
-  });
-
   test("/analisar mostra o texto de Em Breve", async ({ page }) => {
     await page.goto("/analisar");
     await expect(page.getByText("Chega na Etapa")).toBeVisible();

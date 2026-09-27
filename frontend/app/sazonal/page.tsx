@@ -1,16 +1,87 @@
-import { EmBreve } from "@/components/EmBreve";
+"use client";
+
+import { Suspense } from "react";
+import useSWR from "swr";
+import { useSearchParams } from "next/navigation";
+import { apiGet, BackendOfflineError } from "@/lib/api";
+import { BackendOffline } from "@/components/BackendOffline";
+import { CountrySelect } from "@/components/CountrySelect";
+import { EventRow } from "@/components/sazonal/EventRow";
+import { SeasonHero } from "@/components/sazonal/SeasonHero";
+import type { RadarMeta } from "@/lib/radar-types";
+import type { SeasonalResponse } from "@/lib/sazonal-types";
+
+function Loading() {
+  return (
+    <div className="flex flex-1 items-center justify-center p-8">
+      <p className="text-muted-foreground">Carregando…</p>
+    </div>
+  );
+}
+
+function SazonalContent() {
+  const searchParams = useSearchParams();
+  const country = searchParams.get("country") || "BR";
+  const { data: meta, error: metaError } = useSWR<RadarMeta>("/api/radar/meta", apiGet);
+  const { data, error, isLoading } = useSWR<SeasonalResponse>(
+    `/api/seasonal?country=${country}`,
+    apiGet
+  );
+
+  if (error instanceof BackendOfflineError || metaError instanceof BackendOfflineError) {
+    return <BackendOffline />;
+  }
+  if (isLoading || !data) {
+    return error ? (
+      <div className="flex flex-1 items-center justify-center p-8">
+        <p className="text-destructive">{error.message}</p>
+      </div>
+    ) : (
+      <Loading />
+    );
+  }
+
+  const leader = data.events.find((e) => e.status !== "atrasado") ?? data.events[0];
+
+  return (
+    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-14 px-4 sm:px-8">
+      {leader && (
+        <SeasonHero
+          event={leader}
+          country={country}
+          leadDays={data.lead_days}
+          modelingDays={data.modeling_days}
+        />
+      )}
+
+      <section aria-labelledby="calendario-titulo" className="flex flex-col gap-4">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div className="flex flex-col gap-1">
+            <h2 id="calendario-titulo" className="text-[length:var(--text-xl)] font-bold">
+              Calendário
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Ordenado pelo dia de começar a modelar. Ajuste os prazos em Configurações.
+            </p>
+          </div>
+          {meta && (
+            <CountrySelect countries={meta.countries} europe={meta.country_groups?.Europa ?? []} />
+          )}
+        </div>
+        <ol className="flex flex-col border-b border-border">
+          {data.events.map((event) => (
+            <EventRow key={event.slug} event={event} />
+          ))}
+        </ol>
+      </section>
+    </div>
+  );
+}
 
 export default function SazonalPage() {
   return (
-    <EmBreve
-      etapa={2}
-      titulo="O calendário do que vende em cada época."
-      texto="Datas que puxam vendas em cada país — Halloween, Natal, Dia das Mães, Golden Week no Japão — com o prazo certo para começar a modelar antes do pico."
-      itens={[
-        "Calendário por país, com as datas que importam para impressão 3D e assets",
-        "Aviso de quando começar, contando o seu tempo de modelagem",
-        "Temas que costumam vender em cada data",
-      ]}
-    />
+    <Suspense fallback={<Loading />}>
+      <SazonalContent />
+    </Suspense>
   );
 }

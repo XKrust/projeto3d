@@ -1,0 +1,11 @@
+{
+  "country": "BR",
+  "lead_days": 21,
+  "modeling_days": 7,
+  "events": [
+    {"slug": "dia_das_criancas_br", "name": "Dia das Crianças", "date": "2026-10-12", "start_by": "2026-09-14", "days_to_event": 15, "days_to_start": -13, "status": "atrasado", "themes": ["brinquedos articulados", "flexi"]},
+    {"slug": "halloween", "name": "Halloween", "date": "2026-10-31", "start_by": "2026-10-03", "days_to_event": 34, "days_to_start": 6, "status": "agora", "themes": ["abóboras", "caveiras", "bruxas"]},
+    {"slug": "black_friday", "name": "Black Friday", "date": "2026-11-27", "start_by": "2026-10-30", "days_to_event": 61, "days_to_start": 33, "status": "em_breve", "themes": ["pacotes de modelos"]},
+    {"slug": "natal", "name": "Natal", "date": "2026-12-25", "start_by": "2026-11-27", "days_to_event": 89, "days_to_start": 61, "status": "em_breve", "themes": ["enfeites de árvore", "presépio"]}
+  ]
+}
