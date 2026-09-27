@@ -44,3 +44,17 @@
     ES: 0.6
     JP: 0.4
   notes: "Comissao de 20% sobre pagamentos de download de conteudo digital, confirmada em https://www.prusa3d.com/page/printables-club-store-terms-and-conditions-for-creators_236503/ (26/09/2026)."
+
+- slug: booth
+  name: BOOTH
+  markets: [digital]
+  fee_pct: null
+  strength:
+    BR: 0.2
+    US: 0.2
+    GB: 0.2
+    DE: 0.2
+    FR: 0.2
+    ES: 0.2
+    JP: 0.9
+  notes: "Marketplace japones (pixiv); forte em modelos 3D para VRChat."

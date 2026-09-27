@@ -74,7 +74,8 @@ Regras gerais:
 | Cults3D | API | sim | 1 |
 | Printables | scraping | não | 1 |
 | Thingiverse, MyMiniFactory, Etsy | API | sim | 1b |
-| ArtStation, MakerWorld, CGTrader, BOOTH | scraping | não | 1b |
+| BOOTH (Japão) | scraping | não | 1b |
+| ArtStation, MakerWorld, CGTrader | scraping | não | 1b |
 | AniList | API | não | 2 |
 | TMDB, IGDB | API | sim | 2 |
 | frankfurter.app (câmbio) | API | não | 3 |
@@ -344,6 +345,41 @@ copiado dos exemplos acima).
     varia com o tempo, não é uma constante do produto).
   - `backend/tests/fixtures/printables/robots.txt`: robots.txt real de `www.printables.com`
     (usado só no teste de `is_allowed`, não pelo `PrintablesCollector` — ver seção acima).
+
+## BOOTH
+
+`backend/app/collectors/booth.py` (`BoothCollector`: `name="booth"`, `label="BOOTH"`,
+`kind="scrape"`, `platform="booth"`, sem chave, país **`JP`**, 1440 minutos). Implementa
+`Collector` e `count_listings`.
+
+- **Robots.txt:** `https://booth.pm/robots.txt` só bloqueia `/terms` e o carrinho
+  (confirmado em 27/09/2026). Checado antes de cada busca via `polite.check_robots`, com
+  3 a 5 s de espera entre as requisições.
+- **Tendências:** `GET https://booth.pm/ja/browse/3Dモデル?sort=wish_list` (categoria "3Dモデル"
+  ordenada por favoritos, 1 página com 60 cards). Cada produto é um `li.item-card` com
+  `data-product-id`, `data-product-name`, `data-product-price` (em JPY) e
+  `data-product-brand`. A miniatura vem do `data-original` do primeiro
+  `a.js-thumbnail-image`. Cards sem id ou sem nome são descartados. Se nenhum card for
+  encontrado, lança `CollectorError("Formato da página do BOOTH mudou")`, para a fonte
+  ficar vermelha em vez de verde com 0 itens.
+- **Favoritos:** o número de favoritos não vem no HTML. O próprio site o busca em
+  `GET https://accounts.booth.pm/wish_lists.json?item_ids[]=<id>&item_ids[]=...`, que
+  responde `{"wishlists_counts": {"<id>": n}}`.
+  - `likes` e `metric` recebem esse número.
+  - Se essa chamada falhar, os itens voltam com `likes=None` e `metric` pela posição no
+    ranking (o primeiro de N cards vale N, o último vale 1).
+- **Campos:** `external_id`=id, `title`=nome, `url=https://booth.pm/ja/items/<id>`,
+  `country="JP"`. `price_usd=None`, porque o preço está em JPY e a conversão fica para a
+  Etapa 3.
+- **Contagem:** `GET https://booth.pm/ja/search/<termo>` (termo codificado com
+  `quote(..., safe="")`, ou seja, `/` vira `%2F`) e leitura de "対象商品 N 件". Sem esse
+  texto, lança `CollectorError`.
+- **Fixtures** (chamadas reais de 27/09/2026):
+  - `tests/fixtures/booth/browse.html`: página real, reduzida aos 5 primeiros cards e sem
+    `<script>`;
+  - `wish_lists.json`: resposta real para esses 5 ids;
+  - `search.html`: só o trecho "対象商品 11,068 件" da busca real por "ドラゴン";
+  - `robots.txt`: real.
 
 ## Como adicionar um coletor
 

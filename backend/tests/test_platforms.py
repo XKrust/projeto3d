@@ -19,7 +19,7 @@ def test_get_platforms_returns_seeded(client):
     r = client.get("/api/platforms")
     assert r.status_code == 200
     slugs = {p["slug"] for p in r.json()}
-    assert slugs == {"cults3d", "sketchfab", "printables"}
+    assert slugs == {"cults3d", "sketchfab", "printables", "booth"}
 
 
 def test_put_platform_unknown_slug_404(client):
