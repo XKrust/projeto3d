@@ -157,6 +157,29 @@ def test_category_invalid_returns_422(client, platforms):
     assert r.json()["detail"] == "Categoria inválida"
 
 
+def test_brief_example_url_with_empty_filters_returns_200(session, client, platforms):
+    topic = _topic(session, "Labubu")
+    _score(session, topic, opportunity=90.0)
+
+    r = client.get(
+        "/api/radar?country=BR&platform=&market=&category=&limit=50"
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert len(body) == 1
+    assert body[0]["name"] == "Labubu"
+
+
+def test_limit_out_of_range_returns_422_pt_message(client, platforms):
+    r = client.get("/api/radar", params={"country": "BR", "limit": 0})
+    assert r.status_code == 422
+    assert r.json()["detail"] == "Limite deve estar entre 1 e 200"
+
+    r = client.get("/api/radar", params={"country": "BR", "limit": 201})
+    assert r.status_code == 422
+    assert r.json()["detail"] == "Limite deve estar entre 1 e 200"
+
+
 # ---------------------------------------------------------------- ordering / shape
 
 

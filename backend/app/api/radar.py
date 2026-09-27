@@ -5,7 +5,7 @@ import statistics
 from collections import defaultdict
 from datetime import timedelta
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import func
 from sqlmodel import Session, select
 
@@ -49,11 +49,20 @@ def read_radar(
     platform: str | None = None,
     market: str | None = None,
     category: str | None = None,
-    limit: int = Query(default=50, ge=1, le=200),
+    limit: int = 50,
     session: Session = Depends(get_session),
 ) -> list[dict]:
+    # Um filtro vazio na URL (ex.: `?platform=`, do exemplo do brief) chega aqui como
+    # string vazia, nao None - normaliza para "sem filtro" antes de validar.
+    platform = platform or None
+    market = market or None
+    category = category or None
+
     if country not in COUNTRIES:
         raise HTTPException(status_code=422, detail="País inválido")
+
+    if not (1 <= limit <= 200):
+        raise HTTPException(status_code=422, detail="Limite deve estar entre 1 e 200")
 
     platforms_by_slug = _platforms_by_slug(session)
     if platform is not None and platform not in platforms_by_slug:
@@ -104,7 +113,11 @@ def read_radar(
 
     best_rows: dict[int, TopicScore] = {}
     for topic_id, topic_rows in rows_by_topic.items():
-        best_rows[topic_id] = max(topic_rows, key=lambda r: r.opportunity * r.fit_platform)
+        # Ordena por slug da plataforma antes do max() para que um empate em
+        # opportunity * fit_platform sempre resolva para a mesma plataforma
+        # (a primeira em ordem alfabetica), nao para a ordem de retorno do banco.
+        candidates = sorted(topic_rows, key=lambda r: r.platform)
+        best_rows[topic_id] = max(candidates, key=lambda r: r.opportunity * r.fit_platform)
 
     ordered_topic_ids = sorted(
         best_rows.keys(), key=lambda tid: best_rows[tid].opportunity, reverse=True
