@@ -1,0 +1,50 @@
+[
+  {
+    "slug": "cults3d",
+    "name": "Cults3D",
+    "markets": ["print"],
+    "fee_pct": null,
+    "strength": {
+      "BR": 0.6,
+      "US": 0.7,
+      "GB": 0.7,
+      "DE": 0.7,
+      "FR": 0.9,
+      "ES": 0.8,
+      "JP": 0.3
+    },
+    "notes": ""
+  },
+  {
+    "slug": "sketchfab",
+    "name": "Sketchfab Store",
+    "markets": ["digital"],
+    "fee_pct": null,
+    "strength": {
+      "BR": 0.5,
+      "US": 0.8,
+      "GB": 0.7,
+      "DE": 0.7,
+      "FR": 0.7,
+      "ES": 0.6,
+      "JP": 0.5
+    },
+    "notes": ""
+  },
+  {
+    "slug": "printables",
+    "name": "Printables",
+    "markets": ["print"],
+    "fee_pct": 20.0,
+    "strength": {
+      "BR": 0.5,
+      "US": 0.8,
+      "GB": 0.7,
+      "DE": 0.8,
+      "FR": 0.6,
+      "ES": 0.6,
+      "JP": 0.4
+    },
+    "notes": "Comissão de 20% confirmada em página oficial."
+  }
+]

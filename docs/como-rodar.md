@@ -5,9 +5,20 @@
 3. O navegador abre em http://localhost:3000.
 4. Para desligar, dê dois cliques em `parar.bat`.
 
-Chaves de API gratuitas: tela **Configurações** (`/config`). Cada chave tem um guia próprio.
+## Configurar as chaves
 
-Os detalhes são atualizados ao implementar a Etapa 1.
+Abra a tela **Configurações** (menu superior, ou http://localhost:3000/config) para:
+
+- ver a **saúde das fontes** (🟢 ok, 🔴 erro, 🟡 sem chave, ⚪ nunca rodou) e coletar uma fonte
+  manualmente;
+- colar as **chaves de API** gratuitas (YouTube, Reddit, Sketchfab, Cults3D, Gemini) — cada uma
+  tem um guia passo a passo recolhível, com o link oficial para conseguir a chave;
+- ajustar **preferências** (países, tempo de modelagem, antecedência de compra e, em "Avançado",
+  os pesos do score);
+- editar a **tabela de plataformas** (taxa e força por país).
+
+Nenhuma chave é obrigatória: sem elas, a fonte correspondente aparece como "sem chave" e as
+demais continuam funcionando normalmente.
 
 ## Setup de desenvolvimento (para quem mexe no código)
 

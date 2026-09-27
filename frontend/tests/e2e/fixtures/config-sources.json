@@ -1,0 +1,35 @@
+[
+  {
+    "name": "google_trends",
+    "label": "Google Trends",
+    "kind": "api",
+    "needs_key": false,
+    "has_key": true,
+    "status": "ok",
+    "last_run": "2026-09-27T09:55:00+00:00",
+    "last_error": null,
+    "items_last_run": 12
+  },
+  {
+    "name": "youtube",
+    "label": "YouTube",
+    "kind": "api",
+    "needs_key": true,
+    "has_key": false,
+    "status": "no_key",
+    "last_run": null,
+    "last_error": null,
+    "items_last_run": 0
+  },
+  {
+    "name": "reddit",
+    "label": "Reddit",
+    "kind": "api",
+    "needs_key": true,
+    "has_key": true,
+    "status": "error",
+    "last_run": "2026-09-27T08:00:00+00:00",
+    "last_error": "Chave inválida ou sem permissão (401)",
+    "items_last_run": 0
+  }
+]

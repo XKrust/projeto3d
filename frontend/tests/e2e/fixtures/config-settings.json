@@ -1,0 +1,23 @@
+{
+  "api_keys": {
+    "youtube": "••••1234",
+    "reddit_client_id": "",
+    "reddit_client_secret": "",
+    "sketchfab": "",
+    "cults3d_user": "",
+    "cults3d_key": "",
+    "gemini": ""
+  },
+  "countries": ["BR", "US", "GB", "DE", "FR", "ES", "JP"],
+  "modeling_days": 7,
+  "lead_days": 21,
+  "weights": { "demand": 0.4, "momentum": 0.25, "saturation": 0.35 },
+  "source_weights": {
+    "google_trends": 0.35,
+    "youtube": 0.25,
+    "reddit": 0.15,
+    "platforms": 0.25
+  },
+  "gemini_model": "gemini-2.5-flash",
+  "top_n_saturation": 50
+}
