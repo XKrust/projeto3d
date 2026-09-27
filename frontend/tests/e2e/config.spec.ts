@@ -90,4 +90,13 @@ test.describe("/config", () => {
     await expect(page.getByText("Salvo!")).toBeVisible();
     expect(captured.body?.api_keys?.youtube).toBe("••••1234");
   });
+
+  test("plataforma com taxa não confirmada mostra —", async ({ page }) => {
+    await page.goto("/config");
+
+    // Cults3D tem fee_pct null na fixture (taxa ainda não confirmada).
+    const feeInput = page.getByLabel("Taxa de Cults3D");
+    await expect(feeInput).toHaveValue("");
+    await expect(feeInput).toHaveAttribute("placeholder", "—");
+  });
 });

@@ -96,6 +96,9 @@ export function PlatformsTable({
                     min={0}
                     max={100}
                     className="w-20"
+                    // Taxa nao confirmada (null): campo fica em branco mas mostra
+                    // "—" como placeholder, conforme docs/plataformas.md.
+                    placeholder={value.fee_pct === null ? "—" : undefined}
                     value={value.fee_pct ?? ""}
                     onChange={(event) => updateFee(platform, event.target.value)}
                   />
