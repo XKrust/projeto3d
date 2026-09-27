@@ -11,13 +11,10 @@ batendo as queries contra o endpoint real. `robots.txt` desse host (`api.printab
 devolve 404 — sem regras, `is_allowed` libera tudo.
 """
 
-import random
-import time
-
 from app.collectors.base import CollectedItem, Collector, CollectorError
-from app.collectors.robots import is_allowed
+from app.collectors.polite import check_robots, polite_delay
 from app.constants import GLOBAL
-from app.http import USER_AGENT, get_with_retry
+from app.http import get_with_retry
 
 GRAPHQL_URL = "https://api.printables.com/graphql/"
 ROBOTS_URL = "https://api.printables.com/robots.txt"
@@ -49,13 +46,6 @@ TRENDING_ORDERING = "popular"
 TRENDING_LIMIT = 24
 SEARCH_ORDERING = "best_match"
 SEARCH_LIMIT = 1
-
-DELAY_RANGE_SECONDS = (3.0, 5.0)
-
-
-def _polite_delay() -> None:
-    """Espera de 3 a 5s entre a checagem de robots.txt e a requisicao real, por educacao."""
-    time.sleep(random.uniform(*DELAY_RANGE_SECONDS))
 
 
 def _thumb_url(item: dict) -> str | None:
@@ -113,12 +103,6 @@ class PrintablesCollector(Collector):
     needs_key = ()
     interval_minutes = 1440
 
-    def _check_robots(self, url: str) -> None:
-        response = get_with_retry(self.http, "GET", ROBOTS_URL)
-        robots_txt = "" if response.status_code == 404 else response.text
-        if not is_allowed(robots_txt, url, USER_AGENT):
-            raise CollectorError(f"Bloqueado pelo robots.txt: {url}")
-
     def _query(self, variables: dict) -> dict:
         response = get_with_retry(
             self.http,
@@ -135,15 +119,15 @@ class PrintablesCollector(Collector):
         return data
 
     def collect(self) -> list[CollectedItem]:
-        self._check_robots(GRAPHQL_URL)
-        _polite_delay()
+        check_robots(self.http, ROBOTS_URL, GRAPHQL_URL)
+        polite_delay()
 
         data = self._query({"query": "", "limit": TRENDING_LIMIT, "ordering": TRENDING_ORDERING})
         return parse_trending(data)
 
     def count_listings(self, query: str) -> int:
-        self._check_robots(GRAPHQL_URL)
-        _polite_delay()
+        check_robots(self.http, ROBOTS_URL, GRAPHQL_URL)
+        polite_delay()
 
         data = self._query({"query": query, "limit": SEARCH_LIMIT, "ordering": SEARCH_ORDERING})
         return parse_count(data)

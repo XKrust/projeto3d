@@ -313,8 +313,8 @@ copiado dos exemplos acima).
   `/graphql/`, `is_allowed` vai detectar e `CollectorError("Bloqueado pelo robots.txt: <url>")`
   é lançado antes de qualquer requisição à API (a query real nunca é chamada nesse caso).
 - **Espera entre requisições:** 3 a 5s (aleatório) entre a checagem do robots.txt e a
-  requisição real à API (`_polite_delay`, injetável/monkeypatchável nos testes via
-  `printables.time.sleep`/`printables.random.uniform`).
+  requisição real à API (`app.collectors.polite.polite_delay`, monkeypatchável nos testes via
+  `app.collectors.polite.time.sleep`/`app.collectors.polite.random.uniform`).
 - **Tendências (`collect()`):** a query `SearchModels` (`searchPrints2`) chamada com
   `query=""`, `ordering: popular` e `limit=24` — não existe uma query de "trending" dedicada
   confirmada; buscar sem termo, ordenado por popularidade (fórmula própria do Printables,
@@ -362,8 +362,9 @@ copiado dos exemplos acima).
    `ListingCounter`).
    - Use `app.http.get_with_retry` para toda chamada HTTP (retry automático em 429/5xx/timeout,
      `CollectorError` na hora em 401/403).
-   - Coletor de scraping: confira `app.collectors.robots.is_allowed` antes de buscar a
-     página, e espere 3–5 s entre páginas (ver `printables.py:_polite_delay` como exemplo).
+   - Coletor de scraping: chame `app.collectors.polite.check_robots(http, robots_url, url)`
+     antes de buscar a página e `polite_delay()` (3–5 s) entre requisições. Nos testes,
+     monkeypatch em `app.collectors.polite.time.sleep` evita a espera real.
 3. **Escreva o teste** em `backend/tests/test_<fonte>.py`: carregue a fixture, monkeypatch/
    injete o `http` (ou use `respx`) para devolver o conteúdo gravado, e confira os campos
    mapeados de `CollectedItem` e os casos de erro (sem chave, 401/403, resposta vazia).

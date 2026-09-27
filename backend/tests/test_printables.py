@@ -33,7 +33,7 @@ def _mock_robots_allowed():
 @pytest.fixture(autouse=True)
 def no_real_delay(monkeypatch):
     """Nenhum teste deve realmente dormir 3-5s; s0 os testes de delay checam a chamada."""
-    monkeypatch.setattr("app.collectors.printables.time.sleep", lambda _: None)
+    monkeypatch.setattr("app.collectors.polite.time.sleep", lambda _: None)
 
 
 def test_parse_trending_returns_5_items_with_title_url_and_likes():
@@ -162,8 +162,8 @@ def test_graphql_errors_raise_collector_error():
 @respx.mock
 def test_waits_random_delay_between_robots_check_and_query(monkeypatch):
     waits: list[float] = []
-    monkeypatch.setattr("app.collectors.printables.time.sleep", waits.append)
-    monkeypatch.setattr("app.collectors.printables.random.uniform", lambda a, b: 4.2)
+    monkeypatch.setattr("app.collectors.polite.time.sleep", waits.append)
+    monkeypatch.setattr("app.collectors.polite.random.uniform", lambda a, b: 4.2)
 
     _mock_robots_allowed()
     respx.post(GRAPHQL_URL).mock(return_value=httpx.Response(200, json=TRENDING))
