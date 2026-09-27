@@ -50,6 +50,13 @@ const API_KEY_GROUPS: ApiKeyGroup[] = [
     service: "tmdb",
     fields: [{ key: "tmdb", label: "Token de leitura da API do TMDB" }],
   },
+  {
+    service: "igdb",
+    fields: [
+      { key: "igdb_client_id", label: "Client ID do IGDB (Twitch)" },
+      { key: "igdb_client_secret", label: "Client Secret do IGDB (Twitch)" },
+    ],
+  },
   { service: "gemini", fields: [{ key: "gemini", label: "Chave da API do Gemini" }] },
 ];
 

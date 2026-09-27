@@ -94,6 +94,15 @@ export const KEY_GUIDES: Record<string, KeyGuide> = {
     ],
     url: "https://www.themoviedb.org/settings/api",
   },
+  igdb: {
+    titulo: "IGDB (jogos)",
+    passos: [
+      "É gratuito e usa uma conta da Twitch. Entre em dev.twitch.tv/console (ative a verificação em duas etapas se a Twitch pedir).",
+      "Clique em “Register Your Application”, dê um nome qualquer, use http://localhost como OAuth Redirect URL e escolha a categoria “Application Integration”.",
+      "Abra o app criado: copie o “Client ID” e clique em “New Secret” para gerar o “Client Secret”. Cole os dois aqui.",
+    ],
+    url: "https://dev.twitch.tv/console/apps",
+  },
   gemini: {
     titulo: "Gemini",
     passos: [

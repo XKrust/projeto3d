@@ -25,6 +25,8 @@ DEFAULTS: dict = {
         "myminifactory": "",
         "cgtrader": "",
         "tmdb": "",
+        "igdb_client_id": "",
+        "igdb_client_secret": "",
         "gemini": "",
     },
     "countries": ["BR", "US", "GB", "DE", "FR", "ES", "JP"],

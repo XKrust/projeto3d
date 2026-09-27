@@ -614,6 +614,28 @@ da demanda.
   `tests/fixtures/tmdb/upcoming_br.json` (3 filmes, um sem data e sem pôster) e
   `discover_tv.json` (2 séries).
 
+## IGDB
+
+`backend/app/collectors/igdb.py` (`IGDBCollector`: `name="igdb"`, `label="IGDB (jogos)"`,
+`kind="api"`, `needs_key=("igdb_client_id", "igdb_client_secret")`, 360 minutos). É coletor
+de hype.
+
+**⚠️ Não validado com chave real — validar e regravar as fixtures assim que houver uma.**
+
+- **Token (Twitch):** `POST https://id.twitch.tv/oauth2/token?client_id=…&client_secret=…&grant_type=client_credentials`
+  → `access_token`. Credencial errada responde **400** `{"message":"invalid client"}`, e
+  não 401 (confirmado em 27/09/2026). Qualquer status diferente de 200 vira
+  `CollectorError("Client ID ou Client Secret do IGDB inválido")`.
+- **Jogos:** `POST https://api.igdb.com/v4/games` com headers `Client-ID` e
+  `Authorization: Bearer <token>` e corpo Apicalypse:
+  `fields name,alternative_names.name,first_release_date,hypes,cover.image_id,url; where first_release_date > <agora_unix> & hypes > 0; sort hypes desc; limit 50;`.
+- **Release:** `kind="jogo"`, `country=GLOBAL`, `release_date` = `first_release_date`
+  (unix → data UTC), `popularity=hypes`, `aliases` = nomes alternativos e
+  `image_url=https://images.igdb.com/igdb/image/upload/t_cover_big/<image_id>.jpg`.
+- **CollectedItem:** `metric = hypes`.
+- **Fixtures** montadas à mão pela doc oficial (`https://api-docs.igdb.com`):
+  `tests/fixtures/igdb/token.json` e `games.json` (3 jogos, um sem capa).
+
 ## MakerWorld (não implementado)
 
 O MakerWorld (makerworld.com) responde com o desafio Cloudflare "Just a moment..." a acesso

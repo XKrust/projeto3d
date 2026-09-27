@@ -14,6 +14,7 @@ from app.collectors.artstation import ArtStationCollector
 from app.collectors.booth import BoothCollector
 from app.collectors.cults3d import Cults3DCollector
 from app.collectors.google_trends import GoogleTrendsCollector
+from app.collectors.igdb import IGDBCollector
 from app.collectors.printables import PrintablesCollector
 from app.collectors.reddit import RedditCollector
 from app.collectors.sketchfab import SketchfabCollector
@@ -35,4 +36,5 @@ ALL_COLLECTORS: list[type[Collector]] = [
     CGTraderCollector,
     AniListCollector,
     TMDBCollector,
+    IGDBCollector,
 ]

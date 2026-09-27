@@ -1,0 +1,43 @@
+[
+ {
+  "id": 350001,
+  "name": "Hollow Knight: Silksong 2",
+  "first_release_date": 1793491200,
+  "hypes": 1840,
+  "cover": {
+   "id": 9001,
+   "image_id": "co9abc"
+  },
+  "alternative_names": [
+   {
+    "id": 1,
+    "name": "Silksong 2"
+   }
+  ],
+  "url": "https://www.igdb.com/games/hollow-knight-silksong-2"
+ },
+ {
+  "id": 350002,
+  "name": "Monster Hunter Stories 3",
+  "first_release_date": 1799366400,
+  "hypes": 920,
+  "cover": {
+   "id": 9002,
+   "image_id": "co9def"
+  },
+  "alternative_names": [
+   {
+    "id": 2,
+    "name": "モンスターハンターストーリーズ3"
+   }
+  ],
+  "url": "https://www.igdb.com/games/monster-hunter-stories-3"
+ },
+ {
+  "id": 350003,
+  "name": "Jogo Sem Capa",
+  "first_release_date": 1801958400,
+  "hypes": 15,
+  "url": "https://www.igdb.com/games/jogo-sem-capa"
+ }
+]
