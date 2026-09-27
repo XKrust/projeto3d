@@ -53,4 +53,4 @@ O usuário **não programa**. Tudo precisa rodar com duplo clique em `iniciar.ba
 
 ## Status
 
-Etapa atual: **1 (Fundação e Radar)**. Consulte o plano mais recente em `docs/superpowers/plans/`.
+Etapa 1 concluída; próxima: 1b. Consulte o plano mais recente em `docs/superpowers/plans/`.

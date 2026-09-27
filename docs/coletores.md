@@ -347,4 +347,32 @@ copiado dos exemplos acima).
 
 ## Como adicionar um coletor
 
-O passo a passo é documentado junto com a implementação da Etapa 1.
+1. **Fixture primeiro.** Grave uma resposta real da fonte (ou monte uma à mão, se a fonte
+   bloquear chamada automatizada, como o Cults3D) em
+   `backend/tests/fixtures/<fonte>/<algo>.json` (ou `.xml`/`.txt`). Testes nunca acessam a
+   rede real — ver "Achado documentado" acima para o cuidado extra com robots.txt real.
+2. **Subclasse de `Collector`** em `backend/app/collectors/<fonte>.py`: defina os `ClassVar`
+   `name`, `label`, `kind` (`"api" | "rss" | "scrape"`), `platform` (se for marketplace, o
+   slug em `Platform`), `needs_key` (tupla com os nomes em `settings["api_keys"]`, vazia se
+   não precisar de chave) e `interval_minutes` (60 para API/RSS, 1440 para scraping).
+   Implemente `collect(self) -> list[CollectedItem]` usando `self.settings` e `self.http`
+   (recebidos no construtor); erros esperados (chave inválida, resposta inesperada da API)
+   viram `CollectorError("mensagem em português")`. Se a fonte também expõe contagem de
+   anúncios para a saturação, implemente `count_listings(query)` (protocolo
+   `ListingCounter`).
+   - Use `app.http.get_with_retry` para toda chamada HTTP (retry automático em 429/5xx/timeout,
+     `CollectorError` na hora em 401/403).
+   - Coletor de scraping: confira `app.collectors.robots.is_allowed` antes de buscar a
+     página, e espere 3–5 s entre páginas (ver `printables.py:_polite_delay` como exemplo).
+3. **Escreva o teste** em `backend/tests/test_<fonte>.py`: carregue a fixture, monkeypatch/
+   injete o `http` (ou use `respx`) para devolver o conteúdo gravado, e confira os campos
+   mapeados de `CollectedItem` e os casos de erro (sem chave, 401/403, resposta vazia).
+4. **Rode `cd backend && uv run pytest`** e veja o teste novo passar (e nada mais quebrar).
+5. **Registre em `ALL_COLLECTORS`** (`backend/app/collectors/__init__.py`): importe a classe
+   e acrescente-a à lista. A ordem na lista é a ordem em que `/api/sources` e o ciclo de
+   coleta processam a fonte.
+6. **Acrescente uma linha na tabela "Fontes"** acima (nome, tipo, se precisa de chave, etapa)
+   e uma seção própria documentando a URL/query, os campos mapeados e as fixtures usadas
+   (siga o padrão das seções existentes, como "Printables" ou "Sketchfab" acima) — inclusive
+   qualquer achado de investigação (bloqueio por Cloudflare, campo que a API não expõe,
+   comportamento inesperado do robots.txt etc.).
