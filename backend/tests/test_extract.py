@@ -221,3 +221,149 @@ def test_topic_image_prefers_platform_thumb_over_trends_thumb(session):
 
     topic = session.exec(select(Topic).where(Topic.slug == "labubu")).one()
     assert topic.image_url == "https://sketchfab.example/labubu.png"
+
+
+# --- Fix round 1: revisao ---
+
+
+def test_trends_term_passes_filter_via_in_window_history_match(session):
+    """Fix 1: um item de outra fonte de ate 7 dias atras (nao so do proprio dia
+    ou de um TopicItem ja existente) deve valer para o filtro de ruido."""
+    yesterday = DAY - timedelta(days=1)
+    _raw_item(
+        session,
+        source="reddit",
+        external_id="frieren-reddit",
+        country=GLOBAL,
+        title="Frieren figure",
+        metric=20.0,
+        day=yesterday,
+    )
+
+    _raw_item(
+        session,
+        source="google_trends",
+        external_id="frieren-trend",
+        country="JP",
+        title="Frieren",
+        metric=300.0,
+        day=DAY,
+    )
+
+    count = extract_topics(session, DAY)
+
+    topic = session.exec(select(Topic).where(Topic.slug == "frieren")).one()
+    assert count >= 1
+    signal = session.exec(
+        select(TopicSignal).where(
+            TopicSignal.topic_id == topic.id, TopicSignal.day == DAY, TopicSignal.source == "google_trends"
+        )
+    ).one()
+    assert signal.value == 300.0
+    assert signal.country == "JP"
+
+
+def test_trends_term_matching_entity_alias_resolves_to_the_entity_not_a_duplicate(session):
+    """Fix 2: um termo do Trends igual a um alias de entidade nao deve virar um
+    segundo topico; deve casar com a entidade."""
+    _raw_item(
+        session,
+        source="google_trends",
+        external_id="zelda-trend",
+        country="US",
+        title="Zelda",
+        metric=80.0,
+    )
+    _raw_item(
+        session,
+        source="reddit",
+        external_id="zelda-reddit",
+        country=GLOBAL,
+        title="Zelda sword",
+        metric=15.0,
+    )
+
+    extract_topics(session, DAY)
+
+    assert session.exec(select(Topic).where(Topic.slug == "zelda")).first() is None
+    topic = session.exec(select(Topic).where(Topic.slug == "the-legend-of-zelda")).one()
+
+    signals = session.exec(select(TopicSignal).where(TopicSignal.topic_id == topic.id)).all()
+    assert {(s.source, s.country): s.value for s in signals} == {
+        ("google_trends", "US"): 80.0,
+        ("reddit", GLOBAL): 15.0,
+    }
+
+
+def test_existing_candidate_topic_gets_signal_next_day_without_requalifying(session):
+    """Fix 3: um topico-candidato ja existente e casado/recebe sinal todo dia,
+    sem precisar bater o limiar de mineracao (>=3 itens/>=2 fontes) de novo."""
+    yesterday = DAY - timedelta(days=1)
+    _raw_item(session, source="reddit", external_id="r1", country=GLOBAL, title="Gojo satoru figure", metric=5.0, day=yesterday)
+    _raw_item(session, source="reddit", external_id="r2", country=GLOBAL, title="gojo infinity void", metric=6.0, day=yesterday)
+    _raw_item(session, source="sketchfab", external_id="sk1", country=GLOBAL, title="Gojo bust model", metric=7.0, day=yesterday)
+    extract_topics(session, yesterday)
+    topic = session.exec(select(Topic).where(Topic.slug == "gojo")).one()
+    assert topic.is_candidate is True
+
+    # hoje: so 2 itens de 1 fonte, bem abaixo do limiar de mineracao de candidato.
+    _raw_item(session, source="reddit", external_id="r3", country=GLOBAL, title="Gojo domain expansion", metric=50.0, day=DAY)
+    _raw_item(session, source="reddit", external_id="r4", country=GLOBAL, title="gojo strongest sorcerer", metric=50.0, day=DAY)
+
+    extract_topics(session, DAY)
+
+    signal = session.exec(
+        select(TopicSignal).where(
+            TopicSignal.topic_id == topic.id, TopicSignal.day == DAY, TopicSignal.source == "reddit"
+        )
+    ).one()
+    assert signal.value == 100.0
+
+
+def test_existing_topic_matches_item_via_alias_added_by_a_merge(session):
+    """Fix 3: aliases_json de um topico ja existente (ex.: fusao da Tarefa 13)
+    tambem sao usados no casamento do dia, nao so o nome."""
+    topic = Topic(
+        slug="jjk-arc",
+        name="JJK Arc",
+        category="anime",
+        aliases_json=json.dumps(["shibuya arc"]),
+        is_candidate=True,
+        created_day=DAY - timedelta(days=1),
+    )
+    session.add(topic)
+    session.commit()
+    session.refresh(topic)
+
+    _raw_item(session, source="reddit", external_id="r1", country=GLOBAL, title="Shibuya Arc figure", metric=30.0)
+
+    extract_topics(session, DAY)
+
+    signal = session.exec(
+        select(TopicSignal).where(TopicSignal.topic_id == topic.id, TopicSignal.day == DAY)
+    ).one()
+    assert signal.value == 30.0
+
+
+def test_entity_image_url_is_backfilled_once_a_thumb_appears_on_a_later_day(session):
+    """Fix 4: image_url de uma entidade criada sem itens fica None ate um item
+    com thumb casar; nunca fica preso em None para sempre."""
+    extract_topics(session, DAY)
+    topic = session.exec(select(Topic).where(Topic.slug == "labubu")).one()
+    assert topic.image_url is None
+
+    next_day = DAY + timedelta(days=1)
+    _raw_item(
+        session,
+        source="sketchfab",
+        external_id="labubu-sk",
+        country=GLOBAL,
+        title="Labubu figure",
+        metric=10.0,
+        day=next_day,
+        thumb_url="https://sketchfab.example/labubu.png",
+    )
+    extract_topics(session, next_day)
+
+    updated = session.exec(select(Topic).where(Topic.slug == "labubu")).one()
+    assert updated.image_url == "https://sketchfab.example/labubu.png"
