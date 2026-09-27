@@ -24,6 +24,7 @@ DEFAULTS: dict = {
         "thingiverse": "",
         "myminifactory": "",
         "cgtrader": "",
+        "tmdb": "",
         "gemini": "",
     },
     "countries": ["BR", "US", "GB", "DE", "FR", "ES", "JP"],

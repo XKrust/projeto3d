@@ -98,7 +98,8 @@ Regras gerais:
 | CGTrader | API oficial | sim | 1b |
 | MakerWorld | — (não implementado, ver abaixo) | — | 1b |
 | AniList | API (GraphQL) | não | 2 |
-| TMDB, IGDB | API | sim | 2 |
+| TMDB | API | sim (token de leitura) | 2 |
+| IGDB | API | sim | 2 |
 | frankfurter.app (câmbio) | API | não | 3 |
 
 ## Google Trends RSS
@@ -587,6 +588,31 @@ da demanda.
   429/5xx têm retry via `get_with_retry`.
 - **Fixture:** `tests/fixtures/anilist/page.json`, chamada real de 27/09/2026 com a query
   final e `perPage: 5`.
+
+## TMDB
+
+`backend/app/collectors/tmdb.py` (`TMDBCollector`: `name="tmdb"`, `label="TMDB"`, `kind="api"`,
+`needs_key=("tmdb",)`, 360 minutos). É coletor de hype.
+
+**⚠️ Não validado com chave real — validar e regravar as fixtures assim que houver uma.**
+
+- **Autenticação:** `Authorization: Bearer <API Read Access Token>`. Sem token, a API
+  responde 401 `{"status_code":7,"status_message":"Invalid API key…"}` (confirmado em
+  27/09/2026); 401/403 viram `CollectorError` via `get_with_retry`.
+- **Filmes:** `GET https://api.themoviedb.org/3/movie/upcoming?region=<país>&language=pt-BR&page=1`
+  para cada país ativo. Release:
+  - `kind="filme"`, `country=<país>`, `title`;
+  - `aliases=[original_title]` se diferente do título;
+  - `release_date` (vazio ou inválido → `None`), `popularity`;
+  - `image_url=https://image.tmdb.org/t/p/w342<poster_path>` e
+    `url=https://www.themoviedb.org/movie/<id>`.
+- **Séries:** `GET /3/discover/tv?first_air_date.gte=<hoje>&sort_by=popularity.desc&language=pt-BR`.
+  Release: `kind="serie"`, `country=GLOBAL`, `title=name`, `aliases=[original_name]`,
+  `release_date=first_air_date` e `url=https://www.themoviedb.org/tv/<id>`.
+- **CollectedItem:** um por lançamento, com `metric = popularity`.
+- **Fixtures** montadas à mão no formato da doc oficial:
+  `tests/fixtures/tmdb/upcoming_br.json` (3 filmes, um sem data e sem pôster) e
+  `discover_tv.json` (2 séries).
 
 ## MakerWorld (não implementado)
 

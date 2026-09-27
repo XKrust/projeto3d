@@ -46,6 +46,10 @@ const API_KEY_GROUPS: ApiKeyGroup[] = [
     service: "cgtrader",
     fields: [{ key: "cgtrader", label: "Chave da API do CGTrader" }],
   },
+  {
+    service: "tmdb",
+    fields: [{ key: "tmdb", label: "Token de leitura da API do TMDB" }],
+  },
   { service: "gemini", fields: [{ key: "gemini", label: "Chave da API do Gemini" }] },
 ];
 

@@ -17,6 +17,7 @@ from app.collectors.google_trends import GoogleTrendsCollector
 from app.collectors.printables import PrintablesCollector
 from app.collectors.reddit import RedditCollector
 from app.collectors.sketchfab import SketchfabCollector
+from app.collectors.tmdb import TMDBCollector
 from app.collectors.youtube import YouTubeCollector
 
 ALL_COLLECTORS: list[type[Collector]] = [
@@ -33,4 +34,5 @@ ALL_COLLECTORS: list[type[Collector]] = [
     MyMiniFactoryCollector,
     CGTraderCollector,
     AniListCollector,
+    TMDBCollector,
 ]

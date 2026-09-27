@@ -1,0 +1,45 @@
+{
+ "page": 1,
+ "results": [
+  {
+   "backdrop_path": "/tvb1.jpg",
+   "first_air_date": "2026-11-05",
+   "genre_ids": [
+    10765
+   ],
+   "id": 2200001,
+   "name": "Arcane: Noxus",
+   "origin_country": [
+    "US"
+   ],
+   "original_language": "en",
+   "original_name": "Arcane: Noxus",
+   "overview": "Nova série.",
+   "popularity": 210.0,
+   "poster_path": "/tv1.jpg",
+   "vote_average": 0,
+   "vote_count": 0
+  },
+  {
+   "backdrop_path": null,
+   "first_air_date": "2026-10-30",
+   "genre_ids": [
+    16
+   ],
+   "id": 2200002,
+   "name": "Frieren: A Jornada 3",
+   "origin_country": [
+    "JP"
+   ],
+   "original_language": "ja",
+   "original_name": "葬送のフリーレン 第3期",
+   "overview": "",
+   "popularity": 150.5,
+   "poster_path": "/tv2.jpg",
+   "vote_average": 0,
+   "vote_count": 0
+  }
+ ],
+ "total_pages": 1,
+ "total_results": 2
+}

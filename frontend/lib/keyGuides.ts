@@ -85,6 +85,15 @@ export const KEY_GUIDES: Record<string, KeyGuide> = {
     ],
     url: "https://api.cgtrader.com/docs/authentication.html",
   },
+  tmdb: {
+    titulo: "TMDB (filmes e séries)",
+    passos: [
+      "É gratuito. Crie uma conta em themoviedb.org e confirme o e-mail.",
+      "Com a conta aberta, vá em Configurações → API e peça uma chave de uso pessoal.",
+      "Na mesma página, copie o “API Read Access Token” (o texto longo) e cole aqui.",
+    ],
+    url: "https://www.themoviedb.org/settings/api",
+  },
   gemini: {
     titulo: "Gemini",
     passos: [
