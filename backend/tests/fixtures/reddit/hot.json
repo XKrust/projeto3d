@@ -1,0 +1,42 @@
+{
+  "kind": "Listing",
+  "data": {
+    "after": "t3_def456",
+    "dist": 3,
+    "children": [
+      {
+        "kind": "t3",
+        "data": {
+          "id": "abc123",
+          "title": "Impressora nova rodando a noite toda",
+          "score": 120,
+          "num_comments": 10,
+          "stickied": false,
+          "link_flair_text": "Print"
+        }
+      },
+      {
+        "kind": "t3",
+        "data": {
+          "id": "pin1",
+          "title": "Leia as regras do subreddit antes de postar",
+          "score": 5,
+          "num_comments": 0,
+          "stickied": true,
+          "link_flair_text": null
+        }
+      },
+      {
+        "kind": "t3",
+        "data": {
+          "id": "def456",
+          "title": "Miniatura pintada para RPG de mesa",
+          "score": 50,
+          "num_comments": 3,
+          "stickied": false,
+          "link_flair_text": ""
+        }
+      }
+    ]
+  }
+}
