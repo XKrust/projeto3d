@@ -2,6 +2,7 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
+from datetime import date
 from typing import ClassVar, Protocol
 
 import httpx
@@ -25,6 +26,26 @@ class CollectedItem:
     price_usd: float | None = None
 
 
+@dataclass
+class Release:
+    """Um lançamento (anime, filme, série ou jogo) coletado por uma fonte de hype.
+
+    `release_date` é `None` quando a fonte não tem a data exata (só ano/mês).
+    `characters` são dicts `{name, native, favourites, image_url}` (só anime).
+    """
+
+    external_id: str
+    kind: str  # "anime" | "filme" | "serie" | "jogo"
+    title: str
+    release_date: date | None
+    popularity: float
+    country: str
+    url: str | None = None
+    image_url: str | None = None
+    aliases: list[str] = field(default_factory=list)
+    characters: list[dict] = field(default_factory=list)
+
+
 class CollectorError(Exception):
     """Erro esperado de um coletor. Mensagem em portugues, exibida na interface."""
 
@@ -45,6 +66,11 @@ class Collector(ABC):
 
     @abstractmethod
     def collect(self) -> list[CollectedItem]: ...
+
+    def releases(self) -> list[Release]:
+        """Lançamentos encontrados no último `collect()` (só coletores de hype).
+        O runner grava em `HypeRelease` depois de um `collect()` bem-sucedido."""
+        return []
 
 
 class ListingCounter(Protocol):

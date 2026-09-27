@@ -202,3 +202,74 @@ def test_get_sources_reflects_run_status(client, monkeypatch, session):
 
     assert rows["fake_ok"]["status"] == "ok"
     assert rows["fake_ok"]["items_last_run"] == 1
+
+
+# ---------------------------------------------------------------- lancamentos (hype)
+
+from datetime import date as _date  # noqa: E402
+
+from app.collectors.base import Release  # noqa: E402
+from app.models import HypeRelease  # noqa: E402
+
+
+class FakeHypeCollector(Collector):
+    name = "fake_hype"
+    label = "Fake hype"
+    kind = "api"
+    needs_key = ()
+    interval_minutes = 60
+    title_suffix = ""
+
+    def collect(self) -> list[CollectedItem]:
+        self._releases = [
+            Release(
+                external_id="a1",
+                kind="anime",
+                title="Frieren" + type(self).title_suffix,
+                release_date=_date(2026, 10, 10),
+                popularity=500.0,
+                country="GLOBAL",
+                aliases=["Sousou no Frieren", "葬送のフリーレン"],
+                characters=[{"name": "Frieren", "native": "フリーレン", "favourites": 90, "image_url": None}],
+            ),
+            Release(
+                external_id="g1",
+                kind="jogo",
+                title="Jogo Futuro",
+                release_date=None,
+                popularity=12.0,
+                country="GLOBAL",
+            ),
+        ]
+        return [CollectedItem(external_id="a1", title="Frieren", country="GLOBAL", metric=0.5)]
+
+    def releases(self) -> list[Release]:
+        return self._releases
+
+
+def test_collector_releases_default_empty():
+    assert FakeOkCollector({}, object()).releases() == []
+
+
+def test_runner_saves_releases_from_collector(session):
+    run_cycle(session, collectors=[FakeHypeCollector], http=object())
+
+    rows = {r.external_id: r for r in session.exec(select(HypeRelease)).all()}
+    assert set(rows) == {"a1", "g1"}
+    frieren = rows["a1"]
+    assert frieren.source == "fake_hype"
+    assert frieren.kind == "anime"
+    assert frieren.release_date == _date(2026, 10, 10)
+    assert "葬送のフリーレン" in frieren.aliases_json
+    assert "フリーレン" in frieren.characters_json
+    assert rows["g1"].release_date is None
+
+
+def test_runner_upserts_release_same_external_id(session, monkeypatch):
+    run_cycle(session, collectors=[FakeHypeCollector], http=object())
+    monkeypatch.setattr(FakeHypeCollector, "title_suffix", " (2ª temporada)")
+    run_cycle(session, collectors=[FakeHypeCollector], http=object(), force=True)
+
+    rows = session.exec(select(HypeRelease).where(HypeRelease.external_id == "a1")).all()
+    assert len(rows) == 1
+    assert rows[0].title == "Frieren (2ª temporada)"

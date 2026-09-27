@@ -136,3 +136,26 @@ class Platform(SQLModel, table=True):
     fee_pct: float | None = None
     strength_json: str
     notes: str = ""
+
+
+class HypeRelease(SQLModel, table=True):
+    """Lançamento (anime, filme, série, jogo) vindo dos coletores de hype.
+    Upsert por fonte/external_id/país; `updated_day` marca a última coleta."""
+
+    __table_args__ = (
+        UniqueConstraint("source", "external_id", "country", name="uq_hyperelease_source_external_country"),
+    )
+
+    id: int | None = Field(default=None, primary_key=True)
+    source: str = Field(index=True)
+    external_id: str
+    kind: str
+    title: str
+    release_date: date | None = None
+    popularity: float = 0.0
+    country: str
+    url: str | None = None
+    image_url: str | None = None
+    aliases_json: str = "[]"
+    characters_json: str = "[]"
+    updated_day: date

@@ -46,6 +46,23 @@ Cada tarefa de coletor acrescenta a própria classe a `ALL_COLLECTORS`
 - `app.clock.now()` retorna a hora local **com fuso horário** (`.astimezone()`), porque o
   SQLModel exige `tzinfo` em colunas `datetime` (`Source.last_run`).
 
+## Coletores de hype (lançamentos)
+
+Coletores de estreias (AniList, TMDB, IGDB) seguem a mesma interface e, além dos
+`CollectedItem` (que entram no radar como sinal de demanda), guardam uma lista de `Release`
+(`app.collectors.base`) durante `collect()` e a devolvem em `releases()`.
+
+- `Release`:
+  - campos obrigatórios: `external_id`, `kind` (`anime | filme | serie | jogo`), `title`,
+    `release_date` (`None` quando a fonte não tem a data exata) e `popularity`;
+  - `country`: `GLOBAL` ou o país da estreia;
+  - opcionais: `url`, `image_url`, `aliases` (outros títulos, inclusive em japonês) e
+    `characters` (`{name, native, favourites, image_url}`, só anime).
+- O runner, depois de um `collect()` bem-sucedido, faz upsert de `releases()` na tabela
+  `HypeRelease` por fonte/`external_id`/país, com `updated_day` = hoje.
+  - É uma tabela nova: o `create_all` do startup a cria em bancos antigos sem migração.
+- `Collector.releases()` devolve `[]` por padrão, então os coletores comuns não mudam.
+
 ## Rotas
 
 - `GET /api/sources` → uma linha por classe em `ALL_COLLECTORS` (mesmo que nunca tenha

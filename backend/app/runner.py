@@ -11,9 +11,9 @@ from sqlmodel import Session, select
 
 import app.collectors as collectors_pkg
 from app.clock import now, today
-from app.collectors.base import Collector, CollectedItem, CollectorError
+from app.collectors.base import Collector, CollectedItem, CollectorError, Release
 from app.http import make_client
-from app.models import RawItem, Source
+from app.models import HypeRelease, RawItem, Source
 from app.settings_store import get_settings
 
 logger = logging.getLogger(__name__)
@@ -81,6 +81,34 @@ def _upsert_raw_item(session: Session, *, source_name: str, day, item: Collected
     session.add(existing)
 
 
+def _upsert_release(session: Session, *, source_name: str, day, release: Release) -> None:
+    existing = session.exec(
+        select(HypeRelease).where(
+            HypeRelease.source == source_name,
+            HypeRelease.external_id == release.external_id,
+            HypeRelease.country == release.country,
+        )
+    ).first()
+    row = existing or HypeRelease(
+        source=source_name,
+        external_id=release.external_id,
+        country=release.country,
+        kind=release.kind,
+        title=release.title,
+        updated_day=day,
+    )
+    row.kind = release.kind
+    row.title = release.title
+    row.release_date = release.release_date
+    row.popularity = release.popularity
+    row.url = release.url
+    row.image_url = release.image_url
+    row.aliases_json = json.dumps(release.aliases, ensure_ascii=False)
+    row.characters_json = json.dumps(release.characters, ensure_ascii=False)
+    row.updated_day = day
+    session.add(row)
+
+
 def run_cycle(
     session: Session,
     *,
@@ -135,6 +163,8 @@ def run_cycle(
                 day = today()
                 for item in items:
                     _upsert_raw_item(session, source_name=cls.name, day=day, item=item)
+                for release in collector.releases():
+                    _upsert_release(session, source_name=cls.name, day=day, release=release)
 
                 source_row.status = "ok"
                 source_row.last_error = None
