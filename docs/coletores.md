@@ -379,7 +379,8 @@ copiado dos exemplos acima).
   `country="JP"`. `price_usd=None`, porque o preço está em JPY e a conversão fica para a
   Etapa 3.
 - **Contagem:** `GET https://booth.pm/ja/search/<termo>` (termo codificado com
-  `quote(..., safe="")`, ou seja, `/` vira `%2F`) e leitura de "対象商品 N 件". Sem esse
+  `quote(..., safe="")`, ou seja, `/` vira `%2F`) e leitura de "対象商品 N 件". A busca
+  sem resultado também mostra "対象商品 0 件" (confirmado), e a leitura devolve 0. Sem esse
   texto, lança `CollectorError`.
 - **Limitação conhecida:** os títulos do BOOTH são em japonês, e os tópicos (entidades de
   `seed/entities.yaml` e candidatos) são quase todos em inglês. Assim, poucos itens do BOOTH
@@ -391,7 +392,9 @@ copiado dos exemplos acima).
     `<script>`;
   - `wish_lists.json`: resposta real para esses 5 ids;
   - `search.html`: só o trecho "対象商品 11,068 件" da busca real por "ドラゴン";
-  - `robots.txt`: real.
+  - `search_zero.html`: só o trecho "対象商品 0 件" de uma busca real sem resultado;
+  - `robots.txt` e `accounts_robots.txt`: robots.txt reais de `booth.pm` e
+    `accounts.booth.pm`.
 
 ## ArtStation
 
