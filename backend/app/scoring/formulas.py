@@ -118,7 +118,11 @@ def opportunity(
     Combines demand, momentum, and saturation with weights and a time-fit factor.
     Rounded to 1 decimal place.
 
-    Formula: (demand * w_demand + momentum * w_momentum + saturation * w_saturation) + fit * 21
+    Formula: (w_demand·demand + w_momentum·momentum + w_saturation·(100 - saturation)) · fit
+
+    Notes:
+        - Saturation enters as (100 - saturation): higher saturation means lower opportunity
+        - Fit multiplies the entire weighted sum (timing window effect)
 
     Args:
         demand: Demand score (0-100)
@@ -130,12 +134,12 @@ def opportunity(
     Returns:
         Opportunity score
     """
-    base_score = (
+    weighted_sum = (
         demand * weights["demand"]
         + momentum * weights["momentum"]
-        + saturation * weights["saturation"]
+        + (100 - saturation) * weights["saturation"]
     )
-    return round(base_score + fit * 21, 1)
+    return round(weighted_sum * fit, 1)
 
 
 def peak_day(

@@ -132,7 +132,29 @@ class TestOpportunity:
         """Opportunity with standard weights."""
         weights = {"demand": 0.40, "momentum": 0.25, "saturation": 0.35}
         result = opportunity(80, 50, 20, 1.0, weights)
+        # (0.4*80 + 0.25*50 + 0.35*(100-20)) * 1.0 = (32 + 12.5 + 28) * 1.0 = 72.5
         assert result == 72.5
+
+    def test_higher_saturation(self):
+        """Higher saturation (more crowded market) lowers opportunity."""
+        weights = {"demand": 0.40, "momentum": 0.25, "saturation": 0.35}
+        result = opportunity(80, 50, 50, 1.0, weights)
+        # (0.4*80 + 0.25*50 + 0.35*(100-50)) * 1.0 = (32 + 12.5 + 17.5) * 1.0 = 62.0
+        assert result == 62.0
+
+    def test_with_partial_fit(self):
+        """Fit factor multiplies the entire weighted sum."""
+        weights = {"demand": 0.40, "momentum": 0.25, "saturation": 0.35}
+        result = opportunity(80, 50, 20, 0.5, weights)
+        # (0.4*80 + 0.25*50 + 0.35*(100-20)) * 0.5 = 72.5 * 0.5 = 36.25 → 36.2 or 36.3
+        assert result == pytest.approx(36.2, abs=0.05)
+
+    def test_zero_with_full_saturation(self):
+        """Full saturation with zero demand and momentum gives zero."""
+        weights = {"demand": 0.40, "momentum": 0.25, "saturation": 0.35}
+        result = opportunity(0, 0, 100, 1.0, weights)
+        # (0.4*0 + 0.25*0 + 0.35*(100-100)) * 1.0 = 0.0
+        assert result == 0.0
 
 
 class TestPeakDay:
