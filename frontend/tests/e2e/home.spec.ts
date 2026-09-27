@@ -20,8 +20,8 @@ test.describe("tela inicial (países)", () => {
     await page.goto("/");
 
     await expect(page.getByRole("heading", { level: 1, name: "Onde você vai vender?" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Japão: 81% de chance de venda" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Brasil: 72% de chance de venda" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Japão: 81% de chance de venda (estimativa)" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Brasil: 72% de chance de venda (estimativa)" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Alemanha: sem dados" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Reino Unido: inativo, ative em Configurações" })).toBeVisible();
     await expect(page.getByText("Melhor tema: The Apothecary Diaries")).toBeVisible();
@@ -29,7 +29,7 @@ test.describe("tela inicial (países)", () => {
 
   test("escolher Japao leva ao radar com country=JP e lembra a escolha", async ({ page }) => {
     await page.goto("/");
-    await page.getByRole("button", { name: "Japão: 81% de chance de venda" }).click();
+    await page.getByRole("button", { name: "Japão: 81% de chance de venda (estimativa)" }).click();
 
     await expect(page).toHaveURL(/\/radar\?country=JP/);
 
@@ -41,7 +41,7 @@ test.describe("tela inicial (países)", () => {
 
   test("nav mostra o pais escolhido", async ({ page }) => {
     await page.goto("/");
-    await page.getByRole("button", { name: "Japão: 81% de chance de venda" }).click();
+    await page.getByRole("button", { name: "Japão: 81% de chance de venda (estimativa)" }).click();
     await expect(page).toHaveURL(/country=JP/);
 
     await expect(page.getByRole("link", { name: "País: Japão. Trocar país" })).toBeVisible();

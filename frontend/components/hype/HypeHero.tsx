@@ -5,7 +5,7 @@ import { formatDayMonth } from "@/lib/dates";
 import { KIND_LABELS, formatCompetition, type HypeRelease } from "@/lib/hype-types";
 
 // Destaque (Stat-Led): o lançamento de maior oportunidade. O número é quantos dias
-// faltam para a estreia; sem data, vira a nota de oportunidade.
+// faltam para a estreia; sem data (ou já estreado), vira a nota de oportunidade.
 export function HypeHero({ release }: { release: HypeRelease }) {
   const days = release.days_to_release;
   const hasDate = days !== null && days >= 0;
@@ -13,7 +13,9 @@ export function HypeHero({ release }: { release: HypeRelease }) {
   const competition = formatCompetition(release.competition);
 
   let figureLabel = "de oportunidade, estreia sem data confirmada";
-  if (hasDate) {
+  if (days !== null && days < 0) {
+    figureLabel = "de oportunidade, já estreou";
+  } else if (hasDate) {
     figureLabel = days === 1 ? "dia para a estreia" : "dias para a estreia";
   }
 

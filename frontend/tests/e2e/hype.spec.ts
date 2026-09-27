@@ -26,6 +26,19 @@ test.describe("/hype", () => {
     await expect(page.getByText("Estreia em 82 dias · concorrência ainda não medida")).toBeVisible();
   });
 
+  test("destaque que já estreou não diz 'sem data confirmada'", async ({ page }) => {
+    const released = structuredClone(hypeFixture);
+    released.releases[1].days_to_release = -3;
+    await page.route("**/api/hype?*", (route) => route.fulfill({ json: released }));
+    await page.goto("/hype");
+
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Vingadores: Guerras Secretas" })
+    ).toBeVisible();
+    await expect(page.getByText("de oportunidade, já estreou")).toBeVisible();
+    await expect(page.getByText("estreia sem data confirmada")).toHaveCount(0);
+  });
+
   test("personagens aparecem com chance (estimativa)", async ({ page }) => {
     await page.route("**/api/hype?*", (route) => route.fulfill({ json: hypeFixture }));
     await page.goto("/hype");

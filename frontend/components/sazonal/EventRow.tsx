@@ -14,7 +14,10 @@ export function EventRow({ event }: { event: SeasonEvent }) {
           {event.name}
         </h3>
         <p className="text-sm text-muted-foreground">
-          Comece até {formatDayMonth(event.start_by)} · evento em {formatDays(event.days_to_event)}
+          {event.status === "atrasado"
+            ? "Prazo ideal já passou"
+            : `Comece até ${formatDayMonth(event.start_by)}`}{" "}
+          · evento em {formatDays(event.days_to_event)}
         </p>
         <TopModels models={event.top_models} label={`Top 5 de ${event.name}`} variant="compact" />
       </div>

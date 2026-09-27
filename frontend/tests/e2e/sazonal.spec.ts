@@ -54,7 +54,16 @@ test.describe("/sazonal", () => {
 
     const row = page.getByRole("listitem").filter({ hasText: "Dia das Crianças" });
     await expect(row).toContainText("Atrasado");
-    await expect(row).toContainText("Comece até 14/09");
+    await expect(row).toContainText("Prazo ideal já passou");
+    await expect(row).not.toContainText("Comece até");
+  });
+
+  test("país inválido na URL cai no país padrão", async ({ page }) => {
+    const request = page.waitForRequest((req) => req.url().includes("/api/seasonal?"));
+
+    await page.goto("/sazonal?country=XX");
+
+    expect((await request).url()).toContain("country=BR");
   });
 
   test("usa o país da URL", async ({ page }) => {

@@ -8,6 +8,12 @@ import { useSyncExternalStore } from "react";
 const STORAGE_KEY = "radar3d.country";
 const EVENT = "radar3d-country";
 export const DEFAULT_COUNTRY = "BR";
+const KNOWN_COUNTRIES = new Set(["BR", "US", "GB", "DE", "FR", "ES", "JP"]);
+
+// Código fora da lista (URL digitada errada, valor velho guardado) é ignorado.
+function valid(code: string | null | undefined): string | null {
+  return code && KNOWN_COUNTRIES.has(code) ? code : null;
+}
 
 function readStored(): string | null {
   try {
@@ -41,21 +47,21 @@ export function saveCountry(code: string): void {
 }
 
 /**
- * País atual: ?country= da URL, senão o guardado, senão "BR".
+ * País atual: ?country= da URL, senão o guardado, senão "BR" (códigos desconhecidos são ignorados).
  * Devolve `null` só no primeiro instante (antes de ler o navegador), para as telas não
  * pedirem dados do país errado; nesse caso, espere antes de buscar.
  */
 export function useCountry(): string | null {
   const searchParams = useSearchParams();
   const stored = useSyncExternalStore<string | null | undefined>(subscribe, readStored, readServer);
-  const fromUrl = searchParams.get("country");
+  const fromUrl = valid(searchParams.get("country"));
   if (fromUrl) {
     return fromUrl;
   }
   if (stored === undefined) {
     return null;
   }
-  return stored || DEFAULT_COUNTRY;
+  return valid(stored) ?? DEFAULT_COUNTRY;
 }
 
 /** O país guardado (ou null), sem olhar a URL — para a tela inicial marcar a escolha. */

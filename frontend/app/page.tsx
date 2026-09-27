@@ -92,7 +92,7 @@ export default function Inicio() {
                     <button
                       type="button"
                       onClick={() => choose(country.code)}
-                      aria-label={`${country.name}: ${country.chance === null ? "sem dados" : `${country.chance}% de chance de venda`}`}
+                      aria-label={`${country.name}: ${country.chance === null ? "sem dados" : `${country.chance}% de chance de venda (estimativa)`}`}
                       className={`${base} hover:bg-muted ${selected ? "ring-2 ring-primary" : ""}`}
                     >
                       {card}
