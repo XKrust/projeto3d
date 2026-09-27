@@ -1,129 +1,179 @@
 # Datas que puxam vendas de modelos 3D, por país. Ver docs/hype-sazonal.md.
 #
-# countries: lista de códigos (app.constants.COUNTRIES) ou [ALL].
-# rule (uma destas):
-#   fixed: "MM-DD"
-#   nth_weekday: {month, weekday (0=segunda … 6=domingo), n (1 = primeiro, -1 = último)}
-#   easter_offset: dias em relação à Páscoa (0 = domingo de Páscoa)
-#   after_nth_weekday: {month, weekday, n, plus_days}  (ex.: Black Friday)
-# themes: ideias de modelos que costumam vender na data.
+# idea_sets: conjuntos de ideias de modelo, reutilizados por várias datas.
+#   Cada ideia: name (como aparece na tela, PT), query (termo de busca nas lojas, em
+#   inglês) e keywords (o que conta como "fala dessa ideia" nos itens coletados; EN, PT e
+#   JP quando faz sentido).
+#
+# events: cada data.
+#   countries: códigos (app.constants.COUNTRIES) ou [ALL].
+#   rule (uma destas):
+#     fixed: "MM-DD"
+#     nth_weekday: {month, weekday (0=segunda … 6=domingo), n (1 = primeiro, -1 = último)}
+#     easter_offset: dias em relação à Páscoa (0 = domingo de Páscoa)
+#     after_nth_weekday: {month, weekday, n, plus_days}  (ex.: Black Friday)
+#   ideas: nome de um idea_set.
 
-- slug: halloween
-  name: Halloween
-  countries: [ALL]
-  rule: {fixed: "10-31"}
-  themes: [abóboras, caveiras, bruxas, monstros clássicos, decoração de terror]
+idea_sets:
+  halloween:
+    - {name: Caveira, query: skull, keywords: [skull, caveira, calavera, ドクロ]}
+    - {name: Abóbora, query: pumpkin, keywords: [pumpkin, jack o lantern, abobora, abóbora]}
+    - {name: Bruxa, query: witch, keywords: [witch, bruxa]}
+    - {name: Fantasma, query: ghost, keywords: [ghost, fantasma]}
+    - {name: Morcego, query: bat decoration, keywords: [bat, morcego]}
+    - {name: Aranha, query: spider, keywords: [spider, aranha]}
+    - {name: Zumbi, query: zombie, keywords: [zombie, zumbi]}
 
-- slug: natal
-  name: Natal
-  countries: [ALL]
-  rule: {fixed: "12-25"}
-  themes: [enfeites de árvore, presépio, Papai Noel, porta-velas, presentes personalizados]
+  natal:
+    - {name: Enfeite de árvore, query: christmas ornament, keywords: [christmas ornament, ornament, bauble, enfeite de natal]}
+    - {name: Presépio, query: nativity, keywords: [nativity, presepio, presépio]}
+    - {name: Papai Noel, query: santa claus, keywords: [santa claus, santa, papai noel]}
+    - {name: Árvore de Natal, query: christmas tree, keywords: [christmas tree, arvore de natal]}
+    - {name: Floco de neve, query: snowflake, keywords: [snowflake, floco de neve]}
+    - {name: Rena, query: reindeer, keywords: [reindeer, rena]}
+    - {name: Boneco de gengibre, query: gingerbread, keywords: [gingerbread]}
 
-- slug: pascoa
-  name: Páscoa
-  countries: [ALL]
-  rule: {easter_offset: 0}
-  themes: [coelhos, porta-ovos, cestas, moldes de chocolate]
+  pascoa:
+    - {name: Coelho, query: easter bunny, keywords: [easter bunny, bunny, rabbit, coelho]}
+    - {name: Porta-ovos, query: egg holder, keywords: [egg holder, egg cup, porta ovo]}
+    - {name: Cesta de Páscoa, query: easter basket, keywords: [easter basket, cesta de pascoa]}
+    - {name: Forma de chocolate, query: chocolate mold, keywords: [chocolate mold, forma de chocolate]}
+    - {name: Pintinho, query: chick, keywords: [chick, pintinho]}
+    - {name: Ovo decorado, query: easter egg, keywords: [easter egg, ovo de pascoa]}
 
-- slug: black_friday
-  name: Black Friday
-  countries: [ALL]
-  rule: {after_nth_weekday: {month: 11, weekday: 3, n: 4, plus_days: 1}}
-  themes: [pacotes de modelos, coleções com desconto, itens de presente]
+  presentes:
+    - {name: Dragão articulado, query: articulated dragon, keywords: [articulated dragon, flexi dragon, dragao articulado]}
+    - {name: Suporte de celular, query: phone stand, keywords: [phone stand, phone holder, suporte de celular]}
+    - {name: Organizador de mesa, query: desk organizer, keywords: [desk organizer, organizador de mesa]}
+    - {name: Vaso para plantas, query: planter, keywords: [planter, vaso]}
+    - {name: Fidget, query: fidget, keywords: [fidget]}
+    - {name: Chaveiro, query: keychain, keywords: [keychain, chaveiro]}
 
-- slug: dia_dos_namorados_br
-  name: Dia dos Namorados
-  countries: [BR]
-  rule: {fixed: "06-12"}
-  themes: [corações, casais, porta-retratos, luminárias personalizadas]
+  namorados:
+    - {name: Coração, query: heart, keywords: [heart, coracao, coração]}
+    - {name: Casal, query: couple figure, keywords: [couple, casal]}
+    - {name: Litofania, query: lithophane, keywords: [lithophane, litofania]}
+    - {name: Rosa, query: rose flower, keywords: [rose, rosa]}
+    - {name: Luminária, query: lamp, keywords: [lamp, luminaria, luminária]}
+    - {name: Nome personalizado, query: name sign, keywords: [name sign, nome personalizado]}
 
-- slug: dia_das_criancas_br
-  name: Dia das Crianças
-  countries: [BR]
-  rule: {fixed: "10-12"}
-  themes: [brinquedos articulados, flexi, personagens de anime e games, quebra-cabeças]
+  criancas:
+    - {name: Bicho flexi, query: flexi, keywords: [flexi, articulated]}
+    - {name: Figura de anime, query: anime figure, keywords: [anime figure, figurine, action figure, フィギュア]}
+    - {name: Dinossauro, query: dinosaur, keywords: [dinosaur, dinossauro]}
+    - {name: Dragão, query: dragon, keywords: [dragon, dragao, dragão]}
+    - {name: Carrinho, query: toy car, keywords: [toy car, carrinho]}
+    - {name: Quebra-cabeça, query: puzzle, keywords: [puzzle, quebra cabeca]}
 
-- slug: dia_das_maes
-  name: Dia das Mães
-  countries: [BR, US]
-  rule: {nth_weekday: {month: 5, weekday: 6, n: 2}}
-  themes: [vasos, porta-joias, flores, luminárias, nomes personalizados]
+  maes:
+    - {name: Vaso, query: vase, keywords: [vase, vaso]}
+    - {name: Porta-joias, query: jewelry box, keywords: [jewelry box, jewelry holder, porta joias]}
+    - {name: Flor, query: flower, keywords: [flower, flor]}
+    - {name: Luminária, query: lamp, keywords: [lamp, luminaria, luminária]}
+    - {name: Porta-retrato, query: photo frame, keywords: [photo frame, porta retrato]}
+    - {name: Litofania, query: lithophane, keywords: [lithophane, litofania]}
 
-- slug: dia_dos_pais_br
-  name: Dia dos Pais
-  countries: [BR]
-  rule: {nth_weekday: {month: 8, weekday: 6, n: 2}}
-  themes: [organizadores de mesa, carros, futebol, churrasco, ferramentas]
+  pais:
+    - {name: Organizador de mesa, query: desk organizer, keywords: [desk organizer, organizador de mesa]}
+    - {name: Miniatura de carro, query: car model, keywords: [car model, carro]}
+    - {name: Futebol, query: football, keywords: [football, soccer, futebol]}
+    - {name: Churrasco, query: bbq, keywords: [bbq, churrasco]}
+    - {name: Porta-ferramentas, query: tool holder, keywords: [tool holder, ferramenta]}
+    - {name: Porta-cerveja, query: beer holder, keywords: [beer, cerveja]}
 
-- slug: carnaval
-  name: Carnaval
-  countries: [BR]
-  rule: {easter_offset: -47}
-  themes: [máscaras, adereços, fantasias, brincos]
+  carnaval:
+    - {name: Máscara, query: carnival mask, keywords: [carnival mask, mask, mascara, máscara]}
+    - {name: Brinco, query: earring, keywords: [earring, brinco]}
+    - {name: Coroa, query: crown, keywords: [crown, coroa]}
+    - {name: Adereço de fantasia, query: costume prop, keywords: [costume, cosplay, fantasia]}
+    - {name: Confete e serpentina, query: confetti, keywords: [confetti, confete]}
 
-- slug: valentines_day
-  name: Dia dos Namorados (14/02)
-  countries: [US, GB, DE, FR, ES]
-  rule: {fixed: "02-14"}
-  themes: [corações, casais, porta-retratos, luminárias personalizadas]
+  thanksgiving:
+    - {name: Peru, query: turkey, keywords: [turkey]}
+    - {name: Folhas de outono, query: autumn leaves, keywords: [autumn, fall leaves, outono]}
+    - {name: Porta-guardanapo, query: napkin ring, keywords: [napkin ring, porta guardanapo]}
+    - {name: Centro de mesa, query: centerpiece, keywords: [centerpiece, centro de mesa]}
+    - {name: Cornucópia, query: cornucopia, keywords: [cornucopia]}
 
-- slug: fathers_day_us
-  name: Father's Day
-  countries: [US]
-  rule: {nth_weekday: {month: 6, weekday: 6, n: 3}}
-  themes: [organizadores de mesa, carros, esportes, ferramentas]
+  japao_festas:
+    - {name: Kabuto de samurai, query: samurai helmet, keywords: [kabuto, samurai, 兜]}
+    - {name: Koinobori, query: koinobori, keywords: [koinobori, 鯉のぼり]}
+    - {name: Figura de anime, query: anime figure, keywords: [anime figure, figurine, フィギュア]}
+    - {name: Garage kit, query: garage kit, keywords: [garage kit, ガレージキット]}
+    - {name: Gato da sorte, query: maneki neko, keywords: [maneki neko, 招き猫]}
 
-- slug: thanksgiving
-  name: Thanksgiving
-  countries: [US]
-  rule: {nth_weekday: {month: 11, weekday: 3, n: 4}}
-  themes: [perus, decoração de mesa, outono, porta-guardanapos]
+  tanabata:
+    - {name: Estrela, query: star ornament, keywords: [star ornament, estrela, 星]}
+    - {name: Bambu, query: bamboo, keywords: [bamboo, 竹]}
+    - {name: Orihime e Hikoboshi, query: orihime, keywords: [orihime, hikoboshi, 織姫, 彦星]}
+    - {name: Lanterna, query: lantern, keywords: [lantern, 提灯]}
+    - {name: Porta-tanzaku, query: tanzaku, keywords: [tanzaku, 短冊]}
 
-- slug: mothering_sunday_gb
-  name: Mothering Sunday
-  countries: [GB]
-  rule: {easter_offset: -21}
-  themes: [vasos, porta-joias, flores, nomes personalizados]
+  obon:
+    - {name: Lanterna, query: lantern, keywords: [lantern, 提灯]}
+    - {name: Santuário em miniatura, query: shrine, keywords: [shrine, 神社]}
+    - {name: Torii, query: torii, keywords: [torii, 鳥居]}
+    - {name: Incensário, query: incense holder, keywords: [incense, 線香]}
+    - {name: Gato da sorte, query: maneki neko, keywords: [maneki neko, 招き猫]}
 
-- slug: muttertag_de
-  name: Muttertag
-  countries: [DE]
-  rule: {nth_weekday: {month: 5, weekday: 6, n: 2}}
-  themes: [vasos, porta-joias, flores, nomes personalizados]
-
-- slug: fete_des_meres_fr
-  name: Fête des Mères
-  countries: [FR]
-  rule: {nth_weekday: {month: 5, weekday: 6, n: -1}}
-  themes: [vasos, porta-joias, flores, nomes personalizados]
-
-- slug: dia_de_la_madre_es
-  name: Día de la Madre
-  countries: [ES]
-  rule: {nth_weekday: {month: 5, weekday: 6, n: 1}}
-  themes: [vasos, porta-joias, flores, nomes personalizados]
-
-- slug: golden_week
-  name: Golden Week
-  countries: [JP]
-  rule: {fixed: "04-29"}
-  themes: [figuras de anime, kits de garagem, acessórios de viagem]
-
-- slug: kodomo_no_hi
-  name: Kodomo no Hi (Dia das Crianças)
-  countries: [JP]
-  rule: {fixed: "05-05"}
-  themes: [koinobori, samurai kabuto, brinquedos]
-
-- slug: tanabata
-  name: Tanabata
-  countries: [JP]
-  rule: {fixed: "07-07"}
-  themes: [estrelas, bambu, tanzaku, casais Orihime e Hikoboshi]
-
-- slug: obon
-  name: Obon
-  countries: [JP]
-  rule: {fixed: "08-13"}
-  themes: [lanternas, decoração tradicional, santuários em miniatura]
+events:
+  - {slug: halloween, name: Halloween, countries: [ALL], rule: {fixed: "10-31"}, ideas: halloween}
+  - {slug: natal, name: Natal, countries: [ALL], rule: {fixed: "12-25"}, ideas: natal}
+  - {slug: pascoa, name: Páscoa, countries: [ALL], rule: {easter_offset: 0}, ideas: pascoa}
+  - slug: black_friday
+    name: Black Friday
+    countries: [ALL]
+    rule: {after_nth_weekday: {month: 11, weekday: 3, n: 4, plus_days: 1}}
+    ideas: presentes
+  - {slug: dia_dos_namorados_br, name: Dia dos Namorados, countries: [BR], rule: {fixed: "06-12"}, ideas: namorados}
+  - {slug: dia_das_criancas_br, name: Dia das Crianças, countries: [BR], rule: {fixed: "10-12"}, ideas: criancas}
+  - slug: dia_das_maes
+    name: Dia das Mães
+    countries: [BR, US]
+    rule: {nth_weekday: {month: 5, weekday: 6, n: 2}}
+    ideas: maes
+  - slug: dia_dos_pais_br
+    name: Dia dos Pais
+    countries: [BR]
+    rule: {nth_weekday: {month: 8, weekday: 6, n: 2}}
+    ideas: pais
+  - {slug: carnaval, name: Carnaval, countries: [BR], rule: {easter_offset: -47}, ideas: carnaval}
+  - slug: valentines_day
+    name: Dia dos Namorados (14/02)
+    countries: [US, GB, DE, FR, ES]
+    rule: {fixed: "02-14"}
+    ideas: namorados
+  - slug: fathers_day_us
+    name: Father's Day
+    countries: [US]
+    rule: {nth_weekday: {month: 6, weekday: 6, n: 3}}
+    ideas: pais
+  - slug: thanksgiving
+    name: Thanksgiving
+    countries: [US]
+    rule: {nth_weekday: {month: 11, weekday: 3, n: 4}}
+    ideas: thanksgiving
+  - {slug: mothering_sunday_gb, name: Mothering Sunday, countries: [GB], rule: {easter_offset: -21}, ideas: maes}
+  - slug: muttertag_de
+    name: Muttertag
+    countries: [DE]
+    rule: {nth_weekday: {month: 5, weekday: 6, n: 2}}
+    ideas: maes
+  - slug: fete_des_meres_fr
+    name: Fête des Mères
+    countries: [FR]
+    rule: {nth_weekday: {month: 5, weekday: 6, n: -1}}
+    ideas: maes
+  - slug: dia_de_la_madre_es
+    name: Día de la Madre
+    countries: [ES]
+    rule: {nth_weekday: {month: 5, weekday: 6, n: 1}}
+    ideas: maes
+  - {slug: golden_week, name: Golden Week, countries: [JP], rule: {fixed: "04-29"}, ideas: japao_festas}
+  - slug: kodomo_no_hi
+    name: Kodomo no Hi (Dia das Crianças)
+    countries: [JP]
+    rule: {fixed: "05-05"}
+    ideas: japao_festas
+  - {slug: tanabata, name: Tanabata, countries: [JP], rule: {fixed: "07-07"}, ideas: tanabata}
+  - {slug: obon, name: Obon, countries: [JP], rule: {fixed: "08-13"}, ideas: obon}

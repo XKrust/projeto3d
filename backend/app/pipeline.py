@@ -24,6 +24,7 @@ from app.models import Platform, RawItem, Topic, TopicItem, TopicListing, TopicS
 from app.scoring import formulas
 from app.settings_store import get_settings
 from app.hype.competition import update_hype_listings
+from app.hype.seasonal_ideas import update_seasonal_listings, update_seasonal_signals
 from app.topics.extract import PLATFORM_SOURCES, extract_topics
 
 logger = logging.getLogger(__name__)
@@ -280,6 +281,16 @@ def run_pipeline(
         update_listings(session, counters, day, top_n)
     # Concorrência dos lançamentos do hype (1x por dia; a função se protege sozinha).
     update_hype_listings(session, counters, day)
+    # Top 5 de modelos por data sazonal: procura e concorrência (1x por dia cada).
+    update_seasonal_signals(session, day)
+    settings = get_settings(session)
+    update_seasonal_listings(
+        session,
+        counters,
+        day,
+        lead_days=int(settings["lead_days"]),
+        modeling_days=int(settings["modeling_days"]),
+    )
 
     compute_scores(session, day)
 

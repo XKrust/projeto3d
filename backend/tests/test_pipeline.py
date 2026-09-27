@@ -328,7 +328,9 @@ def test_update_listings_upserts_same_day(session):
 # ---------------------------------------------------------------- run_pipeline / make_after
 
 
-def test_run_pipeline_extracts_counts_once_per_day_scores_and_enriches(session, platforms):
+def test_run_pipeline_extracts_counts_once_per_day_scores_and_enriches(session, platforms, monkeypatch):
+    # Só a contagem do radar interessa aqui; a sazonal tem teste próprio.
+    monkeypatch.setattr(pipeline, "update_seasonal_listings", lambda *a, **k: 0)
     _raw_item(session, source="google_trends", external_id="t1", country="BR", title="Nova Serie Qualquer")
     _raw_item(session, source="sketchfab", external_id="s1", title="Nova Serie Qualquer figure")
     counter = FakeCounter()
@@ -549,3 +551,17 @@ def test_run_pipeline_updates_hype_listings(session, platforms, monkeypatch):
     run_pipeline(session, counters)
 
     assert calls == [(counters, DAY)]
+
+
+def test_run_pipeline_updates_seasonal_signals_and_listings(session, platforms, monkeypatch):
+    calls = []
+    monkeypatch.setattr(pipeline, "update_seasonal_signals", lambda s, day: calls.append(("signals", day)))
+    monkeypatch.setattr(
+        pipeline,
+        "update_seasonal_listings",
+        lambda s, counters, day, lead_days, modeling_days: calls.append(("listings", day, lead_days, modeling_days)),
+    )
+
+    run_pipeline(session, {"cults3d": FakeCounter()})
+
+    assert calls == [("signals", DAY), ("listings", DAY, 21, 7)]

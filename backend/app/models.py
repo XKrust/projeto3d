@@ -171,3 +171,28 @@ class HypeListing(SQLModel, table=True):
     platform: str
     day: date
     count: int
+
+
+class SeasonalIdeaSignal(SQLModel, table=True):
+    """Procura por uma ideia de modelo sazonal num país, no dia: soma do `metric` dos
+    itens dos últimos 30 dias que citam a ideia (ver app/hype/seasonal_ideas.py)."""
+
+    __table_args__ = (UniqueConstraint("idea", "country", "day", name="uq_seasonalsignal_idea_country_day"),)
+
+    id: int | None = Field(default=None, primary_key=True)
+    idea: str = Field(index=True)
+    country: str
+    day: date
+    signal: float
+
+
+class SeasonalListing(SQLModel, table=True):
+    """Quantos anúncios o termo de busca de uma ideia sazonal tem numa plataforma no dia."""
+
+    __table_args__ = (UniqueConstraint("term", "platform", "day", name="uq_seasonallisting_term_platform_day"),)
+
+    id: int | None = Field(default=None, primary_key=True)
+    term: str = Field(index=True)
+    platform: str
+    day: date
+    count: int

@@ -15,9 +15,18 @@ AGORA_DAYS = 7
 
 
 @lru_cache(maxsize=1)
-def load_events() -> tuple[dict, ...]:
+def _load_file() -> dict:
     with open(_EVENTS_FILE, encoding="utf-8") as f:
-        return tuple(yaml.safe_load(f) or [])
+        return yaml.safe_load(f) or {}
+
+
+def load_events() -> tuple[dict, ...]:
+    return tuple(_load_file().get("events") or [])
+
+
+def event_ideas(event: dict) -> list[dict]:
+    """Ideias de modelo da data: `{name, query, keywords}` do `idea_set` do evento."""
+    return list((_load_file().get("idea_sets") or {}).get(event.get("ideas"), []))
 
 
 def easter(year: int) -> date:
@@ -100,8 +109,84 @@ def upcoming_events(
                 "days_to_event": (when - today).days,
                 "days_to_start": days_to_start,
                 "status": _status(days_to_start),
-                "themes": list(event.get("themes") or []),
+                "themes": [idea["name"] for idea in event_ideas(event)],
+                "_event": event,
             }
         )
     events.sort(key=lambda e: (e["start_by"], e["slug"]))
     return events[:limit]
+
+
+TOP_MODELS = 5
+NEUTRAL_MOMENTUM = 50.0
+UNMEASURED_SATURATION = 50.0
+
+
+def top_models(
+    session,
+    event: dict,
+    country: str,
+    today: date,
+    event_date: date,
+    *,
+    lead_days: int,
+    modeling_days: int,
+    weights: dict,
+    names: dict[str, str],
+) -> list[dict]:
+    """As 5 ideias com mais chance de vender na data, no país.
+
+    Mesma fórmula de oportunidade do radar (docs/score.md): demanda = percentil do sinal
+    entre as ideias da data; saturação = percentil dos anúncios entre as ideias medidas;
+    momentum neutro; janela = (evento − antecedência) contra (hoje + modelagem). Ideias
+    sem sinal nem contagem ficam sem nota (nada de número inventado) e vão por último,
+    na ordem do YAML.
+    """
+    from app.hype.seasonal_ideas import latest_competition, latest_signals
+    from app.scoring import formulas
+
+    ideas = event_ideas(event)
+    signals = latest_signals(session, country, today)
+    competition = latest_competition(session, today)
+
+    idea_signal = {idea["name"]: signals.get(idea["name"], 0.0) for idea in ideas}
+    idea_counts = {idea["name"]: competition.get(idea["query"], {}) for idea in ideas}
+    measured = {
+        name for name in idea_signal if idea_signal[name] > 0 or idea_counts[name]
+    }
+    demand = formulas.percentile_ranks({name: idea_signal[name] for name in measured})
+    saturation = formulas.percentile_ranks(
+        {name: float(sum(idea_counts[name].values())) for name in measured if idea_counts[name]}
+    )
+    peak = formulas.peak_day(today, 0.0, event_day=event_date, lead_days=lead_days)
+    fit = formulas.window_fit(peak, today + timedelta(days=modeling_days))
+
+    models = []
+    for position, idea in enumerate(ideas):
+        name = idea["name"]
+        is_measured = name in measured
+        opportunity = None
+        chance = None
+        if is_measured:
+            opportunity = formulas.opportunity(
+                demand.get(name, 0.0), NEUTRAL_MOMENTUM,
+                saturation.get(name, UNMEASURED_SATURATION), fit, weights,
+            )
+            chance = formulas.sale_chance(opportunity)
+        counts = sorted(idea_counts[name].items(), key=lambda kv: (-kv[1], kv[0]))
+        models.append(
+            {
+                "name": name,
+                "query": idea["query"],
+                "opportunity": opportunity,
+                "sale_chance": chance,
+                "measured": is_measured,
+                "competition": {names.get(slug, slug): count for slug, count in counts},
+                "signal": idea_signal[name],
+                "_position": position,
+            }
+        )
+    models.sort(key=lambda m: (not m["measured"], -(m["opportunity"] or 0), m["_position"]))
+    for model in models:
+        del model["_position"]
+    return models[:TOP_MODELS]

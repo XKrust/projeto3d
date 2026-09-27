@@ -5,9 +5,13 @@
 `backend/app/hype/seasonal.py` + `backend/app/seed/seasonal_events.yaml`. É puro cálculo de
 datas, sem rede.
 
-- **Eventos:** cada item do YAML tem `slug`, `name`, `countries` (códigos de
-  `app.constants.COUNTRIES` ou `[ALL]`), `rule` e `themes`, que são ideias de modelos que
-  vendem na data.
+- **YAML:** duas partes.
+  - `idea_sets`: conjuntos de ideias de modelo reutilizáveis. Cada ideia é `{name}` (como
+    aparece na tela), `query` (termo de busca nas lojas, em inglês) e `keywords` (o que
+    conta como "fala dessa ideia" nos itens coletados; EN/PT/JP).
+  - `events`: cada data com `slug`, `name`, `countries` (códigos de
+    `app.constants.COUNTRIES` ou `[ALL]`), `rule` e `ideas` (nome de um `idea_set`).
+  - Os `themes` da API são os nomes das ideias.
 - **Regras de data:**
   - `fixed: "MM-DD"`;
   - `nth_weekday: {month, weekday, n}`, com `weekday` 0=segunda … 6=domingo e `n` 1=primeiro,
@@ -26,9 +30,26 @@ datas, sem rede.
   - `atrasado`: `start_by` já passou, mas o evento não;
   - `agora`: faltam até 7 dias para `start_by`;
   - `em_breve`: o resto.
+- **Top 5 modelos por data** (`app/hype/seasonal_ideas.py` + `top_models` em
+  `app/hype/seasonal.py`):
+  - **Procura:** `update_seasonal_signals` roda 1x/dia no pipeline. Para cada ideia e país
+    ativo, grava `SeasonalIdeaSignal` com a soma do `metric` dos itens dos últimos 30 dias
+    cujo título+tags cita alguma keyword (`matches_phrase`). Entram as fontes de
+    plataforma de qualquer país e as outras fontes do próprio país ou GLOBAL.
+  - **Concorrência:** `update_seasonal_listings` roda 1x/dia no pipeline. Conta os anúncios
+    do `query` das ideias das datas cujo "comece até" está nos próximos 60 dias (ou
+    atrasado com o evento ainda por vir), no máximo 20 termos, e grava `SeasonalListing`.
+    A falha de um termo pula só ele; 3 falhas seguidas abandonam a plataforma.
+  - **Nota:** `demanda` = percentil do sinal entre as ideias da data; `saturação` =
+    percentil dos anúncios entre as ideias medidas (50 sem contagem); `momentum` = 50; e
+    `fit_janela` = (evento − `lead_days`) contra (hoje + `modeling_days`). `opportunity` e
+    `sale_chance` saem de `formulas`.
+  - **Sem dados:** a ideia fica `measured: false`, sem nota nem chance (nada inventado), e
+    vai para o fim, na ordem do YAML.
 - **API:** `GET /api/seasonal?country=BR` →
   `{country, lead_days, modeling_days, events: [{slug, name, date, start_by, days_to_event,
-  days_to_start, status, themes}]}`.
+  days_to_start, status, themes, top_models}]}`. `top_models` traz 5 itens
+  `{name, query, opportunity, sale_chance, measured, competition, signal}`.
   - Os eventos vêm ordenados por `start_by` (no máximo 20), com datas em ISO.
   - País fora da lista → 422 "País inválido".
 - **Fora do escopo (por ora):** a curva do Google Trends dos anos anteriores. Não há API
