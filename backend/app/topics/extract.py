@@ -2,26 +2,36 @@
 
 Algoritmo (fixo, ver `docs/arquitetura.md#formacao-de-topicos`):
 1. Carrega os `RawItem` de `day`.
-2. Topicos-semente: todas as entidades de `entities.yaml` (mesmo sem itens) e um
-   termo inteiro por titulo do Google Trends. Um termo do Trends que bate com o
-   nome/alias de uma entidade nao vira um topico separado (fica so a entidade).
-3. Candidatos: unigramas/bigramas (fora do Trends) em >=3 itens de >=2 fontes,
-   tambem excluindo termos ja cobertos por uma entidade.
-4. Todo `Topic` ja existente no banco (entidade, termo do Trends ou candidato de
-   dias anteriores) tambem participa do casamento do dia, usando seu nome e
-   `aliases_json` atual (que pode ter ganhado aliases de uma fusao na Tarefa 13).
-   Isso garante que um topico continua recebendo `TopicItem`/`TopicSignal`
-   mesmo em dias em que nao seria "descoberto" de novo pelas regras 2/3.
-5. Casamento: cada item contra nome+aliases de cada topico (limite de palavra
-   para frases latinas, substring para frases com CJK).
-6. Filtro de ruido: um termo do Trends que nao e entidade so vira/continua
-   topico se casou com >=1 item de outra fonte hoje, ou com algum `RawItem` de
-   outra fonte nos ultimos 7 dias (day-6..day-1). Topicos-candidato nao passam
-   por esse filtro: uma vez criados, sao casados/recebem sinal todo dia, sem
-   precisar bater o limiar de mineracao de novo.
-7. Sinais: upsert de `TopicSignal` por (topico, fonte, pais, dia) com `value` =
-   soma de `metric` dos itens casados daquela fonte/pais.
-8. `slug` e definido na criacao. `image_url`/`categoria` sao definidos na
+2. Todo `Topic` ja existente no banco (entidade, termo do Trends ou candidato de
+   dias anteriores) e trazido para a rodada primeiro, usando seu nome e
+   `aliases_json` atual (que pode ter ganhado aliases de uma fusao na Tarefa
+   13). Isso garante que um topico continua recebendo `TopicItem`/`TopicSignal`
+   mesmo em dias em que nao seria "descoberto" de novo pelas regras 3/4, e que
+   um termo de hoje que so bate com um alias (nao o nome) de um topico
+   existente resolve para ele em vez de criar um duplicado.
+3. **Topicos-semente:** todas as entidades de `entities.yaml` (mesmo sem itens)
+   e um termo inteiro por titulo do Google Trends. Um termo do Trends que bate
+   com o nome/alias de uma entidade (ou de um topico ja existente) nao vira um
+   topico separado.
+4. **Candidatos:** unigramas/bigramas (fora do Trends) em >=3 itens de >=2
+   fontes, tambem excluindo termos ja cobertos por uma entidade ou topico
+   existente.
+5. Todo draft (semente de hoje ou topico existente) e indexado pelo `slug` do
+   seu nome; duas sementes cujo nome normalizado difere mas cujo slug colide
+   (ex.: "Spider-Man" e "Spider Man") sao fundidas num so draft, nunca viram
+   dois `Topic` com o mesmo slug (o que violaria a unicidade e derrubaria a
+   rodada inteira).
+6. **Casamento:** cada item contra nome+aliases de cada draft (limite de
+   palavra para frases latinas, substring para frases com CJK).
+7. **Filtro de ruido:** um termo do Trends que nao e entidade nem topico-
+   candidato so vira/continua topico se casou com >=1 item de outra fonte
+   hoje, ou com algum `RawItem` de outra fonte nos ultimos 7 dias
+   (day-6..day-1). Um topico-candidato (novo ou ja existente) nunca passa por
+   esse filtro: e casado e recebe sinal todo dia, sem reconferir o limiar de
+   mineracao.
+8. **Sinais:** upsert de `TopicSignal` por (topico, fonte, pais, dia) com
+   `value` = soma de `metric` dos itens casados daquela fonte/pais.
+9. `slug` e definido na criacao. `image_url`/`categoria` sao definidos na
    criacao e, se ainda vazios (`image_url is None` / `category == "outros"`),
    preenchidos em dias seguintes assim que houver item casado que os resolva —
    sem nunca sobrescrever um valor ja definido (edicao manual ou fusao).
@@ -31,6 +41,7 @@ Idempotente: rodar duas vezes no mesmo dia produz o mesmo `TopicItem`/`TopicSign
 
 import json
 from collections import defaultdict
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import date, timedelta
 from pathlib import Path
@@ -70,7 +81,8 @@ def _slugify(name: str) -> str:
 
 @dataclass
 class _Draft:
-    """Um topico ainda em memoria, durante a extracao de um dia."""
+    """Um topico ainda em memoria, durante a extracao de um dia. Indexado por
+    slug em `drafts` — nunca duas instancias com o mesmo slug (regra 5)."""
 
     name: str
     aliases: list[str]  # ja normalizados; aliases[0] e o proprio nome normalizado
@@ -82,6 +94,19 @@ class _Draft:
     matched_items: list[RawItem] = field(default_factory=list)
 
 
+def _register(drafts: dict[str, _Draft], slug: str, alias: str, make: Callable[[], _Draft]) -> _Draft:
+    """Registra `alias` no draft de `slug`, criando-o com `make()` se ainda nao
+    existir, ou apenas somando o alias se ja existir (nunca sobrescreve flags
+    de um draft ja registrado — regra 5)."""
+    draft = drafts.get(slug)
+    if draft is None:
+        draft = make()
+        drafts[slug] = draft
+    elif alias not in draft.aliases:
+        draft.aliases.append(alias)
+    return draft
+
+
 def _seed_entities(drafts: dict[str, _Draft]) -> set[str]:
     """Registra as entidades de `entities.yaml` como topicos-semente (mesmo sem itens).
 
@@ -91,73 +116,55 @@ def _seed_entities(drafts: dict[str, _Draft]) -> set[str]:
     """
     entity_alias_pool: set[str] = set()
     for entity in _load_entities():
-        key = normalize(entity["name"])
+        name = entity["name"]
+        key = normalize(name)
         aliases = [normalize(a) for a in entity.get("aliases", [])]
-        drafts[key] = _Draft(
-            name=entity["name"],
-            aliases=[key, *aliases],
-            is_entity=True,
-            entity_category=entity.get("category") or "outros",
+        slug = _slugify(name)
+
+        draft = _register(
+            drafts,
+            slug,
+            key,
+            lambda name=name, key=key, aliases=aliases, entity=entity: _Draft(
+                name=name,
+                aliases=[key, *aliases],
+                is_entity=True,
+                entity_category=entity.get("category") or "outros",
+            ),
         )
+        for alias in aliases:
+            if alias not in draft.aliases:
+                draft.aliases.append(alias)
+
         entity_alias_pool.add(key)
         entity_alias_pool.update(aliases)
     return entity_alias_pool
 
 
-def _seed_trends_terms(
-    drafts: dict[str, _Draft], items: list[RawItem], entity_alias_pool: set[str]
-) -> None:
-    """Cada titulo do Google Trends vira um termo-semente inteiro, a nao ser que
-    bata com o nome/alias de uma entidade (a entidade e que casa com o item)."""
-    for item in items:
-        if item.source != TRENDS_SOURCE:
-            continue
-        key = normalize(item.title)
-        if key in drafts or key in entity_alias_pool:
-            continue
-        drafts[key] = _Draft(name=item.title, aliases=[key], is_trends_term=True)
+def _seed_existing_topics(session: Session, drafts: dict[str, _Draft]) -> set[str]:
+    """Traz todo `Topic` ja existente no banco para dentro de `drafts`, **antes**
+    de semear termos do Trends/candidatos do dia (regra 2).
 
+    Um topico cujo slug ja foi semeado (por ora, so uma entidade pode ter sido)
+    so ganha o vinculo `existing_topic` e tem seus aliases atuais incorporados,
+    sem alterar as flags do draft (uma entidade continua entidade). Um topico
+    cujo slug ainda nao foi semeado vira um draft novo, com `is_candidate`
+    herdado do banco e `is_trends_term = not is_candidate` (unica forma hoje de
+    um topico nao-entidade existir sem ser candidato).
 
-def _seed_candidates(drafts: dict[str, _Draft], items: list[RawItem], entity_alias_pool: set[str]) -> None:
-    """Unigramas/bigramas fora do Trends em >=3 itens de >=2 fontes viram candidatos."""
-    ngram_items: dict[str, dict[str, set[int]]] = defaultdict(lambda: defaultdict(set))
-    for item in items:
-        if item.source == TRENDS_SOURCE:
-            continue
-        toks = tokens(_item_text(item))
-        grams = set(toks) | {f"{a} {b}" for a, b in zip(toks, toks[1:])}
-        for gram in grams:
-            ngram_items[gram][item.source].add(item.id)
-
-    for gram, by_source in ngram_items.items():
-        if gram in drafts or gram in entity_alias_pool:
-            continue
-        total_ids = {item_id for ids in by_source.values() for item_id in ids}
-        if len(total_ids) >= _CANDIDATE_MIN_ITEMS and len(by_source) >= _CANDIDATE_MIN_SOURCES:
-            name = gram if is_cjk(gram) else gram.title()
-            drafts[gram] = _Draft(name=name, aliases=[gram], is_candidate=True)
-
-
-def _merge_existing_topics(session: Session, drafts: dict[str, _Draft]) -> None:
-    """Traz todo `Topic` ja existente no banco para dentro de `drafts`.
-
-    Um topico cujo slug ja foi semeado hoje (entidade, termo do Trends ou
-    candidato recem-minerado) so ganha o vinculo `existing_topic` e tem seus
-    aliases atuais (`aliases_json`, que pode ter crescido por uma fusao)
-    incorporados. Um topico cujo slug nao foi semeado hoje vira um draft novo,
-    para que continue sendo casado/recebendo sinal (regra 4): candidatos sem
-    re-qualificar o limiar de mineracao, termos do Trends ainda sujeitos ao
-    filtro de ruido diario.
+    Retorna o pool de nome+aliases normalizados de todo topico existente, para
+    que um termo de hoje que bata com um alias dele (nao so com o nome) seja
+    resolvido para ele em vez de criar um duplicado.
     """
-    by_slug: dict[str, str] = {_slugify(draft.name): key for key, draft in drafts.items()}
+    existing_alias_pool: set[str] = set()
 
     for topic in session.exec(select(Topic)).all():
         aliases = [normalize(topic.name)]
         aliases.extend(normalize(a) for a in json.loads(topic.aliases_json or "[]"))
+        existing_alias_pool.update(aliases)
 
-        existing_key = by_slug.get(topic.slug)
-        if existing_key is not None:
-            draft = drafts[existing_key]
+        draft = drafts.get(topic.slug)
+        if draft is not None:
             draft.existing_topic = topic
             for alias in aliases:
                 if alias not in draft.aliases:
@@ -171,6 +178,45 @@ def _merge_existing_topics(session: Session, drafts: dict[str, _Draft]) -> None:
             is_trends_term=not topic.is_candidate,
             existing_topic=topic,
         )
+
+    return existing_alias_pool
+
+
+def _seed_trends_terms(drafts: dict[str, _Draft], items: list[RawItem], known_alias_pool: set[str]) -> None:
+    """Cada titulo do Google Trends vira um termo-semente inteiro, a nao ser que
+    bata com o nome/alias de uma entidade ou de um topico ja existente (esse e
+    que casa com o item). Duas sementes cujo slug colide (ex.: hifen vs espaco)
+    sao fundidas num so draft."""
+    for item in items:
+        if item.source != TRENDS_SOURCE:
+            continue
+        key = normalize(item.title)
+        if key in known_alias_pool:
+            continue
+        slug = _slugify(item.title)
+        _register(drafts, slug, key, lambda item=item, key=key: _Draft(name=item.title, aliases=[key], is_trends_term=True))
+
+
+def _seed_candidates(drafts: dict[str, _Draft], items: list[RawItem], known_alias_pool: set[str]) -> None:
+    """Unigramas/bigramas fora do Trends em >=3 itens de >=2 fontes viram
+    candidatos, a nao ser que ja batam com uma entidade ou topico existente."""
+    ngram_items: dict[str, dict[str, set[int]]] = defaultdict(lambda: defaultdict(set))
+    for item in items:
+        if item.source == TRENDS_SOURCE:
+            continue
+        toks = tokens(_item_text(item))
+        grams = set(toks) | {f"{a} {b}" for a, b in zip(toks, toks[1:])}
+        for gram in grams:
+            ngram_items[gram][item.source].add(item.id)
+
+    for gram, by_source in ngram_items.items():
+        if gram in known_alias_pool:
+            continue
+        total_ids = {item_id for ids in by_source.values() for item_id in ids}
+        if len(total_ids) >= _CANDIDATE_MIN_ITEMS and len(by_source) >= _CANDIDATE_MIN_SOURCES:
+            name = gram if is_cjk(gram) else gram.title()
+            slug = _slugify(name)
+            _register(drafts, slug, gram, lambda name=name, gram=gram: _Draft(name=name, aliases=[gram], is_candidate=True))
 
 
 def _match_items(drafts: dict[str, _Draft], items: list[RawItem]) -> None:
@@ -295,16 +341,17 @@ def extract_topics(session: Session, day: date) -> int:
 
     drafts: dict[str, _Draft] = {}
     entity_alias_pool = _seed_entities(drafts)
-    _seed_trends_terms(drafts, items, entity_alias_pool)
-    _seed_candidates(drafts, items, entity_alias_pool)
-    _merge_existing_topics(session, drafts)
+    existing_alias_pool = _seed_existing_topics(session, drafts)
+    known_alias_pool = entity_alias_pool | existing_alias_pool
+    _seed_trends_terms(drafts, items, known_alias_pool)
+    _seed_candidates(drafts, items, known_alias_pool)
 
     _match_items(drafts, items)
     history_haystacks = _load_history_haystacks(session, day)
 
     topics_with_signal: set[int] = set()
 
-    for draft in drafts.values():
+    for slug, draft in drafts.items():
         if draft.is_trends_term and not _passes_noise_filter(draft, history_haystacks):
             continue
 
@@ -312,9 +359,9 @@ def extract_topics(session: Session, day: date) -> int:
         if topic is None:
             if not draft.is_entity and not draft.matched_items:
                 # Candidatos e termos do Trends so existem se casaram com algo;
-                # entidades sao semeadas mesmo sem itens (regra 2).
+                # entidades sao semeadas mesmo sem itens (regra 3).
                 continue
-            topic = _create_topic(session, draft, _slugify(draft.name), day)
+            topic = _create_topic(session, draft, slug, day)
 
         _backfill_topic_metadata(topic, draft)
         _sync_topic_items(session, topic, draft.matched_items)

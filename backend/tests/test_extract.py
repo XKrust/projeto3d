@@ -367,3 +367,99 @@ def test_entity_image_url_is_backfilled_once_a_thumb_appears_on_a_later_day(sess
 
     updated = session.exec(select(Topic).where(Topic.slug == "labubu")).one()
     assert updated.image_url == "https://sketchfab.example/labubu.png"
+
+
+# --- Fix round 2: revisao ---
+
+
+def test_trends_terms_with_hyphen_and_space_variants_share_one_topic(session):
+    """Fix 1: duas sementes cujo nome normalizado difere mas cujo slug colide
+    (hifen vs espaco) devem se fundir num so topico, sem IntegrityError."""
+    _raw_item(session, source="google_trends", external_id="sm-us", country="US", title="Spider-Man", metric=200.0)
+    _raw_item(session, source="google_trends", external_id="sm-br", country="BR", title="Spider Man", metric=150.0)
+    _raw_item(session, source="reddit", external_id="sm-reddit", country=GLOBAL, title="Spider-Man movie", metric=20.0)
+
+    count = extract_topics(session, DAY)
+
+    topics = session.exec(select(Topic).where(Topic.slug == "spider-man")).all()
+    assert len(topics) == 1
+    assert count == 1
+    signals = session.exec(select(TopicSignal).where(TopicSignal.topic_id == topics[0].id)).all()
+    assert {(s.source, s.country): s.value for s in signals} == {
+        ("google_trends", "US"): 200.0,
+        ("google_trends", "BR"): 150.0,
+        ("reddit", GLOBAL): 20.0,
+    }
+
+
+def test_trends_term_hyphen_variant_of_an_entity_name_does_not_duplicate_it(session):
+    """Fix 1: um termo do Trends com hifen que colide no slug com uma entidade
+    nao deve crashar nem virar um topico separado dela."""
+    _raw_item(session, source="google_trends", external_id="sw-trend", country="US", title="Star-Wars", metric=90.0)
+    _raw_item(session, source="reddit", external_id="sw-reddit", country=GLOBAL, title="star-wars helmet", metric=25.0)
+
+    extract_topics(session, DAY)
+
+    topics = session.exec(select(Topic).where(Topic.slug == "star-wars")).all()
+    assert len(topics) == 1
+    assert topics[0].name == "Star Wars"
+    assert topics[0].is_candidate is False
+
+    signals = session.exec(select(TopicSignal).where(TopicSignal.topic_id == topics[0].id)).all()
+    assert {(s.source, s.country): s.value for s in signals} == {
+        ("google_trends", "US"): 90.0,
+        ("reddit", GLOBAL): 25.0,
+    }
+
+
+def test_trends_term_matching_an_existing_topics_alias_resolves_to_it_not_a_duplicate(session):
+    """Fix 2: um termo do Trends que so bate com um alias (nao o nome) de um
+    topico ja existente deve resolver para ele, sem criar um duplicado nem
+    contar o sinal duas vezes."""
+    topic = Topic(
+        slug="jjk-arc",
+        name="JJK Arc",
+        category="anime",
+        aliases_json=json.dumps(["shibuya arc"]),
+        is_candidate=True,
+        created_day=DAY - timedelta(days=1),
+    )
+    session.add(topic)
+    session.commit()
+    session.refresh(topic)
+
+    _raw_item(session, source="google_trends", external_id="shibuya-trend", country="JP", title="Shibuya Arc", metric=100.0)
+    _raw_item(session, source="reddit", external_id="shibuya-reddit", country=GLOBAL, title="Shibuya Arc figure", metric=10.0)
+
+    extract_topics(session, DAY)
+
+    assert session.exec(select(Topic).where(Topic.slug == "shibuya-arc")).first() is None
+    signals = session.exec(
+        select(TopicSignal).where(TopicSignal.topic_id == topic.id, TopicSignal.day == DAY)
+    ).all()
+    assert {(s.source, s.country): s.value for s in signals} == {
+        ("google_trends", "JP"): 100.0,
+        ("reddit", GLOBAL): 10.0,
+    }
+
+
+def test_existing_candidate_is_not_treated_as_trends_term_when_a_trends_seed_lands_on_its_slug(session):
+    """Fix 3 (ruling): um topico-candidato ja existente continua sem passar
+    pelo filtro de ruido mesmo quando um termo do Trends de hoje cai no mesmo
+    slug dele."""
+    old_day = DAY - timedelta(days=10)
+    _raw_item(session, source="reddit", external_id="r1", country=GLOBAL, title="Gojo satoru figure", metric=5.0, day=old_day)
+    _raw_item(session, source="reddit", external_id="r2", country=GLOBAL, title="gojo infinity void", metric=6.0, day=old_day)
+    _raw_item(session, source="sketchfab", external_id="sk1", country=GLOBAL, title="Gojo bust model", metric=7.0, day=old_day)
+    extract_topics(session, old_day)
+    topic = session.exec(select(Topic).where(Topic.slug == "gojo")).one()
+    assert topic.is_candidate is True
+
+    _raw_item(session, source="google_trends", external_id="gojo-trend", country="JP", title="Gojo", metric=500.0, day=DAY)
+
+    extract_topics(session, DAY)
+
+    signal = session.exec(
+        select(TopicSignal).where(TopicSignal.topic_id == topic.id, TopicSignal.day == DAY)
+    ).one()
+    assert signal.value == 500.0
