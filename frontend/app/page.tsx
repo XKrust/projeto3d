@@ -23,6 +23,8 @@ type CountryCard = {
     score: number;
     audience: number;
     demand: number;
+    /** false: temas ainda sem histórico; a procura fica neutra (50). */
+    demand_measured: boolean;
     payment: number;
     change_week: number;
     days_at_position: number;
@@ -106,7 +108,10 @@ export default function Inicio() {
                       </span>
                       <span className="text-sm font-medium text-foreground">{movement(country.rank)}</span>
                       <span className="text-xs text-muted-foreground">
-                        Público {Math.round(country.rank.audience)} · Procura {Math.round(country.rank.demand)}
+                        Público {Math.round(country.rank.audience)} ·{" "}
+                        {country.rank.demand_measured
+                          ? `Procura ${Math.round(country.rank.demand)}`
+                          : "Procura: ainda medindo"}
                         {country.rank.payment < 1 ? " · Pagamento difícil (sanções)" : ""}
                       </span>
                     </span>

@@ -62,8 +62,11 @@ Função: `backend/app/pipeline.py:compute_scores(session, day)`.
 - **público** (`audience_index`): visitas × peso × participação do país em 6 lojas de arquivo
   3D (Similarweb, `seed/country_markets.yaml`, agosto/2026), maior país = 100. País fora do
   top 5 de uma loja conta metade da 5ª participação. Muda 1x por mês (atualizar o YAML).
-- **procura**: momentum médio (0–100) dos 10 temas de maior oportunidade do país; 50 sem
-  temas. É o que mexe no ranking no dia a dia.
+- **procura**: momentum médio (0–100) dos 10 temas de maior oportunidade do país, só entre
+  temas com 4+ dias de nota nos últimos 10 dias; sem nenhum, 50 e `demand_measured` falso
+  (a tela diz "ainda medindo"). É o que mexe no ranking no dia a dia.
+- **Fusão automática:** tópico antigo cujo nome virou apelido de uma entidade é fundido
+  nela ao fim de `extract_topics` (ex.: "Dungeon Meshi" → "Delicious in Dungeon").
 - **pagamento**: 1; Rússia e Bielorrússia 0,3 (cartão/PayPal/Stripe bloqueados por sanções).
 
 `GET /api/countries` → ordenado pelo ranking (inativos no fim), cada item `{code, name,

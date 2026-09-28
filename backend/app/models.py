@@ -231,3 +231,4 @@ class CountryRank(SQLModel, table=True):
     audience: float  # 0–100, público nas lojas de arquivo 3D (US = 100)
     demand: float  # 0–100, momentum médio dos 10 melhores temas do país (50 = neutro)
     payment: float  # 0–1, facilidade de pagar
+    demand_measured: bool = False  # False: temas sem histórico ainda (procura neutra)

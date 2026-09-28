@@ -89,6 +89,7 @@ def _ranks(session: Session, active: set[str]) -> dict[str, dict]:
             "score": today.score,
             "audience": today.audience,
             "demand": today.demand,
+            "demand_measured": today.demand_measured,
             "payment": today.payment,
             "change_week": before.position - today.position,
             "days_at_position": streak,

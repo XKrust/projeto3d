@@ -33,6 +33,7 @@ test.describe("tela inicial (países)", () => {
     await expect(cards.nth(0)).toContainText("88");
     await expect(cards.nth(0)).toContainText("(estimativa)");
     await expect(page.getByRole("button", { name: /^Alemanha/ })).toContainText("Ainda sem temas");
+    await expect(page.getByRole("button", { name: /^Alemanha/ })).toContainText("Procura: ainda medindo");
     await expect(page.getByRole("link", { name: "Reino Unido: inativo, ative em Configurações" })).toBeVisible();
   });
 

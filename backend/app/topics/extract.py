@@ -399,4 +399,26 @@ def extract_topics(session: Session, day: date) -> int:
             topics_with_signal.add(topic.id)
 
     session.commit()
+    _merge_alias_topics_into_entities(session, day)
     return len(topics_with_signal)
+
+
+def _merge_alias_topics_into_entities(session: Session, day: date) -> None:
+    """Tópico antigo cujo nome virou apelido de uma entidade ("Dungeon Meshi" →
+    "Delicious in Dungeon") é fundido nela, para o mesmo tema não aparecer duas vezes."""
+    from app.topics.enrich import merge_topics  # enrich importa este módulo
+
+    entities = [*_load_entities(), *hype_entities(session, day)]
+    by_alias: dict[str, str] = {}
+    for entity in entities:
+        for alias in entity.get("aliases", []):
+            if alias:
+                by_alias.setdefault(normalize(alias), _slugify(entity["name"]))
+    entity_slugs = {_slugify(e["name"]) for e in entities}
+    topics = {t.slug: t for t in session.exec(select(Topic)).all()}
+    for slug, topic in topics.items():
+        target = by_alias.get(normalize(topic.name))
+        if slug in entity_slugs or target is None or target == slug or target not in topics:
+            continue
+        merge_topics(session, topics[target].id, topic.id)
+    session.commit()

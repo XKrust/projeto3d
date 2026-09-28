@@ -27,10 +27,13 @@ def _topic(session, name):
     return topic
 
 
-def _score(session, topic, country, *, momentum, opportunity=60.0, day=DAY):
-    session.add(TopicScore(topic_id=topic.id, country=country, platform="cults3d", day=day, demand=50,
-                           momentum=momentum, momentum_raw=0, saturation=50, peak_day=day, fit_window=1,
-                           fit_platform=1, opportunity=opportunity))
+def _score(session, topic, country, *, momentum, opportunity=60.0, day=DAY, history_days=5):
+    # Por padrão o tema tem 5 dias de nota (histórico suficiente para a procura contar).
+    for back in range(history_days):
+        session.add(TopicScore(topic_id=topic.id, country=country, platform="cults3d",
+                               day=day - timedelta(days=back), demand=50, momentum=momentum, momentum_raw=0,
+                               saturation=50, peak_day=day, fit_window=1, fit_platform=1,
+                               opportunity=opportunity))
     session.commit()
 
 
@@ -60,6 +63,7 @@ def test_score_combines_audience_demand_and_payment(session):
 
     us = session.exec(select(CountryRank).where(CountryRank.country == "US")).one()
     assert us.demand == 80
+    assert us.demand_measured is True
     assert us.score == pytest.approx(
         round(AUDIENCE_WEIGHT * 100 + DEMAND_WEIGHT * 80 + PAYMENT_WEIGHT * 100, 1)
     )
@@ -112,3 +116,15 @@ def test_demand_uses_top10_themes_by_opportunity(session):
 
     br = session.exec(select(CountryRank).where(CountryRank.country == "BR")).one()
     assert br.demand == 90.0
+
+
+def test_new_themes_without_history_do_not_count_as_rising(session):
+    # Tema criado hoje: "de zero para algo" parece subida máxima, mas é só falta de histórico.
+    update_settings(session, {"countries": ["BR"]})
+    _score(session, _topic(session, "Tema Novo"), "BR", momentum=100, history_days=1)
+
+    compute_country_ranks(session, DAY)
+
+    br = session.exec(select(CountryRank).where(CountryRank.country == "BR")).one()
+    assert br.demand == 50.0
+    assert br.demand_measured is False

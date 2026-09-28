@@ -20,7 +20,8 @@
       "demand": 70.0,
       "payment": 1.0,
       "change_week": 0,
-      "days_at_position": 12
+      "days_at_position": 12,
+      "demand_measured": true
     }
   },
   {
@@ -43,7 +44,8 @@
       "demand": 80.0,
       "payment": 0.3,
       "change_week": 2,
-      "days_at_position": 3
+      "days_at_position": 3,
+      "demand_measured": true
     }
   },
   {
@@ -68,7 +70,8 @@
       "demand": 52.0,
       "payment": 1.0,
       "change_week": -1,
-      "days_at_position": 1
+      "days_at_position": 1,
+      "demand_measured": true
     }
   },
   {
@@ -92,7 +95,8 @@
       "demand": 10.0,
       "payment": 1.0,
       "change_week": 0,
-      "days_at_position": 5
+      "days_at_position": 5,
+      "demand_measured": true
     }
   },
   {
@@ -113,7 +117,8 @@
       "demand": 50.0,
       "payment": 1.0,
       "change_week": 0,
-      "days_at_position": 2
+      "days_at_position": 2,
+      "demand_measured": false
     }
   },
   {

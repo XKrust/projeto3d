@@ -519,3 +519,20 @@ def test_single_word_fragment_of_a_known_theme_is_not_a_topic(session):
 
     meshi = session.exec(select(Topic).where(Topic.slug == "meshi")).one()
     assert session.exec(select(TopicSignal).where(TopicSignal.topic_id == meshi.id)).all() == []
+
+
+def test_old_topic_named_like_an_entity_alias_is_merged_into_the_entity(session):
+    # "Dungeon Meshi" ficou de uma versão anterior; hoje é apelido de "Delicious in Dungeon".
+    old = Topic(slug="dungeon-meshi", name="Dungeon Meshi", category="anime", is_candidate=False,
+                created_day=DAY - timedelta(days=2))
+    session.add(old)
+    session.commit()
+    session.add(TopicSignal(topic_id=old.id, source="reddit", country=GLOBAL, day=DAY - timedelta(days=1), value=9.0))
+    session.commit()
+
+    extract_topics(session, DAY)
+
+    assert session.exec(select(Topic).where(Topic.slug == "dungeon-meshi")).first() is None
+    entity = session.exec(select(Topic).where(Topic.slug == "delicious-in-dungeon")).one()
+    moved = session.exec(select(TopicSignal).where(TopicSignal.topic_id == entity.id)).all()
+    assert [s.value for s in moved] == [9.0]
