@@ -14,11 +14,14 @@ import { resizeImage } from "@/lib/resize-image";
 
 async function buildForm(input: AnalyzeInput): Promise<FormData> {
   const form = new FormData();
+  const ext = (blob: Blob) => (blob.type === "image/png" ? "png" : blob.type === "image/webp" ? "webp" : "jpg");
   for (const [index, file] of input.images.entries()) {
-    form.append("images", await resizeImage(file), `image-${index + 1}.jpg`);
+    const blob = await resizeImage(file);
+    form.append("images", blob, `image-${index + 1}.${ext(blob)}`);
   }
   if (input.wireframe) {
-    form.append("wireframe", await resizeImage(input.wireframe), "wireframe.jpg");
+    const blob = await resizeImage(input.wireframe);
+    form.append("wireframe", blob, `wireframe.${ext(blob)}`);
   }
   form.append("authorship", input.authorship);
   form.append("market", input.market);

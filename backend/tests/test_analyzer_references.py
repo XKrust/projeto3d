@@ -88,3 +88,26 @@ def test_reference_whose_thumbnail_fails_is_left_out():
 
     assert refs == [] and images == []
     assert note == NO_REFERENCES_NOTE
+
+
+@respx.mock
+def test_each_call_has_a_short_timeout():
+    _mock_search_and_thumbs()
+
+    with make_client() as http:
+        find_references(http, "skull", [])
+
+    assert all(call.request.extensions["timeout"]["read"] == 8 for call in respx.calls)
+
+
+@respx.mock
+def test_slow_sketchfab_stops_after_the_time_budget():
+    # Cada chamada "leva" 10 s: depois do orçamento de 25 s, para de buscar e segue a análise.
+    _mock_search_and_thumbs()
+    ticks = iter(range(0, 1000, 10))
+
+    with make_client() as http:
+        refs, images, note = find_references(http, "skull", [], monotonic=lambda: next(ticks))
+
+    assert len(respx.calls) <= 3
+    assert len(refs) == len(images) < 3
