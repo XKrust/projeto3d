@@ -6,7 +6,7 @@ from app.db import init_db
 from app.models import Platform
 from app.platforms import seed_platforms
 
-SELLING = {"cults3d", "printables", "myminifactory", "etsy", "cgtrader", "booth", "fab", "mercadolivre"}
+SELLING = {"cults3d", "printables", "myminifactory", "etsy", "cgtrader", "booth", "fab"}
 
 
 def test_seed_platforms_idempotent_and_preserves_edits(session):
@@ -27,7 +27,7 @@ def test_get_platforms_returns_seeded(client):
     r = client.get("/api/platforms")
     assert r.status_code == 200
     slugs = {p["slug"] for p in r.json()}
-    assert slugs == SELLING | {"sketchfab", "artstation"}
+    assert slugs == SELLING | {"sketchfab", "artstation", "mercadolivre"}
     sketchfab = next(p for p in r.json() if p["slug"] == "sketchfab")
     assert sketchfab["sells"] is False
 

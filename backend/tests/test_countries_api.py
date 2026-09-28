@@ -60,7 +60,7 @@ def test_country_lists_its_strongest_stores(client, engine):
     countries = _countries(client)
 
     assert countries["BR"]["stores"][0] == "Cults3D"
-    assert "Mercado Livre" in countries["BR"]["stores"]
+    assert "Mercado Livre" not in countries["BR"]["stores"]  # vende peça física, não arquivo
     assert countries["JP"]["stores"][0] == "BOOTH"
     assert "Sketchfab" not in countries["US"]["stores"]  # loja fechada
     assert len(countries["US"]["stores"]) == 3

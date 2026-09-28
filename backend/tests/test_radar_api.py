@@ -102,7 +102,7 @@ def test_meta_lists_constants_and_platforms(client, platforms):
     assert body["markets"] == ["print", "digital"]
     # Só as lojas que vendem aparecem no filtro (Sketchfab e ArtStation viraram só sinal).
     slugs = {p["slug"] for p in body["platforms"]}
-    assert slugs == {"cults3d", "printables", "myminifactory", "etsy", "cgtrader", "booth", "fab", "mercadolivre"}
+    assert slugs == {"cults3d", "printables", "myminifactory", "etsy", "cgtrader", "booth", "fab"}
     assert body["last_updated"] is None
 
 
@@ -395,13 +395,13 @@ def test_top3_platforms_to_sell_ordered_by_opportunity_times_fit(session, client
     topic = _topic(session, "Labubu")
     _score(session, topic, platform="cults3d", opportunity=80.0, fit_platform=0.9)
     _score(session, topic, platform="etsy", opportunity=80.0, fit_platform=0.7)
-    _score(session, topic, platform="mercadolivre", opportunity=80.0, fit_platform=0.8)
+    _score(session, topic, platform="myminifactory", opportunity=80.0, fit_platform=0.8)
     _score(session, topic, platform="printables", opportunity=80.0, fit_platform=0.3)
 
     item = client.get("/api/radar", params={"country": "BR"}).json()[0]
 
-    assert [p["slug"] for p in item["platforms"]] == ["cults3d", "mercadolivre", "etsy"]
-    assert item["platforms"][1] == {"slug": "mercadolivre", "name": "Mercado Livre"}
+    assert [p["slug"] for p in item["platforms"]] == ["cults3d", "myminifactory", "etsy"]
+    assert item["platforms"][1] == {"slug": "myminifactory", "name": "MyMiniFactory"}
     assert item["best_platform"] == item["platforms"][0]
 
 

@@ -22,7 +22,7 @@ test.describe("tela inicial (países)", () => {
     await expect(page.getByRole("heading", { level: 1, name: "Onde você vai vender?" })).toBeVisible();
     const brasil = page.getByRole("button", { name: /^Brasil/ });
     await expect(brasil).toContainText("Sousou no Frieren · Minecraft · Articulated Dragon");
-    await expect(brasil).toContainText("Cults3D · Mercado Livre · Fab");
+    await expect(brasil).toContainText("Cults3D · MyMiniFactory · Fab");
     await expect(page.getByRole("button", { name: /^Japão/ })).toContainText("BOOTH");
     await expect(page.getByRole("button", { name: /^Alemanha/ })).toContainText("Ainda sem temas");
     await expect(page.getByRole("link", { name: "Reino Unido: inativo, ative em Configurações" })).toBeVisible();

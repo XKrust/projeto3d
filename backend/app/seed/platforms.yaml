@@ -40,10 +40,10 @@
   name: Mercado Livre
   markets: [print]
   fee_pct: null
-  sells: true
+  sells: false
   categories: []
-  strength: {BR: 0.8, US: 0.0, GB: 0.0, DE: 0.0, FR: 0.0, ES: 0.0, JP: 0.0}
-  notes: "Maior e-commerce do Brasil; vende peça impressa e arquivo STL. Só Brasil (entre os países do app). Fonte: https://outlet3d.com.br/impressao-3d/vender-arquivos-stl-brasil/ (27/09/2026)."
+  strength: {BR: 0.0, US: 0.0, GB: 0.0, DE: 0.0, FR: 0.0, ES: 0.0, JP: 0.0}
+  notes: "Fora da recomendação: vende peça física, e o usuário vende arquivo 3D (modelado no Blender), não objeto impresso."
 
 - slug: printables
   name: Printables

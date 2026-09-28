@@ -16,7 +16,7 @@
 | cults3d | Cults3D | print | sim | generalista | `null` |
 | myminifactory | MyMiniFactory | print | sim | rpg_miniaturas, games | `null` |
 | etsy | Etsy | print, digital | sim | decoracao, toys_memes, outros | `null` |
-| mercadolivre | Mercado Livre | print | sim (só BR) | generalista | `null` |
+| mercadolivre | Mercado Livre | print | **não** (vende peça física; o usuário vende arquivo 3D) | — | — |
 | printables | Printables | print | sim | decoracao, outros | 20.0 ([termos Prusa](https://www.prusa3d.com/page/printables-club-store-terms-and-conditions-for-creators_236503/)) |
 | fab | Fab | digital | sim | games, filmes_series | 12.0 ([Epic](https://www.unrealengine.com/en-US/blog/fab-content-marketplace-launches-in-october-publishing-portal-opens-today)) |
 | cgtrader | CGTrader | digital, print | sim | games, filmes_series | `null` |

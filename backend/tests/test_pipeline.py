@@ -19,7 +19,7 @@ from app.platforms import seed_platforms
 from app.settings_store import update_settings
 
 DAY = date(2026, 9, 26)
-SELLING = {"cults3d", "printables", "myminifactory", "etsy", "cgtrader", "booth", "fab", "mercadolivre"}
+SELLING = {"cults3d", "printables", "myminifactory", "etsy", "cgtrader", "booth", "fab"}
 
 
 @pytest.fixture(autouse=True)

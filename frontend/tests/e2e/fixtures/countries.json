@@ -1,5 +1,5 @@
 [
-  {"code": "BR", "name": "Brasil", "active": true, "top_topics": ["Sousou no Frieren", "Minecraft", "Articulated Dragon"], "stores": ["Cults3D", "Mercado Livre", "Fab"], "topics": 27},
+  {"code": "BR", "name": "Brasil", "active": true, "top_topics": ["Sousou no Frieren", "Minecraft", "Articulated Dragon"], "stores": ["Cults3D", "MyMiniFactory", "Fab"], "topics": 27},
   {"code": "US", "name": "EUA", "active": true, "top_topics": ["Hollow Knight", "Pokemon"], "stores": ["Etsy", "Cults3D", "MyMiniFactory"], "topics": 30},
   {"code": "GB", "name": "Reino Unido", "active": false, "top_topics": [], "stores": ["Cults3D", "Etsy", "MyMiniFactory"], "topics": 0},
   {"code": "DE", "name": "Alemanha", "active": true, "top_topics": [], "stores": ["Cults3D", "Etsy", "Fab"], "topics": 0},
