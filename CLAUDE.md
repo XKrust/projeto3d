@@ -1,6 +1,6 @@
 # Radar 3D
 
-Ferramenta local (localhost) para modeladores 3D:
+Programa local para Windows (abre na própria janela) para modeladores 3D:
 - radar de tendências por país e plataforma;
 - calendário sazonal;
 - hype antecipado (anime, filmes, jogos);

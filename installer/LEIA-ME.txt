@@ -8,7 +8,8 @@ Na primeira vez que abrir, o Radar 3D baixa o Python e as bibliotecas dele
 (uns 100 MB). Isso leva alguns minutos e precisa de internet. Não feche a janela.
 Depois abre em poucos segundos.
 
-O navegador abre sozinho em http://localhost:3000
+O Radar 3D abre na própria janela, como qualquer programa. Fechar a janela
+deixa ele coletando perto do relógio; para fechar de vez, use o "Sair" do ícone.
 
 Seus dados (banco, análises, logs) ficam em:
   %LOCALAPPDATA%\Radar3D\data

@@ -18,9 +18,10 @@ Roda no seu computador (Windows); nada é enviado para servidor nosso.
 3. Abra pelo menu Iniciar (**Radar 3D**). Na primeira vez ele baixa o Python e as
    bibliotecas (uns 100 MB, alguns minutos, precisa de internet). Depois abre em segundos.
 
-O Radar 3D fica como um ícone perto do relógio (sem janelas pretas). Para fechar: botão
-direito no ícone → **Sair** (ou menu Iniciar → **Fechar o Radar 3D**). Seus dados ficam em
-`%LOCALAPPDATA%\Radar3D\data` e continuam lá se você desinstalar.
+O Radar 3D abre na própria janela, como qualquer programa (sem navegador e sem janelas
+pretas). Fechar a janela deixa ele coletando como um ícone perto do relógio; para fechar de
+vez: botão direito no ícone → **Sair** (ou menu Iniciar → **Fechar o Radar 3D**). Seus dados
+ficam em `%LOCALAPPDATA%\Radar3D\data` e continuam lá se você desinstalar.
 
 As chaves de API (Gemini, Reddit etc.) são opcionais e ficam na tela **Configurações**.
 
