@@ -99,6 +99,28 @@ test.describe("/analisar · venda", () => {
     expect(await page.evaluate(() => navigator.clipboard.readText())).toBe("#frieren #animebust #sousounofrieren");
     await expect(section.getByLabel(/^Divulgue em r\/anime e r\/3Dprinting/)).toBeVisible();
 
+    // fan-art por loja
+    await section.getByRole("tab", { name: "Brasil" }).click();
+    await expect(section.getByRole("tabpanel")).toContainText("Fan-art: risco alto");
+    await expect(section.getByRole("tabpanel").getByRole("link", { name: "política da loja" }).first()).toHaveAttribute(
+      "href",
+      "https://cults3d.com/en/blog/articles/3d-printing-intellectual-property-law"
+    );
+    await expect(section).toContainText("Considere uma versão inspirada, autoral");
+
+    // capa
+    await expect(section).toContainText("6,0");
+    await expect(section).toContainText("/10 · avaliação por IA da imagem 1");
+    const checklist = section.getByRole("list", { name: "Checklist da capa" });
+    await expect(checklist.getByLabel("precisa melhorar")).toHaveCount(2);
+    await expect(checklist.getByLabel("não avaliado")).toHaveCount(1);
+    await expect(checklist).toContainText("Coloque uma moeda ao lado.");
+    await expect(section).toContainText("Fundo gradiente escuro destaca a peça.");
+
+    // variações
+    await expect(section).toContainText("Versão pré-suportada");
+    await expect(section).toContainText("14 de 23 anúncios do tema oferecem");
+
     const step = section.getByLabel("Publique primeiro no Cults3D (melhor encaixe no Brasil).");
     await step.check();
     await expect(step).toBeChecked();
@@ -119,6 +141,23 @@ test.describe("/analisar · venda", () => {
     await expect(section.getByRole("link", { name: "Abrir Configurações" })).toHaveAttribute("href", "/config");
     await expect(section).toContainText("O app ainda não viu o tema no Reddit. Comunidades do tipo de modelo:");
     await expect(section).toContainText("comunidade de impressão 3D");
+  });
+
+  test("sem capa avaliada mostra o motivo; autoral não mostra risco de fan-art", async ({ page }) => {
+    const stores = (c: { stores: object[] }) => ({ ...c, stores: c.stores.map((s) => ({ ...s, fanart: null })) });
+    const body = {
+      ...sale,
+      by_country: sale.by_country.map(stores),
+      fanart_tip: null,
+      cover: null,
+      cover_note: "A cota grátis da IA acabou por hoje: a capa fica para depois.",
+    };
+    await setup(page, { response: { status: 200, body } });
+    const section = page.getByRole("region", { name: "Venda" });
+    await section.getByRole("button", { name: "Preparar venda" }).click();
+    await expect(section).toContainText("A cota grátis da IA acabou por hoje: a capa fica para depois.");
+    await expect(section).not.toContainText("Fan-art:");
+    await expect(section).not.toContainText("versão inspirada");
   });
 
   test("análise com venda salva abre pronta", async ({ page }) => {

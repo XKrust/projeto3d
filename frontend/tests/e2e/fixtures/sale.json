@@ -31,6 +31,12 @@
             "value": 64,
             "label": "Média",
             "why": "oportunidade 80 no Cults3D (Brasil) × qualidade 6,9"
+          },
+          "fanart": {
+            "level": "alto",
+            "label": "risco alto",
+            "summary": "Mantém fan-art grátis, mas modera anúncios pagos com termos de marcas protegidas.",
+            "url": "https://cults3d.com/en/blog/articles/3d-printing-intellectual-property-law"
           }
         },
         {
@@ -45,6 +51,12 @@
             "value": null,
             "label": null,
             "why": "o tema ainda não tem nota no Brasil"
+          },
+          "fanart": {
+            "level": "medio",
+            "label": "risco médio",
+            "summary": "Remove o anúncio quando o dono da marca faz uma denúncia válida; repetição pode fechar a loja.",
+            "url": "https://www.etsy.com/legal/ip/"
           }
         }
       ],
@@ -76,6 +88,12 @@
             "value": 72,
             "label": "Alta",
             "why": "oportunidade 76 no Etsy (EUA) × qualidade 6,9"
+          },
+          "fanart": {
+            "level": "medio",
+            "label": "risco médio",
+            "summary": "Remove o anúncio quando o dono da marca faz uma denúncia válida; repetição pode fechar a loja.",
+            "url": "https://www.etsy.com/legal/ip/"
           }
         }
       ],
@@ -146,5 +164,87 @@
       "#sousounofrieren"
     ],
     "note": "Leia as regras de cada comunidade antes: muitas proíbem autopromoção ou pedem um dia específico para isso."
-  }
+  },
+  "fanart_tip": "Considere uma versão inspirada, autoral (sem nome, logo ou traços exclusivos do personagem) para as lojas de risco alto.",
+  "variations": [
+    {
+      "type": "presuportada",
+      "label": "Versão pré-suportada",
+      "why": "Os mais vendidos do tema já vêm com suportes.",
+      "evidence": "14 de 23 anúncios do tema oferecem",
+      "flagged": false,
+      "source": "ia"
+    },
+    {
+      "type": "chibi",
+      "label": "Versão chibi",
+      "why": "O estilo anime pede uma versão fofa menor.",
+      "evidence": "3 de 23 anúncios do tema oferecem",
+      "flagged": false,
+      "source": "ia"
+    }
+  ],
+  "cover": {
+    "score": 6.0,
+    "checks": {
+      "fundo": {
+        "label": "Fundo limpo, sem distrair",
+        "ok": false,
+        "why": "Mesa e ferramentas ao fundo.",
+        "fix": "Use um fundo liso escuro.",
+        "flagged": false
+      },
+      "angulo": {
+        "label": "Ângulo que mostra volume (3/4)",
+        "ok": true,
+        "why": "Vista 3/4 mostra o rosto e o cabelo.",
+        "fix": "",
+        "flagged": false
+      },
+      "luz": {
+        "label": "Luz que mostra a forma",
+        "ok": true,
+        "why": "Luz lateral marca as mechas.",
+        "fix": "",
+        "flagged": false
+      },
+      "enquadramento": {
+        "label": "Modelo ocupa a imagem",
+        "ok": true,
+        "why": "Busto ocupa 70% da imagem.",
+        "fix": "",
+        "flagged": false
+      },
+      "miniatura": {
+        "label": "Dá para entender em miniatura",
+        "ok": null,
+        "why": "Não dá para julgar pela resolução.",
+        "fix": "",
+        "flagged": false
+      },
+      "escala": {
+        "label": "Referência de tamanho",
+        "ok": false,
+        "why": "Nada indica o tamanho.",
+        "fix": "Coloque uma moeda ao lado.",
+        "flagged": false
+      }
+    },
+    "vs_top": [
+      {
+        "reference": 1,
+        "text": "Fundo gradiente escuro destaca a peça.",
+        "flagged": false
+      }
+    ],
+    "references": [
+      {
+        "title": "Frieren bust",
+        "url": "https://cults3d.com/x",
+        "thumb_url": "/ref1.png",
+        "likes": 900
+      }
+    ]
+  },
+  "cover_note": null
 }

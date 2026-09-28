@@ -88,7 +88,22 @@ ranking do dia entre os ativos, mais o BR) e chama `POST /api/analyses/{id}/sale
    comunidades do tipo de modelo entre as que o app acompanha (categoria primeiro, depois
    impressão ou digital). Hashtags = 8 primeiras tags reais do anúncio. Aviso fixo sobre
    regras de autopromoção. Fica em `sale_json.promotion`.
-8. **Checklist** (`build.py`): onde publicar primeiro, preço de lançamento por 48 h, as
+8. **Variações que vendem** (Etapa 3c parte 2, `variations.py`): tipos fixos (pré-suportada,
+   em partes, busto, chibi, pose, base, bundle, low poly, licença comercial) filtrados pelo
+   mercado. A chamada do anúncio pede 3 a 5 com o motivo; o app descarta tipo desconhecido,
+   de outro mercado ou repetido. Prova: "N de M anúncios do tema oferecem" (só com ≥ 5
+   anúncios). Sem IA: os tipos mais oferecidos nos anúncios do tema.
+9. **Nota da capa** (`cover.py`): 2ª chamada da venda, com a imagem 1 da análise + até 3
+   capas dos anúncios comparáveis mais curtidos. Checklist fixo (fundo, ângulo, luz,
+   enquadramento, leitura em miniatura, escala só em impressão) com ok/não/não dá para ver
+   e como corrigir; nota = 10 × ok / avaliados (calculada pelo app). Falha → `cover = null`
+   e `cover_note`; cota esgotada no anúncio pula a capa.
+10. **Risco de fan-art** (`fanart.py` + `seed/fanart_policies.yaml`): só em fan-art; cada
+    loja ganha `fanart = {level, label, summary, url}` com a política oficial consultada
+    (alto: Cults3D, MyMiniFactory, Fab; médio: Etsy, CGTrader, BOOTH; sem confirmação:
+    "conferir a política da loja"). Com loja de risco alto, `fanart_tip` sugere uma versão
+    inspirada, autoral. Leitura do app, não é conselho jurídico.
+11. **Checklist** (`build.py`): onde publicar primeiro, preço de lançamento por 48 h, as
    outras lojas, onde divulgar e o pico previsto do tema.
 
 A IA nunca derruba a venda: sem chave, cota esgotada, JSON inválido duas vezes ou IA fora
@@ -97,5 +112,5 @@ encontrada; 422 "Escolha de 1 a 5 países" / "País inválido". `GET
 /api/analyses/{id}/sale/countries` alimenta o seletor.
 
 Tela: `frontend/components/analisar/SaleSection.tsx` (+ `StoreTable`, `ListingCard`,
-`LaunchChecklist`, `PromotionBlock`); tipos em `frontend/lib/sale-types.ts`. Custo: 1 chamada de texto ao
-Gemini por venda gerada.
+`LaunchChecklist`, `PromotionBlock`, `CoverBlock`, `VariationsBlock`); tipos em `frontend/lib/sale-types.ts`. Custo: até 2 chamadas ao Gemini
+por venda gerada (anúncio + variações em texto; capa com imagens).

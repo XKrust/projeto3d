@@ -42,4 +42,6 @@
 | 2026-09-28 | Limite de título e tags por loja só com confirmação na página oficial (hoje só Etsy); resto usa o padrão do app | Mesma regra de `fee_pct`: não confiar em números de memória |
 | 2026-09-28 | Câmbio pela Frankfurter (taxas do BCE), 1x por dia; preço segue em US$ com "≈ moeda local" ao lado; RU/BY sem conversão | Grátis e sem chave; as lojas cobram em dólar/euro, então a conversão é só referência. O BCE não publica RUB nem BYN |
 | 2026-09-28 | "Onde divulgar" só sugere subreddits em que o tema apareceu ou que o coletor já acompanha, com aviso de autopromoção | Não inventar comunidade; muitas proíbem autopromoção |
+| 2026-09-28 | Variações vêm na mesma chamada do anúncio; a capa é uma 2ª chamada com imagens; nota da capa = % de itens ok do checklist | Economiza cota; a nota calculada pelo app segue a regra da 3a (a IA não dá nota final) |
+| 2026-09-28 | Risco de fan-art só com política oficial consultada; níveis alto/médio são leitura do app; Printables fica "conferir" | Não afirmar regra de loja sem fonte; os termos da Prusa não foram confirmados |
 
