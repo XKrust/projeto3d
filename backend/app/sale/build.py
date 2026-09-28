@@ -13,11 +13,13 @@ from app import clock
 from app.ai.provider import AIQuotaError, TextProvider
 from app.analyzer.errors import AIInvalidResponse
 from app.constants import in_country
+from app.fx import fx_for_country
 from app.models import Analysis
 from app.sale.chance import chance_for_store, peak_for_topic
 from app.sale.listing import generate_listing, languages_for, top_tags
 from app.sale.match import match_topic
 from app.sale.pricing import comparable_items, price_for_store, sales_to_cover
+from app.sale.promotion import build_promotion
 from app.sale.stores import rank_stores
 from app.settings_store import get_settings
 
@@ -34,7 +36,7 @@ def _money(value: float) -> str:
     return f"US$ {value:.2f}".replace(".", ",")
 
 
-def _checklist(by_country: list[dict], peak) -> list[str]:
+def _checklist(by_country: list[dict], peak, communities: list[dict]) -> list[str]:
     ordered = [store for country in by_country for store in country["stores"]]
     if not ordered:
         return [NOTE_NO_STORES]
@@ -50,6 +52,9 @@ def _checklist(by_country: list[dict], peak) -> list[str]:
             others.append(store["name"])
     if others:
         steps.append(f"Em até 2 dias, publique também no {' e no '.join(others[:2])}.")
+    if communities:
+        names = " e ".join(c["name"] for c in communities[:2])
+        steps.append(f"Divulgue em {names} no dia da publicação (leia as regras de autopromoção).")
     if peak is not None:
         day = peak.strftime("%d/%m")
         if peak >= clock.today():
@@ -98,7 +103,7 @@ def build_sale(session: Session, analysis: Analysis, countries: list[str], provi
             chance = chance_for_store(session, topic=topic, country=country, platform=slug,
                                       platform_name=store["name"], fit=store["fit"], overall=analysis.overall)
             stores.append({**store, "price": price, "price_note": None if price else basis, "chance": chance})
-        by_country.append({"country": country, "stores": stores})
+        by_country.append({"country": country, "fx": fx_for_country(session, country), "stores": stores})
 
     first_price = next((s["price"] for c in by_country for s in c["stores"] if s["price"]), None)
     hourly_rate = get_settings(session).get("hourly_rate_usd", 10)
@@ -113,6 +118,8 @@ def build_sale(session: Session, analysis: Analysis, countries: list[str], provi
                     aliases=[topic.name, *aliases] if topic else [])
     pairs = languages_for({c["country"]: [s["platform"] for s in c["stores"]] for c in by_country})
     listings, note = _listing(provider, analysis, pairs, tags)
+    promotion = build_promotion(session, topic=topic, market=analysis.market, category=analysis.category,
+                                tags=tags)
 
     return {
         "countries": countries,
@@ -121,6 +128,7 @@ def build_sale(session: Session, analysis: Analysis, countries: list[str], provi
         "hours_to_cover": hours_to_cover,
         "listing": {"listings": listings} if listings else None,
         "listing_note": note,
-        "checklist": _checklist(by_country, peak_for_topic(session, topic, countries[0])),
+        "promotion": promotion,
+        "checklist": _checklist(by_country, peak_for_topic(session, topic, countries[0]), promotion["communities"]),
         "estimate": True,
     }

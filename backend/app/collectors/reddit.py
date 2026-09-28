@@ -14,7 +14,7 @@ LIMIT = 50
 SEED_FILE = Path(__file__).resolve().parent.parent / "seed" / "reddit.yaml"
 
 
-def _load_subreddits() -> list[str]:
+def load_subreddits() -> list[str]:
     with open(SEED_FILE, encoding="utf-8") as f:
         return yaml.safe_load(f) or []
 
@@ -50,7 +50,7 @@ class RedditCollector(Collector):
         headers = {"Authorization": f"Bearer {token}"}
 
         items: list[CollectedItem] = []
-        for subreddit in _load_subreddits():
+        for subreddit in load_subreddits():
             response = get_with_retry(
                 self.http,
                 "GET",

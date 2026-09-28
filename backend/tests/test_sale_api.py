@@ -6,7 +6,7 @@ from sqlmodel import Session
 from app import clock
 from app.ai.provider import AIQuotaError
 from app.api.analyze import get_analyzer_provider
-from app.models import Analysis
+from app.models import Analysis, FxRate
 from app.sale.build import NOTE_INVALID, NOTE_NO_KEY, NOTE_NO_STORES, NOTE_QUOTA
 from tests.sale_helpers import add_analysis, clear_platforms, add_items, add_platform, add_score, add_topic
 
@@ -49,6 +49,8 @@ def world(client, engine):
                   peak_day=clock.today() + timedelta(days=10))
         add_score(session, topic, country="US", platform="etsy", opportunity=70)
         add_items(session, topic, "cults3d", [4, 5, 6, 7, 8], tags=["Frieren", "anime bust"])
+        session.add(FxRate(day=clock.today() - timedelta(days=2), currency="BRL", rate=5.43))
+        session.commit()
         analysis = add_analysis(session, overall=6.0, hours=10)
         return analysis.id
 
@@ -81,7 +83,15 @@ def test_full_sale(client, world):
     assert sale["checklist"][0] == "Publique primeiro no Cults3d (melhor encaixe no Brasil)."
     assert "US$ 4,99" in sale["checklist"][1] and "US$ 5,99" in sale["checklist"][1]
     assert sale["checklist"][2] == "Em até 2 dias, publique também no Etsy."
-    assert "publique antes disso" in sale["checklist"][3]
+    # sem posts do tema no Reddit: comunidades do tipo de modelo (anime + impressão)
+    assert sale["checklist"][3] == ("Divulgue em r/anime e r/3Dprinting no dia da publicação "
+                                    "(leia as regras de autopromoção).")
+    assert "publique antes disso" in sale["checklist"][4]
+    assert br["fx"] == {"currency": "BRL", "rate": 5.43, "day": (clock.today() - timedelta(days=2)).isoformat()}
+    assert sale["by_country"][1]["fx"] is None  # EUA: já é dólar
+    assert [c["name"] for c in sale["promotion"]["communities"]] == ["r/anime", "r/3Dprinting", "r/PrintedMinis"]
+    assert sale["promotion"]["hashtags"][:3] == ["#frieren", "#animebust", "#sousounofrieren"]
+    assert "autopromoção" in sale["promotion"]["note"]
     assert "frieren" in provider.prompts[0] and "anime bust" in provider.prompts[0]
 
     saved = client.get(f"/api/analyses/{world}").json()
@@ -133,7 +143,7 @@ def test_no_store_for_market(client, engine):
         analysis_id = add_analysis(session, market="digital").id
     _use(client, FakeProvider([]))
     sale = client.post(f"/api/analyses/{analysis_id}/sale", json={"countries": ["BR"]}).json()
-    assert sale["by_country"] == [{"country": "BR", "stores": []}]
+    assert sale["by_country"] == [{"country": "BR", "fx": None, "stores": []}]
     assert sale["listing_note"] == NOTE_NO_STORES
     assert sale["checklist"] == [NOTE_NO_STORES]
     assert sale["hours_to_cover"] is None
@@ -150,7 +160,9 @@ def test_analysis_without_topic(client, engine):
     store = sale["by_country"][0]["stores"][0]
     assert store["chance"]["value"] is None
     assert store["price"] is None
-    assert len(sale["checklist"]) == 1
+    assert sale["checklist"][0].startswith("Publique primeiro no Cults3d")
+    assert sale["checklist"][1].startswith("Divulgue em r/anime")
+    assert len(sale["checklist"]) == 2
 
 
 @pytest.mark.parametrize("countries, message", [

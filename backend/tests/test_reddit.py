@@ -26,7 +26,7 @@ TOKEN_URL = "https://www.reddit.com/api/v1/access_token"
 @pytest.fixture(autouse=True)
 def single_subreddit(monkeypatch):
     """Restringe a um unico subreddit para as assercoes ficarem deterministicas."""
-    monkeypatch.setattr(reddit_module, "_load_subreddits", lambda: ["3Dprinting"])
+    monkeypatch.setattr(reddit_module, "load_subreddits", lambda: ["3Dprinting"])
 
 
 def _mock_token_and_hot():
