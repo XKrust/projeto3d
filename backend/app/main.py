@@ -8,6 +8,7 @@ from fastapi import FastAPI
 from sqlmodel import Session
 
 from app import scheduler as scheduler_mod
+from app.api import analyze as analyze_api
 from app.api import countries as countries_api
 from app.api import health
 from app.api import hype as hype_api
@@ -55,6 +56,7 @@ def create_app(engine=None) -> FastAPI:
     app.include_router(seasonal_api.router, prefix="/api")
     app.include_router(hype_api.router, prefix="/api")
     app.include_router(countries_api.router, prefix="/api")
+    app.include_router(analyze_api.router, prefix="/api")
 
     return app
 
