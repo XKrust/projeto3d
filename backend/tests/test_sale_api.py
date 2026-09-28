@@ -87,6 +87,7 @@ def test_full_sale(client, world):
     assert sale["checklist"][3] == ("Divulgue em r/anime e r/3Dprinting no dia da publicação "
                                     "(leia as regras de autopromoção).")
     assert "publique antes disso" in sale["checklist"][4]
+    assert sale["peak_day"] == (clock.today() + timedelta(days=10)).isoformat()
     assert br["fx"] == {"currency": "BRL", "rate": 5.43, "day": (clock.today() - timedelta(days=2)).isoformat()}
     assert sale["by_country"][1]["fx"] is None  # EUA: já é dólar
     assert [c["name"] for c in sale["promotion"]["communities"]] == ["r/anime", "r/3Dprinting", "r/PrintedMinis"]

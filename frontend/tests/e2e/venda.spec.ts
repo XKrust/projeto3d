@@ -46,7 +46,7 @@ test.describe("/analisar · venda", () => {
   test("prepara a venda: países, lojas, preço, chance, anúncio e checklist", async ({ page, context }) => {
     await context.grantPermissions(["clipboard-read", "clipboard-write"]);
     const posted = await setup(page, {});
-    const section = page.getByRole("region", { name: "Venda" });
+    const section = page.getByRole("region", { name: "Venda", exact: true });
 
     // padrões marcados; até 5 países
     await expect(section.getByRole("button", { name: "EUA" })).toHaveAttribute("aria-pressed", "true");
@@ -55,6 +55,21 @@ test.describe("/analisar · venda", () => {
     await section.getByRole("button", { name: "Reino Unido" }).click();
     await section.getByRole("button", { name: "Preparar venda" }).click();
     expect(posted).toEqual([{ countries: ["US", "BR"] }]);
+
+    // resumo no topo: a decisão em poucas linhas
+    const summary = section.getByRole("region", { name: "Resumo da venda" });
+    await expect(summary).toContainText("Publique primeiro no Cults3D");
+    await expect(summary).toContainText("melhor encaixe no Brasil");
+    await expect(section).toContainText("2 lojas · 2 países");
+    await expect(summary).toContainText("US$ 5,99");
+    await expect(summary).toContainText("≈ R$ 32,53");
+    await expect(summary).toContainText("US$ 4,99 nas primeiras 48 h");
+    await expect(summary).toContainText("Média");
+    await expect(summary).toContainText("Publique antes de 08/10");
+    await expect(summary).toContainText("risco alto de remoção");
+    // o detalhe começa recolhido
+    await expect(section.getByRole("tab", { name: "Brasil" })).toBeHidden();
+    await section.getByText("Todas as lojas e preços", { exact: true }).click();
 
     await expect(section.getByRole("tab", { name: "Brasil" })).toHaveAttribute("aria-selected", "true");
     const panel = section.getByRole("tabpanel");
@@ -91,13 +106,13 @@ test.describe("/analisar · venda", () => {
     await expect(card.getByRole("button", { name: "Copiado" })).toBeVisible();
     expect(await page.evaluate(() => navigator.clipboard.readText())).toBe("Busto Frieren STL (fan art)");
 
+    await section.getByText("Onde divulgar", { exact: true }).click();
     await expect(section).toContainText("Comunidades onde o tema está em alta no Reddit:");
     await expect(section.getByRole("link", { name: "r/anime" })).toHaveAttribute("href", "https://www.reddit.com/r/anime/");
     await expect(section).toContainText("4 posts do tema em alta nos últimos 30 dias");
     await expect(section).toContainText("proíbem autopromoção");
     await section.getByRole("button", { name: "Copiar hashtags" }).click();
     expect(await page.evaluate(() => navigator.clipboard.readText())).toBe("#frieren #animebust #sousounofrieren");
-    await expect(section.getByLabel(/^Divulgue em r\/anime e r\/3Dprinting/)).toBeVisible();
 
     // fan-art por loja
     await section.getByRole("tab", { name: "Brasil" }).click();
@@ -109,6 +124,7 @@ test.describe("/analisar · venda", () => {
     await expect(section).toContainText("Considere uma versão inspirada, autoral");
 
     // capa
+    await section.getByText("Capa", { exact: true }).click();
     await expect(section).toContainText("6,0");
     await expect(section).toContainText("/10 · avaliação por IA da imagem 1");
     const checklist = section.getByRole("list", { name: "Checklist da capa" });
@@ -121,6 +137,8 @@ test.describe("/analisar · venda", () => {
     await expect(section).toContainText("Versão pré-suportada");
     await expect(section).toContainText("14 de 23 anúncios do tema oferecem");
 
+    await section.getByText("Plano de lançamento", { exact: true }).click();
+    await expect(section.getByLabel(/^Divulgue em r\/anime e r\/3Dprinting/)).toBeVisible();
     const step = section.getByLabel("Publique primeiro no Cults3D (melhor encaixe no Brasil).");
     await step.check();
     await expect(step).toBeChecked();
@@ -134,9 +152,9 @@ test.describe("/analisar · venda", () => {
       communities: [{ name: "r/3Dprinting", url: "https://www.reddit.com/r/3Dprinting/", why: "comunidade de impressão 3D", source: "tipo" }],
     };
     await setup(page, { response: { status: 200, body: { ...sale, listing: null, listing_note: note, promotion } } });
-    const section = page.getByRole("region", { name: "Venda" });
+    const section = page.getByRole("region", { name: "Venda", exact: true });
     await section.getByRole("button", { name: "Preparar venda" }).click();
-    await expect(section.getByRole("tabpanel")).toContainText("US$ 5,99");
+    await expect(section.getByRole("region", { name: "Resumo da venda" })).toContainText("US$ 5,99");
     await expect(section.getByRole("note")).toContainText(note);
     await expect(section.getByRole("link", { name: "Abrir Configurações" })).toHaveAttribute("href", "/config");
     await expect(section).toContainText("O app ainda não viu o tema no Reddit. Comunidades do tipo de modelo:");
@@ -153,7 +171,7 @@ test.describe("/analisar · venda", () => {
       cover_note: "A cota grátis da IA acabou por hoje: a capa fica para depois.",
     };
     await setup(page, { response: { status: 200, body } });
-    const section = page.getByRole("region", { name: "Venda" });
+    const section = page.getByRole("region", { name: "Venda", exact: true });
     await section.getByRole("button", { name: "Preparar venda" }).click();
     await expect(section).toContainText("A cota grátis da IA acabou por hoje: a capa fica para depois.");
     await expect(section).not.toContainText("Fan-art:");
@@ -162,16 +180,16 @@ test.describe("/analisar · venda", () => {
 
   test("análise com venda salva abre pronta", async ({ page }) => {
     await setup(page, { saved: sale });
-    const section = page.getByRole("region", { name: "Venda" });
+    const section = page.getByRole("region", { name: "Venda", exact: true });
     await expect(section.getByRole("button", { name: "Gerar de novo" })).toBeVisible();
-    await expect(section.getByRole("tabpanel")).toContainText("Cults3D");
+    await expect(section.getByRole("region", { name: "Resumo da venda" })).toContainText("Cults3D");
     await expect(section.getByRole("button", { name: "Brasil" })).toHaveAttribute("aria-pressed", "true");
     await expect(section.getByRole("button", { name: "Alemanha" })).toHaveAttribute("aria-pressed", "false");
   });
 
   test("erro de validação aparece na seção", async ({ page }) => {
     await setup(page, { response: { status: 422, body: { detail: "Escolha de 1 a 5 países" } } });
-    const section = page.getByRole("region", { name: "Venda" });
+    const section = page.getByRole("region", { name: "Venda", exact: true });
     await section.getByRole("button", { name: "Preparar venda" }).click();
     await expect(section.getByRole("alert")).toHaveText("Escolha de 1 a 5 países");
   });

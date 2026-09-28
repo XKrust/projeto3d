@@ -111,6 +111,6 @@ do ar → `listing = null` e `listing_note` com o motivo (200). Erros: 404 anál
 encontrada; 422 "Escolha de 1 a 5 países" / "País inválido". `GET
 /api/analyses/{id}/sale/countries` alimenta o seletor.
 
-Tela: `frontend/components/analisar/SaleSection.tsx` (+ `StoreTable`, `ListingCard`,
+Tela (simplificada em 28/09/2026): no topo um **resumo** (`SaleSummary.tsx`: loja, preço com câmbio, chance, prazo do pico e alerta de fan-art de risco alto), depois o **anúncio pronto**; o resto fica recolhido em seções (`<details>`): todas as lojas e preços (+ vendas para cobrir as horas), plano de lançamento, onde divulgar, capa e variações. `sale_json.peak_day` alimenta o prazo. Arquivos: `frontend/components/analisar/SaleSection.tsx` (+ `StoreTable`, `ListingCard`,
 `LaunchChecklist`, `PromotionBlock`, `CoverBlock`, `VariationsBlock`); tipos em `frontend/lib/sale-types.ts`. Custo: até 2 chamadas ao Gemini
 por venda gerada (anúncio + variações em texto; capa com imagens).

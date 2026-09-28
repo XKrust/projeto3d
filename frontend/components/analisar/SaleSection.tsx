@@ -7,9 +7,11 @@ import { LaunchChecklist } from "@/components/analisar/LaunchChecklist";
 import { CoverBlock } from "@/components/analisar/CoverBlock";
 import { ListingCard } from "@/components/analisar/ListingCard";
 import { PromotionBlock } from "@/components/analisar/PromotionBlock";
+import { SaleSummary } from "@/components/analisar/SaleSummary";
 import { StoreTable } from "@/components/analisar/StoreTable";
 import { VariationsBlock } from "@/components/analisar/VariationsBlock";
 import { Button } from "@/components/ui/button";
+import { formatScore } from "@/lib/analyzer-types";
 import { ApiError, apiGet, apiPostJson, apiPut, BackendOfflineError } from "@/lib/api";
 import { formatUsd, salesToCover, type Sale, type SaleCountries } from "@/lib/sale-types";
 
@@ -74,28 +76,30 @@ function HoursToCover({ sale }: { sale: Sale }) {
   );
 }
 
+// Seção recolhida: o detalhe fica a um clique, para a venda não virar uma parede de texto.
+function More({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
+  return (
+    <details className="group border-t border-border">
+      <summary className="flex cursor-pointer list-none items-baseline justify-between gap-3 py-4 [&::-webkit-details-marker]:hidden">
+        <span className="font-heading text-[length:var(--text-md)] font-bold">{title}</span>
+        <span className="flex items-baseline gap-3 text-sm text-muted-foreground">
+          {hint && <span className="hidden sm:inline">{hint}</span>}
+          <span aria-hidden="true" className="transition-transform duration-150 group-open:rotate-90">›</span>
+        </span>
+      </summary>
+      <div className="flex flex-col gap-4 pb-6">{children}</div>
+    </details>
+  );
+}
+
 function SaleResult({ sale }: { sale: Sale }) {
   const names = Object.fromEntries(
     sale.by_country.flatMap((c) => c.stores.map((s) => [s.platform, s.name] as const))
   );
+  const storeCount = new Set(Object.keys(names)).size;
   return (
     <div className="flex flex-col gap-8">
-      <p className="text-sm text-muted-foreground">
-        {sale.topic
-          ? `Tema no radar: ${sale.topic.name}.`
-          : "Este tema ainda não está no radar: o preço usa modelos da mesma categoria."}{" "}
-        Preço e chance são estimativas a partir do que o app coletou, em dólar (moeda das lojas), com a
-        conversão aproximada para a moeda do país quando há câmbio.
-      </p>
-
-      <Block title="Onde vender">
-        <StoreTable sale={sale} />
-        {sale.fanart_tip && (
-          <p className="border-l-2 border-[var(--color-signal-down)] pl-3 text-sm">{sale.fanart_tip}</p>
-        )}
-      </Block>
-
-      <HoursToCover sale={sale} />
+      <SaleSummary sale={sale} />
 
       <Block title="Anúncio pronto">
         {sale.listing ? (
@@ -120,29 +124,46 @@ function SaleResult({ sale }: { sale: Sale }) {
         )}
       </Block>
 
-      <Block title="Capa">
-        {sale.cover ? (
-          <CoverBlock cover={sale.cover} />
-        ) : (
-          <p className="text-sm text-muted-foreground">{sale.cover_note ?? "—"}</p>
+      <div className="flex flex-col">
+        <More title="Todas as lojas e preços" hint={`${storeCount} loja${storeCount === 1 ? "" : "s"} · ${sale.by_country.length} ${sale.by_country.length === 1 ? "país" : "países"}`}>
+          <p className="text-sm text-muted-foreground">
+            {sale.topic
+              ? `Tema no radar: ${sale.topic.name}.`
+              : "Este tema ainda não está no radar: o preço usa modelos da mesma categoria."}{" "}
+            Preço e chance são estimativas a partir do que o app coletou, em dólar (moeda das lojas), com a
+            conversão aproximada para a moeda do país quando há câmbio.
+          </p>
+          <StoreTable sale={sale} />
+          {sale.fanart_tip && (
+            <p className="border-l-2 border-[var(--color-signal-down)] pl-3 text-sm">{sale.fanart_tip}</p>
+          )}
+          <HoursToCover sale={sale} />
+        </More>
+
+        <More title="Plano de lançamento" hint={`${sale.checklist.length} passos`}>
+          <LaunchChecklist steps={sale.checklist} />
+        </More>
+
+        {sale.promotion && (
+          <More title="Onde divulgar" hint={sale.promotion.communities.map((c) => c.name).slice(0, 2).join(", ")}>
+            <PromotionBlock promotion={sale.promotion} />
+          </More>
         )}
-      </Block>
 
-      {sale.variations && sale.variations.length > 0 && (
-        <Block title="Variações que vendem">
-          <VariationsBlock variations={sale.variations} />
-        </Block>
-      )}
+        <More title="Capa" hint={sale.cover?.score != null ? `${formatScore(sale.cover.score)}/10` : undefined}>
+          {sale.cover ? (
+            <CoverBlock cover={sale.cover} />
+          ) : (
+            <p className="text-sm text-muted-foreground">{sale.cover_note ?? "—"}</p>
+          )}
+        </More>
 
-      {sale.promotion && (
-        <Block title="Onde divulgar">
-          <PromotionBlock promotion={sale.promotion} />
-        </Block>
-      )}
-
-      <Block title="Lançamento">
-        <LaunchChecklist steps={sale.checklist} />
-      </Block>
+        {sale.variations && sale.variations.length > 0 && (
+          <More title="Variações que vendem" hint={sale.variations.map((v) => v.label).slice(0, 2).join(", ")}>
+            <VariationsBlock variations={sale.variations} />
+          </More>
+        )}
+      </div>
     </div>
   );
 }
