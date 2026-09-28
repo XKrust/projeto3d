@@ -1,0 +1,41 @@
+{
+  "titles": {
+    "en": "Frieren Bust - Anime Fan Art STL",
+    "pt": "Busto da Frieren - fan art de anime",
+    "de": "Frieren Büste - Anime Fanart STL",
+    "ja": "フリーレン 胸像 STL"
+  },
+  "tags": [
+    "frieren",
+    "anime",
+    "bust",
+    "fan art",
+    "stl"
+  ],
+  "description": "Bust of Frieren with layered hair, sculpted for 3D printing.",
+  "languages": [
+    "de",
+    "ja"
+  ],
+  "stores": [
+    "Cults3D",
+    "MyMiniFactory",
+    "Etsy"
+  ],
+  "price": {
+    "eur": 7.4,
+    "low_eur": 2.4,
+    "high_eur": 23.6,
+    "basis": "faixa_categoria",
+    "basis_text": "faixa típica do Cults3D (pesquisa de 28/09/2026): figuras e bustos de anime",
+    "sample": 0,
+    "quality_factor": 1.12,
+    "fx_source": "cotação do Banco Central Europeu de 2026-09-25"
+  },
+  "chance": {
+    "score": 56.0,
+    "label": "Média"
+  },
+  "chance_note": null,
+  "generated_at": "2026-09-28T11:00:00-03:00"
+}

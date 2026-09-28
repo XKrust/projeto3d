@@ -6,6 +6,7 @@ import { test, expect, type Page } from "@playwright/test";
 const fixture = (name: string) => JSON.parse(fs.readFileSync(path.join(__dirname, "fixtures", name), "utf-8"));
 const analysis = fixture("analysis.json");
 const analyses = fixture("analyses.json");
+const sale = fixture("sale.json");
 const metaFixture = fixture("meta.json");
 const IMAGE = path.join(__dirname, "fixtures", "modelo.png");
 
@@ -150,5 +151,43 @@ test.describe("/analisar", () => {
 
     expect(body).toContain("Content-Type: image/png");
     expect(body).not.toContain("Content-Type: image/jpeg");
+  });
+
+  test("preparar para vender mostra título, tags, lojas, preço e chance", async ({ page }) => {
+    await setup(page, { status: 201, body: analysis });
+    await page.route("**/api/analyses/7/sale", (route) => route.fulfill({ status: 201, json: sale }));
+    await page.route("**/api/analyses/7", (route) => route.fulfill({ json: analysis }));
+    await page.goto("/analisar");
+    await page.getByRole("list", { name: "Análises anteriores" }).getByRole("button", { name: /6,9/ }).click();
+
+    await page.getByRole("button", { name: "Preparar para vender" }).click();
+
+    const section = page.getByRole("region", { name: "Para vender" });
+    await expect(section).toContainText("Frieren Bust - Anime Fan Art STL");
+    await expect(section).toContainText("Frieren Büste - Anime Fanart STL");
+    await expect(section).toContainText("fan art");
+    await expect(section).toContainText("Cults3D · MyMiniFactory · Etsy");
+    await expect(section).toContainText("€ 7,40");
+    await expect(section).toContainText("(estimativa)");
+    await expect(section).toContainText("faixa típica do Cults3D");
+    await expect(section).toContainText("Média");
+    await expect(section.getByRole("button", { name: /Copiar/ }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "Gerar de novo" })).toBeVisible();
+  });
+
+  test("análise que já tem venda mostra direto; cota esgotada mostra a mensagem", async ({ page }) => {
+    await setup(page, { status: 201, body: analysis });
+    await page.route("**/api/analyses/3", (route) =>
+      route.fulfill({ json: { ...analysis, id: 3, previous: null, sale } })
+    );
+    await page.route("**/api/analyses/3/sale", (route) =>
+      route.fulfill({ status: 429, json: { detail: "A cota grátis da IA acabou por hoje. Tente de novo mais tarde." } })
+    );
+    await page.goto("/analisar");
+    await page.getByRole("list", { name: "Análises anteriores" }).getByRole("button", { name: /5,8/ }).click();
+
+    await expect(page.getByRole("region", { name: "Para vender" })).toContainText("€ 7,40");
+    await page.getByRole("button", { name: "Gerar de novo" }).click();
+    await expect(page.getByText("A cota grátis da IA acabou por hoje. Tente de novo mais tarde.")).toBeVisible();
   });
 });
