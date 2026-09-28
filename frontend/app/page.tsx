@@ -12,13 +12,15 @@ type CountryCard = {
   code: string;
   name: string;
   active: boolean;
-  chance: number | null;
-  top_topic: string | null;
+  /** Os 3 melhores temas do país agora (nomes). */
+  top_topics: string[];
+  /** As lojas que vendem com mais força no país. */
+  stores: string[];
   topics: number;
 };
 
-// Tela inicial: escolher o país. Ao lado de cada um, a chance de venda estimada
-// (média da nota de oportunidade dos 5 melhores tópicos — ver docs/score.md).
+// Tela inicial: escolher o país. Cada card mostra o que vende lá: os temas em alta e as
+// lojas mais fortes (ver docs/score.md). Sem "% de chance": não diferenciava os países.
 export default function Inicio() {
   const router = useRouter();
   const current = useStoredCountry();
@@ -38,8 +40,8 @@ export default function Inicio() {
       <header className="flex flex-col gap-3">
         <h1 className="text-[length:var(--text-display)] font-bold">Onde você vai vender?</h1>
         <p className="max-w-[58ch] text-[length:var(--text-md)] leading-snug text-muted-foreground">
-          Escolha o país. Radar, Sazonal e Hype passam a mostrar o que vende lá. A
-          porcentagem é a chance de venda estimada dos 5 temas mais fortes de cada país.
+          Escolha o país. Radar, Sazonal e Hype passam a mostrar o que vende lá. Em cada
+          país: os temas em alta agora e as lojas onde mais se vende.
         </p>
       </header>
 
@@ -48,7 +50,7 @@ export default function Inicio() {
       ) : (
         <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {[...data]
-            .sort((a, b) => Number(b.active) - Number(a.active) || (b.chance ?? -1) - (a.chance ?? -1))
+            .sort((a, b) => Number(b.active) - Number(a.active) || b.topics - a.topics)
             .map((country) => {
               const selected = country.code === current;
               const card = (
@@ -67,21 +69,26 @@ export default function Inicio() {
                       </span>
                     )}
                   </span>
-                  <span className="flex items-baseline gap-2">
-                    <span className="tnum font-heading text-[length:var(--text-2xl)] font-extrabold leading-none tracking-[-0.04em]">
-                      {country.chance === null ? "—" : `${country.chance}%`}
+                  <span className="flex w-full flex-col gap-1">
+                    <span className="text-xs uppercase tracking-[0.08em] text-muted-foreground">
+                      Temas em alta
                     </span>
-                    <span className="text-sm text-muted-foreground">
-                      chance de venda (estimativa)
+                    <span className="text-base font-medium leading-snug text-foreground">
+                      {!country.active
+                        ? "Ative em Configurações"
+                        : country.top_topics.length
+                          ? country.top_topics.join(" · ")
+                          : "Ainda sem temas: clique em Coletar agora no Radar"}
                     </span>
                   </span>
-                  <span className="w-full truncate text-sm text-muted-foreground">
-                    {!country.active
-                      ? "Ative em Configurações"
-                      : country.top_topic
-                        ? `Melhor tema: ${country.top_topic}`
-                        : "Ainda sem dados — clique em Coletar agora"}
-                  </span>
+                  {country.stores.length > 0 && (
+                    <span className="flex w-full flex-col gap-1">
+                      <span className="text-xs uppercase tracking-[0.08em] text-muted-foreground">
+                        Onde mais se vende
+                      </span>
+                      <span className="text-sm text-muted-foreground">{country.stores.join(" · ")}</span>
+                    </span>
+                  )}
                 </>
               );
               const base =
@@ -92,7 +99,7 @@ export default function Inicio() {
                     <button
                       type="button"
                       onClick={() => choose(country.code)}
-                      aria-label={`${country.name}: ${country.chance === null ? "sem dados" : `${country.chance}% de chance de venda (estimativa)`}`}
+                      aria-label={`${country.name}: ${country.top_topics.length ? `temas em alta ${country.top_topics.join(", ")}` : "ainda sem temas"}. Onde mais se vende: ${country.stores.join(", ")}`}
                       className={`${base} hover:bg-muted ${selected ? "ring-2 ring-primary" : ""}`}
                     >
                       {card}

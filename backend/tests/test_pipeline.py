@@ -32,7 +32,11 @@ def platforms(session):
     seed_platforms(session)
 
 
-def _topic(session, name, category="outros"):
+def _topic(session, name, category="outros", *, exact=False):
+    # Nome de 2 palavras por padrão: palavra solta comum ("Tema", "Alto") não é tema de
+    # verdade e não ganha nota (app/topics/theme.py). `exact` usa o nome como veio.
+    if not exact:
+        name = f"{name} Modelo"
     topic = Topic(slug=name.lower().replace(" ", "-"), name=name, category=category, is_candidate=False,
                   created_day=DAY)
     session.add(topic)
@@ -154,11 +158,27 @@ def test_compute_scores_twice_does_not_duplicate_rows(session, platforms):
     assert len(session.exec(select(TopicScore)).all()) == len(SELLING)
 
 
+def test_generic_topic_gets_no_score_and_old_rows_are_removed(session, platforms):
+    # "Game" tem sinal dos dias anteriores, mas não é tema de verdade.
+    game = _topic(session, "Game", exact=True)
+    minecraft = _topic(session, "Minecraft", category="games", exact=True)  # tema curado
+    _signal(session, game, 90)
+    _signal(session, minecraft, 10)
+    session.add(TopicScore(topic_id=game.id, country="BR", platform="cults3d", day=DAY, demand=99, momentum=50,
+                           momentum_raw=0, saturation=50, peak_day=DAY, fit_window=1, fit_platform=1, opportunity=90))
+    session.commit()
+
+    compute_scores(session, DAY)
+
+    assert _scores(session, topic=game) == []
+    assert _scores(session, topic=minecraft)
+
+
 def test_every_selling_platform_is_scored_even_without_collected_data(session, platforms):
     # O Cults3D (sem chave) nunca é coletado, mas é onde se vende: tem que concorrer.
     # O Sketchfab é coletado (tendência), mas a loja fechou: não concorre.
     _raw_item(session, source="sketchfab")
-    topic = _topic(session, "Tema")
+    topic = _topic(session, "Tema Qualquer")
     _signal(session, topic, 10)
 
     compute_scores(session, DAY)
@@ -255,7 +275,7 @@ class FakeCounter:
 
 
 def test_failing_counter_does_not_stop_other_platforms(session):
-    topic = _topic(session, "Tema")
+    topic = _topic(session, "Tema", exact=True)
     _signal(session, topic, 10)
     ok = FakeCounter({"Tema": 12})
     broken = FakeCounter(error=CollectorError("Falha simulada"))
@@ -282,8 +302,8 @@ class FlakyCounter(FakeCounter):
 
 
 def test_failing_term_only_skips_that_topic(session):
-    good = _topic(session, "Bom")
-    bad = _topic(session, "Ruim")
+    good = _topic(session, "Bom", exact=True)
+    bad = _topic(session, "Ruim", exact=True)
     _signal(session, good, 10)
     _signal(session, bad, 20)
     counter = FlakyCounter({"Bom": 12}, failing={"Ruim"})
@@ -308,9 +328,9 @@ def test_platform_is_abandoned_after_3_consecutive_failures(session):
 
 
 def test_update_listings_uses_signal_sum_when_there_is_no_score(session):
-    small = _topic(session, "Pequeno")
-    big = _topic(session, "Grande")
-    medium = _topic(session, "Medio")
+    small = _topic(session, "Pequeno", exact=True)
+    big = _topic(session, "Grande", exact=True)
+    medium = _topic(session, "Medio", exact=True)
     _signal(session, small, 5)
     _signal(session, big, 30)
     _signal(session, big, 30, source="reddit", country=GLOBAL)
@@ -324,9 +344,9 @@ def test_update_listings_uses_signal_sum_when_there_is_no_score(session):
 
 
 def test_update_listings_uses_opportunity_of_last_scored_day(session):
-    a = _topic(session, "A")
-    b = _topic(session, "B")
-    c = _topic(session, "C")
+    a = _topic(session, "A", exact=True)
+    b = _topic(session, "B", exact=True)
+    c = _topic(session, "C", exact=True)
     old_day = DAY - timedelta(days=2)
     for topic, opp in ((a, 30.0), (b, 80.0), (c, 60.0)):
         session.add(
@@ -347,7 +367,7 @@ def test_update_listings_uses_opportunity_of_last_scored_day(session):
 
 def test_update_listings_counts_only_once_per_day(session):
     # Regra de scraping educado: no máximo 1 contagem por dia (DailyAttempt).
-    topic = _topic(session, "Tema")
+    topic = _topic(session, "Tema", exact=True)
     _signal(session, topic, 10)
 
     update_listings(session, {"sketchfab": FakeCounter({"Tema": 1})}, DAY, 50)

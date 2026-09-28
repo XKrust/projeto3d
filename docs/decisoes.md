@@ -29,3 +29,5 @@
 | 2026-09-27 | Recomendação de loja por força de venda pesquisada × afinidade com o tipo de tema; todas as lojas que vendem concorrem, mesmo sem coleta | O app recomendava Sketchfab/ArtStation só porque conseguia lê-los; o usuário nunca vendeu lá e vende no Cults3D (sem chave, nunca entrava) |
 | 2026-09-27 | Sketchfab e ArtStation viram só sinal de tendência (`sells: false`); entram Fab e Mercado Livre | A Sketchfab Store fechou em 10/2024 e o ArtStation Marketplace migrou para a Fab em 2025 |
 | 2026-09-27 | Radar mostra as 3 melhores lojas por tema, sem filtro "onde eu vendo" | Pedido do usuário: pode existir loja boa num país que ele não conhece |
+| 2026-09-27 | Palavra comum de dicionário (wordfreq, Zipf ≥ 3,4) e pedaço de tema conhecido não viram tema; lista curada ampliada | Metade do radar era "Game", "Night", "Girl", "germany": não ajudava a decidir o que modelar |
+| 2026-09-27 | Tela de países troca a "% de chance" pelos 3 temas em alta e as 3 lojas mais fortes | A % era média de percentis do próprio país e dava ~80% em todos |

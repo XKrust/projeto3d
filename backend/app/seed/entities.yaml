@@ -81,3 +81,69 @@
 - name: Sonic the Hedgehog
   category: games
   aliases: [sonic]
+
+# Franquias que vendem bem em 3D (acrescentadas em 27/09/2026). Nome de uma palavra
+# comum ("Mario", "Stitch") só vale como tema por estar aqui (ver app/topics/theme.py).
+- name: Super Mario
+  category: games
+  aliases: [mario, luigi, bowser]
+
+- name: Kirby
+  category: games
+  aliases: []
+
+- name: Hello Kitty
+  category: toys_memes
+  aliases: [sanrio, kuromi, cinnamoroll, my melody]
+
+- name: Stitch
+  category: filmes_series
+  aliases: [lilo and stitch, lilo & stitch]
+
+- name: Spider-Man
+  category: filmes_series
+  aliases: [spiderman, homem-aranha, homem aranha]
+
+- name: Batman
+  category: filmes_series
+  aliases: []
+
+- name: Chainsaw Man
+  category: anime
+  aliases: [denji, makima]
+
+- name: Genshin Impact
+  category: games
+  aliases: [genshin]
+
+- name: Hollow Knight
+  category: games
+  aliases: [silksong]
+
+- name: The Witcher
+  category: games
+  aliases: [witcher, geralt]
+
+- name: Bluey
+  category: toys_memes
+  aliases: []
+
+- name: Squid Game
+  category: filmes_series
+  aliases: [round 6]
+
+- name: Stranger Things
+  category: filmes_series
+  aliases: [demogorgon]
+
+- name: Sousou no Frieren
+  category: anime
+  aliases: [frieren]
+
+- name: Delicious in Dungeon
+  category: anime
+  aliases: [dungeon meshi, ダンジョン飯]
+
+- name: Articulated Dragon
+  category: toys_memes
+  aliases: [flexi dragon, dragao articulado]

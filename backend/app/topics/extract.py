@@ -15,7 +15,9 @@ Algoritmo (fixo, ver `docs/arquitetura.md#formacao-de-topicos`):
    topico separado.
 4. **Candidatos:** unigramas/bigramas (fora do Trends) em >=3 itens de >=2
    fontes, tambem excluindo termos ja cobertos por uma entidade ou topico
-   existente.
+   existente. Palavra solta comum de dicionario ("Game", "Night") nunca vira
+   candidato nem termo do Trends (`app/topics/theme.py`), e um topico antigo
+   assim para de receber item e sinal; entidades valem sempre.
 5. Todo draft (semente de hoje ou topico existente) e indexado pelo `slug` do
    seu nome; duas sementes cujo nome normalizado difere mas cujo slug colide
    (ex.: "Spider-Man" e "Spider Man") sao fundidas num so draft, nunca viram
@@ -53,6 +55,7 @@ from app.models import RawItem, Topic, TopicItem, TopicSignal
 from app.topics.category import guess_category
 from app.hype.entities import hype_entities
 from app.topics.normalize import is_cjk, matches_phrase, normalize, tokens
+from app.topics.theme import is_fragment, is_generic, words_of
 
 _SEED_DIR = Path(__file__).resolve().parent.parent / "seed"
 _ENTITIES_FILE = _SEED_DIR / "entities.yaml"
@@ -192,7 +195,7 @@ def _seed_trends_terms(drafts: dict[str, _Draft], items: list[RawItem], known_al
         if item.source != TRENDS_SOURCE:
             continue
         key = normalize(item.title)
-        if key in known_alias_pool:
+        if key in known_alias_pool or is_generic(key):
             continue
         slug = _slugify(item.title)
         _register(drafts, slug, key, lambda item=item, key=key: _Draft(name=item.title, aliases=[key], is_trends_term=True))
@@ -211,7 +214,7 @@ def _seed_candidates(drafts: dict[str, _Draft], items: list[RawItem], known_alia
             ngram_items[gram][item.source].add(item.id)
 
     for gram, by_source in ngram_items.items():
-        if gram in known_alias_pool:
+        if gram in known_alias_pool or is_generic(gram):
             continue
         total_ids = {item_id for ids in by_source.values() for item_id in ids}
         if len(total_ids) >= _CANDIDATE_MIN_ITEMS and len(by_source) >= _CANDIDATE_MIN_SOURCES:
@@ -335,6 +338,28 @@ def _sync_topic_signals(
     return bool(signal_values)
 
 
+def entity_names(session: Session, day: date) -> set[str]:
+    """Nomes normalizados das entidades (curadas + estreias do hype) de `day`: temas
+    que valem mesmo sendo palavra comum ("Pokemon", "Minecraft")."""
+    return {normalize(e["name"]) for e in [*_load_entities(), *hype_entities(session, day)]}
+
+
+def entity_words(session: Session, day: date) -> set[str]:
+    """Palavras dos nomes e aliases das entidades, para achar pedaços ("Meshi")."""
+    names: set[str] = set()
+    for entity in [*_load_entities(), *hype_entities(session, day)]:
+        names.add(entity["name"])
+        names.update(a for a in entity.get("aliases", []) if a)
+    return words_of(names)
+
+
+def is_not_a_theme(name: str, entities: set[str], known_words: set[str]) -> bool:
+    """Palavra comum ou pedaço de tema conhecido; entidades valem sempre."""
+    if normalize(name) in entities:
+        return False
+    return is_generic(name) or is_fragment(name, known_words)
+
+
 def extract_topics(session: Session, day: date) -> int:
     """Extrai topicos, `TopicItem` e `TopicSignal` de `day`. Retorna o numero de
     topicos com sinal gravado hoje. Ver o algoritmo fixo no topo do arquivo."""
@@ -347,6 +372,7 @@ def extract_topics(session: Session, day: date) -> int:
     _seed_trends_terms(drafts, items, known_alias_pool)
     _seed_candidates(drafts, items, known_alias_pool)
 
+    known_words = entity_words(session, day)
     _match_items(drafts, items)
     history_haystacks = _load_history_haystacks(session, day)
 
@@ -354,6 +380,9 @@ def extract_topics(session: Session, day: date) -> int:
 
     for slug, draft in drafts.items():
         if draft.is_trends_term and not _passes_noise_filter(draft, history_haystacks):
+            continue
+        if not draft.is_entity and (is_generic(draft.name) or is_fragment(draft.name, known_words)):
+            # Palavra comum ("Game") ou pedaço de tema ("Meshi"): sem item nem sinal.
             continue
 
         topic = draft.existing_topic

@@ -39,23 +39,37 @@ def test_countries_list_all_seven_in_order(client):
     assert body[0]["name"] == "Brasil"
 
 
-def test_countries_chance_is_mean_of_top5(client, engine):
+def test_country_shows_its_top3_themes_instead_of_a_percentage(client, engine):
+    # A "% de chance" era a média do top 5 de percentis e dava ~80% em todo país:
+    # não ajudava. Agora cada país mostra os 3 melhores temas.
     with Session(engine) as session:
         for i, opp in enumerate([90, 80, 70, 60, 50, 10]):
             _score(session, _topic(session, f"Tema {i}"), opportunity=opp)
 
     br = _countries(client)["BR"]
 
-    assert br["chance"] == 70  # média de 90, 80, 70, 60, 50
-    assert br["top_topic"] == "Tema 0"
+    assert "chance" not in br
+    assert br["top_topics"] == ["Tema 0", "Tema 1", "Tema 2"]
     assert br["topics"] == 6
 
 
-def test_country_without_scores_has_null_chance(client):
+def test_country_lists_its_strongest_stores(client, engine):
+    with Session(engine) as session:
+        seed_platforms(session)
+
+    countries = _countries(client)
+
+    assert countries["BR"]["stores"][0] == "Cults3D"
+    assert "Mercado Livre" in countries["BR"]["stores"]
+    assert countries["JP"]["stores"][0] == "BOOTH"
+    assert "Sketchfab" not in countries["US"]["stores"]  # loja fechada
+    assert len(countries["US"]["stores"]) == 3
+
+
+def test_country_without_scores_has_no_themes(client):
     jp = _countries(client)["JP"]
 
-    assert jp["chance"] is None
-    assert jp["top_topic"] is None
+    assert jp["top_topics"] == []
     assert jp["topics"] == 0
 
 
@@ -63,12 +77,12 @@ def test_topic_counted_once_per_country(client, engine):
     with Session(engine) as session:
         topic = _topic(session, "Tema")
         _score(session, topic, platform="cults3d", opportunity=80)
-        _score(session, topic, platform="sketchfab", opportunity=40, fit_platform=0.5)
+        _score(session, topic, platform="etsy", opportunity=40, fit_platform=0.5)
 
     br = _countries(client)["BR"]
 
     assert br["topics"] == 1
-    assert br["chance"] == 80  # a plataforma de maior nota × fit, como no radar
+    assert br["top_topics"] == ["Tema"]
 
 
 def test_only_latest_day_counts(client, engine):
@@ -77,7 +91,7 @@ def test_only_latest_day_counts(client, engine):
         _score(session, old, opportunity=99, day=DAY - timedelta(days=1))
         _score(session, _topic(session, "Hoje"), opportunity=40)
 
-    assert _countries(client)["BR"]["chance"] == 40
+    assert _countries(client)["BR"]["top_topics"] == ["Hoje"]
 
 
 def test_country_active_flag(client, engine):
@@ -91,7 +105,7 @@ def test_country_active_flag(client, engine):
     assert countries["US"]["active"] is False
 
 
-def test_inactive_country_has_null_chance_even_with_old_scores(client, engine):
+def test_inactive_country_has_no_themes_even_with_old_scores(client, engine):
     with Session(engine) as session:
         topic = _topic(session, "Frieren")
         _score(session, topic, country="US", opportunity=80.0)
@@ -100,15 +114,14 @@ def test_inactive_country_has_null_chance_even_with_old_scores(client, engine):
     us = _countries(client)["US"]
 
     assert us["active"] is False
-    assert us["chance"] is None
-    assert us["top_topic"] is None
+    assert us["top_topics"] == []
 
 
 def test_closed_store_scores_do_not_count(client, engine):
     with Session(engine) as session:
         seed_platforms(session)
-        topic = _topic(session, "Frieren")
-        _score(session, topic, platform="sketchfab", opportunity=95.0)
-        _score(session, topic, platform="cults3d", opportunity=60.0)
+        closed_only = _topic(session, "So Sketchfab")
+        _score(session, closed_only, platform="sketchfab", opportunity=95.0)
+        _score(session, _topic(session, "Frieren"), platform="cults3d", opportunity=60.0)
 
-    assert _countries(client)["BR"]["chance"] == 60
+    assert _countries(client)["BR"]["top_topics"] == ["Frieren"]

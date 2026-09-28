@@ -5,7 +5,7 @@ from sqlmodel import select
 
 from app.constants import GLOBAL
 from app.models import RawItem, Topic, TopicItem, TopicSignal
-from app.topics.extract import extract_topics
+from app.topics.extract import _load_entities, extract_topics
 
 DAY = date(2026, 9, 26)
 
@@ -31,7 +31,7 @@ def test_entities_are_seeded_even_without_matching_items(session):
     count = extract_topics(session, DAY)
 
     topics = session.exec(select(Topic)).all()
-    assert len(topics) == 20
+    assert len(topics) == len(_load_entities())
     assert all(t.is_candidate is False for t in topics)
     assert count == 0
     assert session.exec(select(TopicItem)).all() == []
@@ -233,9 +233,9 @@ def test_trends_term_passes_filter_via_in_window_history_match(session):
     _raw_item(
         session,
         source="reddit",
-        external_id="frieren-reddit",
+        external_id="gachiakuta-reddit",
         country=GLOBAL,
-        title="Frieren figure",
+        title="Gachiakuta figure",
         metric=20.0,
         day=yesterday,
     )
@@ -243,16 +243,16 @@ def test_trends_term_passes_filter_via_in_window_history_match(session):
     _raw_item(
         session,
         source="google_trends",
-        external_id="frieren-trend",
+        external_id="gachiakuta-trend",
         country="JP",
-        title="Frieren",
+        title="Gachiakuta",
         metric=300.0,
         day=DAY,
     )
 
     count = extract_topics(session, DAY)
 
-    topic = session.exec(select(Topic).where(Topic.slug == "frieren")).one()
+    topic = session.exec(select(Topic).where(Topic.slug == "gachiakuta")).one()
     assert count >= 1
     signal = session.exec(
         select(TopicSignal).where(
@@ -463,3 +463,59 @@ def test_existing_candidate_is_not_treated_as_trends_term_when_a_trends_seed_lan
         select(TopicSignal).where(TopicSignal.topic_id == topic.id, TopicSignal.day == DAY)
     ).one()
     assert signal.value == 500.0
+
+
+def test_common_word_does_not_become_a_candidate_topic(session):
+    # "Dragon" aparece em 3 itens de 2 fontes, mas é palavra de dicionário: não é tema.
+    _raw_item(session, source="reddit", external_id="r1", country=GLOBAL, title="Dragon figure", metric=5.0)
+    _raw_item(session, source="reddit", external_id="r2", country=GLOBAL, title="dragon lamp", metric=6.0)
+    _raw_item(session, source="sketchfab", external_id="sk1", country=GLOBAL, title="Dragon bust", metric=7.0)
+
+    extract_topics(session, DAY)
+
+    assert session.exec(select(Topic).where(Topic.slug == "dragon")).first() is None
+
+
+def test_generic_trends_search_does_not_become_a_topic(session):
+    # Busca em alta que não é tema de modelo 3D ("germany") casando com um item qualquer.
+    _raw_item(session, source="google_trends", external_id="g1", country="BR", title="germany", metric=300.0)
+    _raw_item(session, source="sketchfab", external_id="sk1", country=GLOBAL, title="Germany tank", metric=5.0)
+
+    extract_topics(session, DAY)
+
+    assert session.exec(select(Topic).where(Topic.slug == "germany")).first() is None
+
+
+def test_existing_generic_topic_stops_receiving_signals(session):
+    game = Topic(slug="game", name="Game", category="outros", is_candidate=True, created_day=DAY - timedelta(days=3))
+    session.add(game)
+    session.commit()
+    _raw_item(session, source="sketchfab", external_id="sk1", country=GLOBAL, title="Game controller", metric=5.0)
+
+    extract_topics(session, DAY)
+
+    assert session.exec(select(TopicSignal).where(TopicSignal.topic_id == game.id)).all() == []
+
+
+def test_entity_with_common_name_still_counts(session):
+    # "Pokemon" é palavra comum no dicionário, mas é tema curado: continua valendo.
+    _raw_item(session, source="sketchfab", external_id="sk1", country=GLOBAL, title="Pokemon planter", metric=5.0)
+
+    extract_topics(session, DAY)
+
+    topic = session.exec(select(Topic).where(Topic.slug == "pokemon")).one()
+    assert session.exec(select(TopicSignal).where(TopicSignal.topic_id == topic.id)).all()
+
+
+def test_single_word_fragment_of_a_known_theme_is_not_a_topic(session):
+    # "Meshi" é pedaço de "Dungeon Meshi" (tema conhecido): não vira tema separado.
+    session.add(Topic(slug="meshi", name="Meshi", category="outros", is_candidate=True,
+                      created_day=DAY - timedelta(days=3)))
+    session.commit()
+    _raw_item(session, source="sketchfab", external_id="sk1", country=GLOBAL, title="Dungeon Meshi Marcille",
+              metric=5.0)
+
+    extract_topics(session, DAY)
+
+    meshi = session.exec(select(Topic).where(Topic.slug == "meshi")).one()
+    assert session.exec(select(TopicSignal).where(TopicSignal.topic_id == meshi.id)).all() == []

@@ -1,11 +1,12 @@
-"""Rota da tela inicial (/api/countries): cada país com a chance de venda estimada.
+"""Rota da tela inicial (/api/countries): o que vende em cada país.
 
-`chance` = média da nota de oportunidade dos 5 melhores tópicos do país no último dia
-com score. Cada tópico conta uma vez, pela mesma plataforma que o radar mostra (maior
-oportunidade × fit da plataforma). A interface exibe como "NN% (estimativa)". País
-inativo vem com `chance` nulo (a nota antiga não é mais atualizada).
+Para cada país: os 3 melhores temas (maior nota de oportunidade no último dia com score,
+cada tema contado uma vez pela loja que o radar mostra) e as 3 lojas que vendem com maior
+força ali. Não há mais "% de chance": era a média de percentis dentro do próprio país e
+dava ~80% em todo lugar, sem diferenciar nada. País inativo vem sem temas.
 """
 
+import json
 from collections import defaultdict
 
 from fastapi import APIRouter, Depends
@@ -19,7 +20,8 @@ from app.settings_store import get_settings
 
 router = APIRouter()
 
-TOP_N = 5
+TOP_THEMES = 3
+TOP_STORES = 3
 
 
 def _best_opportunities(session: Session, country: str) -> list[tuple[float, int]]:
@@ -45,22 +47,31 @@ def _best_opportunities(session: Session, country: str) -> list[tuple[float, int
     return best
 
 
+def _strongest_stores(session: Session) -> dict[str, list[str]]:
+    """país → nomes das `TOP_STORES` lojas que vendem com maior força ali."""
+    stores = [p for p in session.exec(select(Platform).where(Platform.sells)).all()]
+    result = {}
+    for code in COUNTRIES:
+        ranked = sorted(stores, key=lambda p: (-json.loads(p.strength_json).get(code, 0.0), p.name))
+        result[code] = [p.name for p in ranked[:TOP_STORES] if json.loads(p.strength_json).get(code, 0.0) > 0]
+    return result
+
+
 @router.get("/countries")
 def read_countries(session: Session = Depends(get_session)) -> list[dict]:
     active = set(get_settings(session).get("countries", []))
+    stores = _strongest_stores(session)
     result = []
     for code in COUNTRIES:
-        # País inativo não é coletado: a nota antiga ficaria parada, então não mostra.
+        # País inativo não é coletado: os temas antigos ficariam parados, então não mostra.
         best = _best_opportunities(session, code) if code in active else []
-        top = best[:TOP_N]
-        top_topic = session.get(Topic, top[0][1]).name if top else None
         result.append(
             {
                 "code": code,
                 "name": COUNTRY_NAMES[code],
                 "active": code in active,
-                "chance": round(sum(opp for opp, _ in top) / len(top)) if top else None,
-                "top_topic": top_topic,
+                "top_topics": [session.get(Topic, topic_id).name for _, topic_id in best[:TOP_THEMES]],
+                "stores": stores[code],
                 "topics": len(best),
             }
         )

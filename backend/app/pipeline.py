@@ -26,7 +26,7 @@ from app.settings_store import get_settings
 from app.daily import claim_daily
 from app.hype.competition import update_hype_listings
 from app.hype.seasonal_ideas import update_seasonal_listings, update_seasonal_signals
-from app.topics.extract import PLATFORM_SOURCES, extract_topics
+from app.topics.extract import PLATFORM_SOURCES, entity_names, entity_words, extract_topics, is_not_a_theme
 
 logger = logging.getLogger(__name__)
 
@@ -168,6 +168,22 @@ def compute_scores(session: Session, day: date) -> int:
 
     saturation = _latest_listing_saturation(session, day, platform_slugs)
 
+    # Palavra comum de dicionário ("Game") ou pedaço de tema ("Meshi") não é tema: sem
+    # nota, e as linhas de hoje que sobraram de antes da regra são apagadas.
+    entities = entity_names(session, day)
+    known_words = entity_words(session, day)
+    generic_ids = {
+        topic.id
+        for topic in session.exec(select(Topic)).all()
+        if is_not_a_theme(topic.name, entities, known_words)
+    }
+    if generic_ids:
+        for row in session.exec(
+            select(TopicScore).where(TopicScore.day == day, TopicScore.topic_id.in_(generic_ids))
+        ).all():
+            session.delete(row)
+        session.flush()
+
     # Todos os sinais da janela de 10 dias, numa consulta so.
     signals = session.exec(
         select(TopicSignal).where(
@@ -203,7 +219,7 @@ def compute_scores(session: Session, day: date) -> int:
                 for topic_id, rank in formulas.percentile_ranks(dict(by_topic)).items():
                     values[day_][topic_id][PLATFORMS_GROUP] += rank
 
-        topic_ids = {topic_id for by_topic in values.values() for topic_id in by_topic}
+        topic_ids = {topic_id for by_topic in values.values() for topic_id in by_topic} - generic_ids
         if not topic_ids:
             continue
 

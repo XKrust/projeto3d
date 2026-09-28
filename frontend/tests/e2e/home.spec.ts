@@ -16,20 +16,22 @@ test.describe("tela inicial (países)", () => {
     await page.route("**/api/radar?*", (route) => route.fulfill({ json: [] }));
   });
 
-  test("inicio lista os 7 paises com chance", async ({ page }) => {
+  test("cada país mostra os temas em alta e as lojas fortes, sem porcentagem", async ({ page }) => {
     await page.goto("/");
 
     await expect(page.getByRole("heading", { level: 1, name: "Onde você vai vender?" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Japão: 81% de chance de venda (estimativa)" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Brasil: 72% de chance de venda (estimativa)" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Alemanha: sem dados" })).toBeVisible();
+    const brasil = page.getByRole("button", { name: /^Brasil/ });
+    await expect(brasil).toContainText("Sousou no Frieren · Minecraft · Articulated Dragon");
+    await expect(brasil).toContainText("Cults3D · Mercado Livre · Fab");
+    await expect(page.getByRole("button", { name: /^Japão/ })).toContainText("BOOTH");
+    await expect(page.getByRole("button", { name: /^Alemanha/ })).toContainText("Ainda sem temas");
     await expect(page.getByRole("link", { name: "Reino Unido: inativo, ative em Configurações" })).toBeVisible();
-    await expect(page.getByText("Melhor tema: The Apothecary Diaries")).toBeVisible();
+    await expect(page.getByText("%")).toHaveCount(0);
   });
 
   test("escolher Japao leva ao radar com country=JP e lembra a escolha", async ({ page }) => {
     await page.goto("/");
-    await page.getByRole("button", { name: "Japão: 81% de chance de venda (estimativa)" }).click();
+    await page.getByRole("button", { name: /^Japão/ }).click();
 
     await expect(page).toHaveURL(/\/radar\?country=JP/);
 
@@ -41,7 +43,7 @@ test.describe("tela inicial (países)", () => {
 
   test("nav mostra o pais escolhido", async ({ page }) => {
     await page.goto("/");
-    await page.getByRole("button", { name: "Japão: 81% de chance de venda (estimativa)" }).click();
+    await page.getByRole("button", { name: /^Japão/ }).click();
     await expect(page).toHaveURL(/country=JP/);
 
     await expect(page.getByRole("link", { name: "País: Japão. Trocar país" })).toBeVisible();

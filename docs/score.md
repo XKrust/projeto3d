@@ -53,14 +53,24 @@ Função: `backend/app/pipeline.py:compute_scores(session, day)`.
   são ignorados no radar e na tela de países.
 - Rodar de novo no mesmo dia atualiza as linhas existentes, sem duplicar.
 
-## Chance de venda por país (tela inicial)
+## Tela inicial de países
 
 `GET /api/countries` (`app/api/countries.py`) → um item por país de `COUNTRIES`:
-`{code, name, active, chance, top_topic, topics}`.
+`{code, name, active, top_topics, stores, topics}`.
 
-- **`chance`:** média da `opportunity` dos 5 melhores tópicos do país no último dia com
-  score, arredondada. Cada tópico conta uma vez, pela mesma plataforma que o radar mostra
-  (maior `opportunity × fit_platform`). É `null` sem score. A interface exibe
-  "NN% (estimativa)": é a nota de oportunidade (0–100), não uma probabilidade medida.
-- **Demais campos:** `top_topic` é o melhor tópico, `topics` é quantos tópicos têm score e
-  `active` diz se o país está em `settings.countries`.
+- **`top_topics`:** os 3 temas de maior `opportunity` do país no último dia com score (cada
+  tema conta uma vez, pela loja que o radar mostra). País inativo vem vazio.
+- **`stores`:** as 3 lojas que vendem com maior força no país (`strength`), só as que vendem.
+- **Sem "% de chance":** era a média de percentis dentro do próprio país e dava ~80% em
+  todo lugar, sem diferenciar nada.
+
+## Quem é tema de verdade (`app/topics/theme.py`)
+
+- Palavra solta comum de dicionário ("Game", "Night", "germany") **não** é tema: frequência
+  Zipf ≥ 3,4 (`wordfreq`, maior valor entre EN/PT/ES/FR/DE; japonês pela tabela do japonês).
+- Palavra solta que é **pedaço** de um tema conhecido ("Meshi" de "Delicious in Dungeon")
+  também não.
+- Entidades (curadas em `seed/entities.yaml` + estreias do hype) valem sempre, mesmo com
+  nome comum ("Pokemon").
+- Vale na extração (não cria o tópico; tópico antigo para de receber item e sinal) e no
+  cálculo (sem `TopicScore`; linhas de hoje de antes da regra são apagadas).

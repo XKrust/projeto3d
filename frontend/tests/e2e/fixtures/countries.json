@@ -1,9 +1,9 @@
 [
-  {"code": "BR", "name": "Brasil", "active": true, "chance": 72, "top_topic": "Frieren", "topics": 27},
-  {"code": "US", "name": "EUA", "active": true, "chance": 64, "top_topic": "Dragon", "topics": 30},
-  {"code": "GB", "name": "Reino Unido", "active": false, "chance": null, "top_topic": null, "topics": 0},
-  {"code": "DE", "name": "Alemanha", "active": true, "chance": null, "top_topic": null, "topics": 0},
-  {"code": "FR", "name": "França", "active": true, "chance": 51, "top_topic": "Temple", "topics": 12},
-  {"code": "ES", "name": "Espanha", "active": true, "chance": 48, "top_topic": "Girl", "topics": 10},
-  {"code": "JP", "name": "Japão", "active": true, "chance": 81, "top_topic": "The Apothecary Diaries", "topics": 22}
+  {"code": "BR", "name": "Brasil", "active": true, "top_topics": ["Sousou no Frieren", "Minecraft", "Articulated Dragon"], "stores": ["Cults3D", "Mercado Livre", "Fab"], "topics": 27},
+  {"code": "US", "name": "EUA", "active": true, "top_topics": ["Hollow Knight", "Pokemon"], "stores": ["Etsy", "Cults3D", "MyMiniFactory"], "topics": 30},
+  {"code": "GB", "name": "Reino Unido", "active": false, "top_topics": [], "stores": ["Cults3D", "Etsy", "MyMiniFactory"], "topics": 0},
+  {"code": "DE", "name": "Alemanha", "active": true, "top_topics": [], "stores": ["Cults3D", "Etsy", "Fab"], "topics": 0},
+  {"code": "FR", "name": "França", "active": true, "top_topics": ["One Piece"], "stores": ["Cults3D", "Fab", "Etsy"], "topics": 12},
+  {"code": "ES", "name": "Espanha", "active": true, "top_topics": ["Dragon Ball"], "stores": ["Cults3D", "Fab", "Etsy"], "topics": 10},
+  {"code": "JP", "name": "Japão", "active": true, "top_topics": ["The Apothecary Diaries", "Dandadan"], "stores": ["BOOTH", "Fab", "Cults3D"], "topics": 22}
 ]
