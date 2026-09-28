@@ -34,7 +34,7 @@ O usuário **não programa**. Tudo precisa rodar com duplo clique em `iniciar.ba
 
 ## Stack (resumo)
 
-- **Backend:** Python 3.12 gerenciado por `uv`, com FastAPI, APScheduler, SQLModel/SQLite (`data/radar.db`), httpx, Playwright e google-genai.
+- **Backend:** Python 3.12 gerenciado por `uv`, com FastAPI, APScheduler, SQLModel/SQLite (`data/radar.db`), httpx, selectolax e google-genai.
 - **Frontend:** Next.js (App Router), Tailwind, shadcn/ui e Recharts.
 - **IA:** Gemini free tier, atrás de `backend/app/ai/provider.py`, que é uma interface trocável.
 

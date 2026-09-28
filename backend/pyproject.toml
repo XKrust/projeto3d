@@ -10,7 +10,6 @@ dependencies = [
     "httpx",
     "apscheduler>=3.10,<4",
     "pyyaml",
-    "playwright",
     "selectolax",
     "google-genai",
     "defusedxml>=0.7.1",
