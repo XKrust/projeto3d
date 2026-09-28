@@ -177,3 +177,20 @@ def test_collect_survives_connection_error_on_wish_counts():
 
     assert [i.likes for i in items] == [None] * 5
     assert [i.metric for i in items] == [5, 4, 3, 2, 1]
+
+
+@respx.mock
+def test_collect_converts_yen_price_to_dollars():
+    from app.fx import ECB_URL
+
+    _mock_robots()
+    respx.get(BROWSE_URL).mock(return_value=httpx.Response(200, text=BROWSE))
+    respx.get(url__startswith=WISH_URL).mock(return_value=httpx.Response(200, json=WISH))
+    xml = (Path(__file__).parent / "fixtures" / "ecb" / "eurofxref-daily.xml").read_text(encoding="utf-8")
+    respx.get(ECB_URL).mock(return_value=httpx.Response(200, text=xml))
+
+    with make_client() as http:
+        items = BoothCollector(SETTINGS, http).collect()
+
+    # ¥2500 ÷ 179,70 ¥/€ × 1,1403 US$/€
+    assert items[0].price_usd == pytest.approx(15.86, abs=0.01)
