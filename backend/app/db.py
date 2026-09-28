@@ -17,6 +17,7 @@ _ADDED_COLUMNS = [
     ("platform", "categories_json", "VARCHAR NOT NULL DEFAULT '[]'"),
     ("platform", "edited", "BOOLEAN NOT NULL DEFAULT 0"),
     ("countryrank", "demand_measured", "BOOLEAN NOT NULL DEFAULT 0"),
+    ("analysis", "sale_json", "VARCHAR"),
 ]
 
 

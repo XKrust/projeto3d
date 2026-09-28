@@ -5,6 +5,7 @@ validar → salvar (spec 3a §2). Erros em português (spec 3a §3 e §4.1). Res
 da IA é 424 (não 502: o frontend trata 502 como "backend fora do ar").
 """
 
+import json
 import logging
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
@@ -18,7 +19,11 @@ from app.analyzer.identify import identify
 from app.analyzer.references import find_references, parse_reference_url
 from app.analyzer.store import analysis_to_dict, image_path, list_analyses, save_analysis
 from app.analyzer.validate import validate_result
+from app import clock
 from app.db import get_session
+from app.fx import get_rates
+from app.sale.copy import popular_titles, write_copy
+from app.sale.pricing import estimate_chance, estimate_price, rank_stores, target_languages
 from app.http import make_client
 from app.models import Analysis
 from app.settings_store import get_settings
@@ -154,3 +159,49 @@ def read_analysis_image(analysis_id: int, name: str) -> FileResponse:
     if path is None:
         raise HTTPException(status_code=404, detail="Imagem não encontrada")
     return FileResponse(path)
+
+
+@router.post("/analyses/{analysis_id}/sale", status_code=201)
+def prepare_sale(
+    analysis_id: int,
+    session: Session = Depends(get_session),
+    provider: TextProvider | None = Depends(get_analyzer_provider),
+) -> dict:
+    """Etapa 3b: título, tags, descrição, lojas, preço e chance (estimativas). Sobrescreve."""
+    row = _get(session, analysis_id)
+    if provider is None:
+        raise HTTPException(status_code=409, detail=MSG_NO_KEY)
+    analysis = analysis_to_dict(session, row)
+    identified, overall = analysis["identified"], analysis["result"].get("overall")
+    today = clock.today()
+    languages = target_languages(session, today)
+    try:
+        copy = write_copy(provider, analysis=analysis, languages=languages,
+                          examples=popular_titles(session, today, identified["search_query"]))
+    except AIQuotaError as exc:
+        raise HTTPException(status_code=429, detail=MSG_QUOTA) from exc
+    except AIInvalidResponse as exc:
+        raise HTTPException(status_code=424, detail=MSG_INVALID) from exc
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("Falha ao chamar a IA na venda")
+        raise HTTPException(status_code=424, detail=MSG_AI_DOWN) from exc
+
+    with make_client() as http:
+        rates, fx_source = get_rates(session, http, today)
+    chance, chance_note = estimate_chance(session, today, theme=identified["theme"],
+                                          character=identified["character"], query=identified["search_query"],
+                                          overall=overall)
+    sale = {
+        **copy,
+        "languages": languages,
+        "stores": rank_stores(session, today, identified["category"], analysis["input"]["market"]),
+        "price": estimate_price(session, today, query=identified["search_query"], character=identified["character"],
+                                category=identified["category"], overall=overall, rates=rates, fx_source=fx_source),
+        "chance": chance,
+        "chance_note": chance_note,
+        "generated_at": clock.now().isoformat(),
+    }
+    row.sale_json = json.dumps(sale, ensure_ascii=False)
+    session.add(row)
+    session.commit()
+    return sale
