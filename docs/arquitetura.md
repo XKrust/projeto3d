@@ -11,7 +11,10 @@
 - `backend/app/topics/`: extração e fusão de tópicos.
 - `backend/app/scoring/`: fórmulas (ver `score.md`).
 - `backend/app/hype/`: AniList, TMDB, IGDB e o calendário sazonal.
-- `backend/app/analyzer/` e `backend/app/ai/`: o analisador e os provedores de IA.
+- `backend/app/analyzer/` e `backend/app/ai/`: o analisador (identificar → referências →
+  criticar → validar → salvar; ver `docs/analisador.md`) e os provedores de IA
+  (`generate_json` e `generate_json_with_images`). Tabela `Analysis`; imagens em
+  `data/analyses/<id>/`.
 - `backend/app/api/`: rotas REST.
 - `backend/app/seed/`: YAMLs editáveis (plataformas, eventos, entidades).
 - `frontend/`: as telas `/radar`, `/sazonal`, `/hype`, `/analisar` e `/config`.

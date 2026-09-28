@@ -27,6 +27,9 @@ Abra a tela **Configurações** (menu superior, ou http://localhost:3000/config)
   os pesos do score);
 - editar a **tabela de plataformas** (taxa e força por país).
 
+A **chave do Gemini** (grátis no Google AI Studio) é o que liga a tela **Analisar modelo**;
+sem ela, a tela explica como conseguir a chave.
+
 Nenhuma chave é obrigatória: sem elas, a fonte correspondente aparece como "sem chave" e as
 demais continuam funcionando normalmente.
 

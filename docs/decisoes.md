@@ -34,3 +34,5 @@
 | 2026-09-27 | Mercado Livre fora da recomendação | Vende peça física; o usuário vende arquivo 3D modelado no Blender |
 | 2026-09-27 | 15 países (+ RU, BY, MX, IT, CA, AU, PL, NL) e ranking diário por possibilidade de venda (público Similarweb 60% + procura 25% + pagamento 15%) | Pedido do usuário: vender para os melhores mercados e ver quem sobe e quem cai. Rússia é o 2º público do Cults3D, mas as sanções dificultam o pagamento |
 | 2026-09-27 | Público por país vem de dado manual mensal (Similarweb), não de coleta automática | Similarweb não tem API grátis e raspar o site fura a regra de coleta educada |
+| 2026-09-28 | Analisador: 2 chamadas (identificar, criticar) com referências do Sketchfab; honestidade no prompt + checagem no app; nota geral = média dos critérios | Pedido do usuário: análise real, sem inflar ego nem inventar defeito, comparada com grandes artistas |
+| 2026-09-28 | Resposta inválida da IA → 424 (não 502) e a tela reduz imagens para ≤ 1600 px antes de enviar | 502 é lido como "backend desligado"; o proxy do Next limita o corpo e imagem menor gasta menos cota |

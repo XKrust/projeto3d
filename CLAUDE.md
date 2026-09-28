@@ -54,4 +54,4 @@ O usuário **não programa**. Tudo precisa rodar com duplo clique em `iniciar.ba
 
 ## Status
 
-Etapa 2 concluída (sazonal com top 5, hype, tela inicial de países); próxima: Etapa 3 (Analisador). Consulte o plano mais recente em `docs/superpowers/plans/`.
+Etapa 3a concluída (Analisador: análise crítica com referências, histórico). Também prontos: ranking diário de 15 países, lojas por força de venda, só temas de verdade no radar. Próxima: Etapa 3b (venda: título, loja, preço, chance). Consulte o plano mais recente em `docs/superpowers/plans/`.
