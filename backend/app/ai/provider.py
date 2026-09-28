@@ -7,9 +7,9 @@ Gemini configurada, `get_text_provider` retorna `None` e o enriquecimento nao ro
 
 import json
 import logging
-from typing import Protocol
+from typing import Protocol, TypedDict
 
-from google.genai import Client
+from google.genai import Client, types
 from google.genai.errors import APIError
 
 logger = logging.getLogger(__name__)
@@ -17,10 +17,19 @@ logger = logging.getLogger(__name__)
 DEFAULT_MODEL = "gemini-2.5-flash"
 
 
+class ImageInput(TypedDict):
+    """Imagem enviada à IA (bytes + tipo, ex. "image/png")."""
+
+    data: bytes
+    mime_type: str
+
+
 class TextProvider(Protocol):
-    """Provedor de texto que devolve JSON a partir de um prompt."""
+    """Provedor de texto que devolve JSON a partir de um prompt (e, opcionalmente, imagens)."""
 
     def generate_json(self, prompt: str) -> dict: ...
+
+    def generate_json_with_images(self, prompt: str, images: list[ImageInput]) -> dict: ...
 
 
 class AIQuotaError(Exception):
@@ -35,11 +44,19 @@ class GeminiTextProvider:
         self.model = model
 
     def generate_json(self, prompt: str) -> dict:
+        return self._call(prompt)
+
+    def generate_json_with_images(self, prompt: str, images: list[ImageInput]) -> dict:
+        """O prompt primeiro, depois as imagens na ordem dada."""
+        parts = [types.Part.from_bytes(data=img["data"], mime_type=img["mime_type"]) for img in images]
+        return self._call([prompt, *parts])
+
+    def _call(self, contents) -> dict:
         client = Client(api_key=self.api_key)
         try:
             response = client.models.generate_content(
                 model=self.model,
-                contents=prompt,
+                contents=contents,
                 config={"response_mime_type": "application/json"},
             )
         except APIError as exc:

@@ -15,6 +15,7 @@ dependencies = [
     "google-genai",
     "defusedxml>=0.7.1",
     "wordfreq>=3.1.1",
+    "python-multipart>=0.0.32",
 ]
 
 [dependency-groups]
