@@ -40,13 +40,19 @@ Windows do GitHub:
    `Radar3D.cmd`, checa telas, API pelo proxy, CSS e o banco em `LOCALAPPDATA`, abre de novo
    (não duplica), desliga com `Parar.cmd`, reabre sem baixar nada e desinstala (dados
    ficam, venv sai). Falha mostra o fim dos logs como anotação do job.
-4. O `.exe` fica como artefato do job. **Publicar uma versão:** enviar o branch
-   `versao/X.Y.Z` a partir da `main` (`git push origin main:versao/0.2.0`; workflow
-   `publicar.yml`) ou criar a tag `vX.Y.Z`. Os dois caminhos fazem o mesmo: **Tag `v*`** (ex.: `git tag v1.0.0 && git push
-   origin v1.0.0`) publica o instalador na Release da tag **e** o grava como
-   `Radar3D-Setup.exe` na raiz da `main` (commit do `github-actions[bot]`). É esse arquivo que
-   aparece na página inicial do repositório e vem no "Download ZIP".
-   Só em tag: cada `.exe` (~40 MB) fica para sempre no histórico do Git.
+4. **Publicação automática:** todo push na `main` que mexe em `backend/`, `frontend/`,
+   `installer/` ou `ferramentas-dev/` (não em docs) gera uma versão nova depois que os testes
+   passam: `installer/VERSAO` (ex. `1.0`) + o próximo número livre (`1.0.0`, `1.0.1`…).
+   Ela vira tag, Release (com `Radar3D-Setup-X.exe` e a cópia de nome fixo
+   `Radar3D-Setup.exe`) e o `Radar3D-Setup.exe` da raiz da `main` (commit do
+   `github-actions[bot]`, que não dispara o workflow de novo). Teste falhou → nada é
+   publicado e a raiz continua com a versão anterior.
+   - Link fixo de download da última versão:
+     `https://github.com/XKrust/projeto3d/releases/latest/download/Radar3D-Setup.exe`.
+   - Versão exata à mão: branch `versao/X.Y.Z` (`publicar.yml`) ou tag `vX.Y.Z`.
+   - Mudar de 1.0 para 1.1/2.0: editar `installer/VERSAO`.
+   - Custo: cada versão põe ~40 MB no histórico do Git. Se o repositório ficar pesado, tirar
+     o passo "Instalador na raiz" e usar só o link fixo acima.
 
 Os scripts de desenvolvimento (`iniciar.bat`/`parar.bat`) ficam em `ferramentas-dev/`, fora
 da raiz, para quem baixa o ZIP ver só o instalador.
