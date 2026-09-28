@@ -1,0 +1,51 @@
+{
+  "uri": "https://api.sketchfab.com/v3/models/537f06116f1f40d7bc0de28a7ab653da",
+  "uid": "537f06116f1f40d7bc0de28a7ab653da",
+  "name": "2000 Porsche 911 Carrera (996)",
+  "likeCount": 60,
+  "viewerUrl": "https://sketchfab.com/3d-models/none-537f06116f1f40d7bc0de28a7ab653da",
+  "user": {
+    "username": "ddiaz-design",
+    "displayName": "Ddiaz Design"
+  },
+  "thumbnails": {
+    "images": [
+      {
+        "uid": "212ea57c6d2844938370e2381e51bd24",
+        "size": 324949,
+        "width": 1920,
+        "url": "https://media.sketchfab.com/models/537f06116f1f40d7bc0de28a7ab653da/thumbnails/53f08adcf8c4466796798648ca5571fe/cf63bbb09129437a87eb1004cd670c3f.jpeg",
+        "height": 1080
+      },
+      {
+        "uid": "c8e3304af0c94041aab65f7e686fdd5f",
+        "size": 59164,
+        "width": 1024,
+        "url": "https://media.sketchfab.com/models/537f06116f1f40d7bc0de28a7ab653da/thumbnails/53f08adcf8c4466796798648ca5571fe/4952c2857e3b429b87019480d03e2862.jpeg",
+        "height": 576
+      },
+      {
+        "uid": "a15ad18bd0c54a93a95eb30d35397f05",
+        "size": 34772,
+        "width": 720,
+        "url": "https://media.sketchfab.com/models/537f06116f1f40d7bc0de28a7ab653da/thumbnails/53f08adcf8c4466796798648ca5571fe/35aedf34aef84259a72157b829c2f1fd.jpeg",
+        "height": 405
+      },
+      {
+        "uid": "202167bcd58043088056faee1ec6e054",
+        "size": 7607,
+        "width": 256,
+        "url": "https://media.sketchfab.com/models/537f06116f1f40d7bc0de28a7ab653da/thumbnails/53f08adcf8c4466796798648ca5571fe/072af2cca702487cbce286153c01ccbf.jpeg",
+        "height": 144
+      },
+      {
+        "uid": "295fb730eb2c4d7688638814aed272a0",
+        "size": 1424,
+        "width": 64,
+        "url": "https://media.sketchfab.com/models/537f06116f1f40d7bc0de28a7ab653da/thumbnails/53f08adcf8c4466796798648ca5571fe/b03171d6a22940ff9de6c4879b132540.jpeg",
+        "height": 36
+      }
+    ]
+  },
+  "staffpickedAt": null
+}
