@@ -9,9 +9,9 @@ Roda no seu computador (Windows); nada é enviado para servidor nosso.
 
 ## Instalar
 
-1. Baixe o **`Radar3D-Setup.exe`** que está aqui na página inicial do repositório (clique
-   nele e depois em **Download**), ou baixe tudo em **Code → Download ZIP** e abra o
-   `Radar3D-Setup.exe` que vem dentro.
+1. Baixe o instalador: **[Radar3D-Setup.exe](https://github.com/XKrust/projeto3d/releases/latest/download/Radar3D-Setup.exe)**
+   (sempre a última versão). Ele também está aqui na página inicial do repositório e vem
+   junto em **Code → Download ZIP**.
 2. Abra o arquivo e siga o instalador (não pede senha de administrador).
    O Windows pode avisar que o app é de um editor desconhecido: clique em
    **Mais informações → Executar assim mesmo**.

@@ -51,3 +51,4 @@
 | 2026-09-28 | Seção Venda com resumo + anúncio visíveis e o resto recolhido | 8 blocos abertos eram demais para quem não é técnico; a decisão (onde, quanto, quando) cabe em 4 linhas |
 | 2026-09-28 | `Radar3D-Setup.exe` na raiz (gravado pelo CI só em tag) e `.bat` movidos para `ferramentas-dev/` | Pedido do usuário: quem baixa o ZIP acha o instalador na hora, e arquivos .bat na raiz passam desconfiança |
 | 2026-09-28 | Chave do Gemini inválida vira mensagem própria (409 na análise, aviso na venda) | Antes aparecia "a IA não respondeu, tente de novo" e o usuário nunca descobria que a chave estava errada |
+| 2026-09-28 | Toda mudança de código na `main` publica uma versão (1.0.N) e atualiza o `.exe` da raiz, só depois de passar no teste do Windows | Pedido do usuário: o instalador da página inicial sempre atual; custo de ~40 MB por versão no histórico aceito |
