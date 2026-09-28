@@ -48,7 +48,8 @@ namespace Radar3D
                     Launcher.WaitPortsFree(10000);
                     return 0;
                 }
-                Launcher.OpenBrowser();
+                // Já aberto: só leva a pessoa para a tela (o teste automático não abre navegador).
+                if (Environment.GetEnvironmentVariable("RADAR_NO_BROWSER") != "1") Launcher.OpenBrowser();
                 return 0;
             }
             if (sair)
