@@ -24,4 +24,6 @@
 | sketchfab | Sketchfab | digital | **não** (loja fechou em 10/2024, vendas foram para a Fab) | — | — |
 | artstation | ArtStation | digital | **não** (marketplace migrou para a Fab em 2025) | — | — |
 
+Risco de fan-art por loja (Etapa 3c): `backend/app/seed/fanart_policies.yaml`, só com a política oficial consultada (URL e data no arquivo).
+
 Sketchfab e ArtStation continuam sendo coletados como sinal de tendência (curtidas/visualizações). Previstas para depois: TurboSquid, Elo7 e MakerWorld (este bloqueado por desafio anti-robô, ver `coletores.md`). O Thingiverse entra só como sinal de demanda.

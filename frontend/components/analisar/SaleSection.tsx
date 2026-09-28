@@ -4,9 +4,11 @@ import Link from "next/link";
 import { useState } from "react";
 import useSWR from "swr";
 import { LaunchChecklist } from "@/components/analisar/LaunchChecklist";
+import { CoverBlock } from "@/components/analisar/CoverBlock";
 import { ListingCard } from "@/components/analisar/ListingCard";
 import { PromotionBlock } from "@/components/analisar/PromotionBlock";
 import { StoreTable } from "@/components/analisar/StoreTable";
+import { VariationsBlock } from "@/components/analisar/VariationsBlock";
 import { Button } from "@/components/ui/button";
 import { ApiError, apiGet, apiPostJson, apiPut, BackendOfflineError } from "@/lib/api";
 import { formatUsd, salesToCover, type Sale, type SaleCountries } from "@/lib/sale-types";
@@ -85,6 +87,9 @@ function SaleResult({ sale }: { sale: Sale }) {
 
       <Block title="Onde vender">
         <StoreTable sale={sale} />
+        {sale.fanart_tip && (
+          <p className="border-l-2 border-[var(--color-signal-down)] pl-3 text-sm">{sale.fanart_tip}</p>
+        )}
       </Block>
 
       <HoursToCover sale={sale} />
@@ -111,6 +116,20 @@ function SaleResult({ sale }: { sale: Sale }) {
           </div>
         )}
       </Block>
+
+      <Block title="Capa">
+        {sale.cover ? (
+          <CoverBlock cover={sale.cover} />
+        ) : (
+          <p className="text-sm text-muted-foreground">{sale.cover_note ?? "—"}</p>
+        )}
+      </Block>
+
+      {sale.variations && sale.variations.length > 0 && (
+        <Block title="Variações que vendem">
+          <VariationsBlock variations={sale.variations} />
+        </Block>
+      )}
 
       {sale.promotion && (
         <Block title="Onde divulgar">

@@ -21,6 +21,8 @@ Nada aqui está aprovado para implementação. Cada ideia entra numa etapa só d
 
 - **#1 (em parte):** na Etapa 3b, a venda mostra "≈ N vendas para cobrir as horas" (não no
   card do radar).
+- **#3, #6 e #10:** Etapa 3c: variações que vendem (com prova nos anúncios do tema), nota da
+  capa (checklist + capas dos mais curtidos) e risco de fan-art por loja (política oficial).
 - **#2:** Etapa 3b: título, tags e descrição por loja e idioma, preço de lançamento de 48 h,
   ordem de publicação. Etapa 3c: onde divulgar (subreddits e hashtags).
 

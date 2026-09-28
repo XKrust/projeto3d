@@ -5,6 +5,7 @@ from collections import Counter
 from app.ai.provider import TextProvider
 from app.analyzer.errors import ask_json
 from app.sale.validate import FAN_ART, trim_words, validate_listings  # noqa: F401 (reexportados)
+from app.sale.variations import prompt_types
 
 LANG_NAMES = {"en": "inglês", "pt": "português do Brasil", "ja": "japonês"}
 MAX_TAGS_IN_PROMPT = 20
@@ -72,15 +73,20 @@ Regras: título com o que a pessoa busca primeiro (tema, personagem, tipo de pe�
 curtas; descrição de 3 a 5 frases dizendo o que é, o formato e o que vem no arquivo, sem
 prometer o que não foi informado.
 
+Sugira também de 3 a 5 variações deste modelo que vendem mais, só destes tipos: {prompt_types(market)}.
+Para cada uma, diga em uma frase por que vale para ESTE modelo (em português).
+
 Responda só com JSON:
 {{"listings": [{{"platform": "slug da loja", "lang": "en|pt|ja", "title": "...",
-  "tags": ["..."], "description": "..."}}]}}"""
+  "tags": ["..."], "description": "..."}}],
+  "variations": [{{"type": "slug do tipo", "why": "..."}}]}}"""
 
 
 def generate_listing(provider: TextProvider, *, identified: dict, market: str, authorship: str,
-                     strengths: list[str], tags: list[str], pairs: list[tuple[str, str]]) -> list[dict]:
-    """Chama a IA (1 nova tentativa se o JSON vier inválido) e checa o resultado."""
+                     strengths: list[str], tags: list[str], pairs: list[tuple[str, str]]) -> tuple[list[dict], object]:
+    """Chama a IA (1 nova tentativa se o JSON vier inválido) e checa os anúncios. Devolve
+    (anúncios checados, variações brutas — checadas em `variations.validate_variations`)."""
     prompt = build_prompt(identified=identified, market=market, authorship=authorship, strengths=strengths,
                           tags=tags, pairs=pairs)
     raw = ask_json(provider, prompt, [], required="listings")
-    return validate_listings(raw, set(pairs), authorship=authorship)
+    return validate_listings(raw, set(pairs), authorship=authorship), raw.get("variations")

@@ -20,6 +20,25 @@ export type SaleStore = {
   price: SalePrice | null;
   price_note: string | null;
   chance: SaleChance;
+  fanart?: { level: "alto" | "medio" | null; label: string; summary: string; url: string | null } | null;
+};
+
+export type Variation = {
+  type: string;
+  label: string;
+  why: string;
+  evidence: string | null;
+  flagged: boolean;
+  source: "ia" | "padrao";
+};
+
+export type CoverCheck = { label: string; ok: boolean | null; why: string; fix: string; flagged: boolean };
+
+export type Cover = {
+  score: number | null;
+  checks: Record<string, CoverCheck>;
+  vs_top: { reference: number; text: string; flagged: boolean }[];
+  references: { title: string; url: string | null; thumb_url: string; likes: number | null }[];
 };
 
 export type Listing = {
@@ -44,6 +63,10 @@ export type Sale = {
   listing: { listings: Listing[] } | null;
   listing_note: string | null;
   promotion?: { communities: Community[]; hashtags: string[]; note: string };
+  variations?: Variation[];
+  cover?: Cover | null;
+  cover_note?: string | null;
+  fanart_tip?: string | null;
   checklist: string[];
   estimate: true;
 };

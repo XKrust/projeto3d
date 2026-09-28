@@ -15,6 +15,30 @@ function StoreRow({ store, position, fx }: { store: SaleStore; position: number;
           {store.name}
         </p>
         <p className="text-sm text-muted-foreground">{store.why}</p>
+        {store.fanart && (
+          <p className="text-sm">
+            <span
+              className={
+                store.fanart.level === "alto"
+                  ? "text-[var(--color-signal-down)]"
+                  : store.fanart.level === "medio"
+                    ? "text-[var(--color-signal-mid)]"
+                    : "text-muted-foreground"
+              }
+            >
+              Fan-art: {store.fanart.label}
+            </span>
+            <span className="text-muted-foreground"> · {store.fanart.summary}</span>
+            {store.fanart.url && (
+              <>
+                {" "}
+                <a href={store.fanart.url} target="_blank" rel="noreferrer" className="underline underline-offset-4 hover:text-primary">
+                  política da loja
+                </a>
+              </>
+            )}
+          </p>
+        )}
       </div>
 
       <div className="flex flex-col gap-1">

@@ -54,4 +54,4 @@ O usuário **não programa**. Tudo precisa rodar com duplo clique em `iniciar.ba
 
 ## Status
 
-Etapas 3a e 3b concluídas (Analisador: análise crítica com referências e histórico; venda com lojas por país, preço, chance, anúncio pronto e checklist). Etapa 3c em parte: preço na moeda do país (câmbio diário) e onde divulgar; faltam variações que vendem, nota da capa e risco de fan-art por loja. Também prontos: ranking diário de 15 países, lojas por força de venda, só temas de verdade no radar. Consulte o plano mais recente em `docs/superpowers/plans/`.
+Etapas 3a e 3b concluídas (Analisador: análise crítica com referências e histórico; venda com lojas por país, preço, chance, anúncio pronto e checklist). Etapa 3c concluída: preço na moeda do país (câmbio diário), onde divulgar, variações que vendem, nota da capa e risco de fan-art por loja. Próximo no backlog (`docs/ideias-vendas.md`): #5 lista de observação e alertas, #7 minhas vendas, #9 renda recorrente. Também prontos: ranking diário de 15 países, lojas por força de venda, só temas de verdade no radar. Consulte o plano mais recente em `docs/superpowers/plans/`.
