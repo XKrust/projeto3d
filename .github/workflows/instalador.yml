@@ -5,7 +5,7 @@ name: Instalador Windows
 on:
   push:
     tags: ["v*"]
-    branches: ["**"]
+    branches: ["**", "!versao/**"]
     paths:
       - "backend/**"
       - "ferramentas-dev/**"
@@ -13,6 +13,12 @@ on:
       - "installer/**"
       - ".github/workflows/instalador.yml"
   workflow_dispatch:
+  # Chamado por publicar.yml (push em versao/X.Y.Z): monta, testa e publica a versão X.Y.Z.
+  workflow_call:
+    inputs:
+      versao:
+        type: string
+        required: true
 
 permissions:
   contents: write
@@ -39,9 +45,13 @@ jobs:
         id: versao
         shell: pwsh
         run: |
-          if ("${{ github.ref_type }}" -eq "tag") { $v = "${{ github.ref_name }}".TrimStart("v") }
+          if ("${{ inputs.versao }}") { $v = "${{ inputs.versao }}" -replace '^versao/', '' -replace '^v', '' }
+          elseif ("${{ github.ref_type }}" -eq "tag") { $v = "${{ github.ref_name }}".TrimStart("v") }
           else { $v = "0.0.0-dev." + "${{ github.run_number }}" }
           "valor=$v" >> $env:GITHUB_OUTPUT
+          if ($v -notmatch '^\d+\.\d+\.\d+$' -and "${{ inputs.versao }}") { throw "Versão inválida: $v (use versao/1.2.3)" }
+          $publicar = ("${{ inputs.versao }}" -ne "") -or ("${{ github.ref_type }}" -eq "tag")
+          "publicar=$($publicar.ToString().ToLower())" >> $env:GITHUB_OUTPUT
 
       - name: Dependências do frontend
         working-directory: frontend
@@ -160,15 +170,18 @@ jobs:
           path: dist/Radar3D-Setup-*.exe
 
       - name: Publicar na Release
-        if: github.ref_type == 'tag'
+        if: steps.versao.outputs.publicar == 'true'
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: v${{ steps.versao.outputs.valor }}
+          target_commitish: ${{ github.sha }}
+          name: Radar 3D ${{ steps.versao.outputs.valor }}
           files: dist/Radar3D-Setup-*.exe
 
       # A página inicial do repositório (e o "Download ZIP") traz o instalador testado da
       # última versão publicada. Só em tag, para não pôr 40 MB no histórico a cada commit.
       - name: Instalador na raiz da main
-        if: github.ref_type == 'tag'
+        if: steps.versao.outputs.publicar == 'true'
         shell: pwsh
         run: |
           $exe = (Get-ChildItem dist\Radar3D-Setup-*.exe | Select-Object -First 1).FullName
@@ -178,5 +191,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add Radar3D-Setup.exe
-          git commit -m "chore: instalador ${{ github.ref_name }} na raiz"
+          git commit -m "chore: instalador v${{ steps.versao.outputs.valor }} na raiz"
           git push origin main
