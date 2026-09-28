@@ -52,9 +52,9 @@ $csc = Join-Path $env:WINDIR "Microsoft.NET\Framework64\v4.0.30319\csc.exe"
 $icone = Join-Path $PSScriptRoot "radar3d.ico"
 $saida = Join-Path $dist "Radar3D.exe"
 $fonte = Join-Path $PSScriptRoot "lancador\Radar3D.cs"
-$args = @("/nologo", "/target:winexe", "/optimize+", "/langversion:5", "/win32icon:$icone",
+$cscArgs = @("/nologo", "/target:winexe", "/optimize+", "/langversion:5", "/win32icon:$icone",
           "/r:System.Windows.Forms.dll", "/r:System.Drawing.dll", "/out:$saida", $fonte)
-$log = & $csc @args 2>&1
+$log = & $csc @cscArgs 2>&1
 if ($LASTEXITCODE -ne 0 -or -not (Test-Path $saida)) {
     Write-Host "::error title=csc::$(($log | Out-String) -replace "`r?`n", '%0A')"
     throw "csc falhou ao compilar o lançador"
