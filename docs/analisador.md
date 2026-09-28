@@ -80,8 +80,16 @@ ranking do dia entre os ativos, mais o BR) e chama `POST /api/analyses/{id}/sale
    põe "fan art" no título de fan-art e marca bajulação (`flagged`). Limites só entram em
    `limits.py` confirmados na página oficial (hoje: Etsy); o resto usa 100 caracteres,
    15 tags de 30.
-6. **Checklist** (`build.py`): onde publicar primeiro, preço de lançamento por 48 h, as
-   outras lojas e o pico previsto do tema.
+6. **Câmbio** (Etapa 3c, `app/fx.py`): cada país traz `fx = {currency, rate, day}` com a
+   taxa mais recente de até 7 dias (`null` para EUA, Rússia, Bielorrússia ou sem taxa). O
+   preço continua em US$; a tela mostra "≈ R$ …" ao lado, com a data do câmbio.
+7. **Onde divulgar** (Etapa 3c, `promotion.py`): até 3 subreddits onde o tema teve posts em
+   alta nos últimos 30 dias (coletor do Reddit, por engajamento); sem isso, até 3
+   comunidades do tipo de modelo entre as que o app acompanha (categoria primeiro, depois
+   impressão ou digital). Hashtags = 8 primeiras tags reais do anúncio. Aviso fixo sobre
+   regras de autopromoção. Fica em `sale_json.promotion`.
+8. **Checklist** (`build.py`): onde publicar primeiro, preço de lançamento por 48 h, as
+   outras lojas, onde divulgar e o pico previsto do tema.
 
 A IA nunca derruba a venda: sem chave, cota esgotada, JSON inválido duas vezes ou IA fora
 do ar → `listing = null` e `listing_note` com o motivo (200). Erros: 404 análise não
@@ -89,5 +97,5 @@ encontrada; 422 "Escolha de 1 a 5 países" / "País inválido". `GET
 /api/analyses/{id}/sale/countries` alimenta o seletor.
 
 Tela: `frontend/components/analisar/SaleSection.tsx` (+ `StoreTable`, `ListingCard`,
-`LaunchChecklist`); tipos em `frontend/lib/sale-types.ts`. Custo: 1 chamada de texto ao
+`LaunchChecklist`, `PromotionBlock`); tipos em `frontend/lib/sale-types.ts`. Custo: 1 chamada de texto ao
 Gemini por venda gerada.

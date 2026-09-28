@@ -520,9 +520,12 @@ def test_run_after_cycle_runs_pipeline_with_fresh_settings(session, monkeypatch)
         pipeline, "run_pipeline", lambda s, counters, *, enrich=None: captured.update(counters=counters)
     )
 
+    monkeypatch.setattr(pipeline, "update_fx_rates", lambda s, http, day: captured.update(fx_day=day))
+
     pipeline.run_after_cycle(session)
 
     assert list(captured["counters"]) == ["fake_platform"]
+    assert captured["fx_day"] == clock.today()
 
 
 # ---------------------------------------------------------------- agendador

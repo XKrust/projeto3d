@@ -256,3 +256,14 @@ class Analysis(SQLModel, table=True):
     overall: float | None = None
     sale_json: str | None = None  # Etapa 3b: venda preparada (ver app/sale/build.py)
     sale_at: datetime | None = None
+
+
+class FxRate(SQLModel, table=True):
+    """Câmbio do dia (Etapa 3c): 1 US$ = `rate` na `currency` (taxas do BCE via Frankfurter)."""
+
+    __table_args__ = (UniqueConstraint("day", "currency", name="uq_fxrate_day_currency"),)
+
+    id: int | None = Field(default=None, primary_key=True)
+    day: date = Field(index=True)
+    currency: str
+    rate: float

@@ -32,13 +32,18 @@ export type Listing = {
   flagged: boolean;
 };
 
+export type Fx = { currency: string; rate: number; day: string };
+
+export type Community = { name: string; url: string; why: string; source: "tema" | "tipo" };
+
 export type Sale = {
   countries: string[];
   topic: { id: number; name: string; slug: string } | null;
-  by_country: { country: string; stores: SaleStore[] }[];
+  by_country: { country: string; fx?: Fx | null; stores: SaleStore[] }[];
   hours_to_cover: { sales: number; hours: number; hourly_rate_usd: number; price: number } | null;
   listing: { listings: Listing[] } | null;
   listing_note: string | null;
+  promotion?: { communities: Community[]; hashtags: string[]; note: string };
   checklist: string[];
   estimate: true;
 };
@@ -64,4 +69,9 @@ export function formatUsd(value: number): string {
 export function salesToCover(hours: number, hourlyRate: number, price: number): number | null {
   if (!hours || !price || !hourlyRate || hourlyRate <= 0) return null;
   return Math.ceil((hours * hourlyRate) / price);
+}
+
+/** Converte um preço em US$ para a moeda do país: 7.99 × 5.43 → "R$ 43,39". */
+export function formatLocal(usd: number, fx: Fx): string {
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: fx.currency }).format(usd * fx.rate);
 }

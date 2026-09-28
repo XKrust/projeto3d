@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { COUNTRY_LABELS, SALE_CHANCE_DOT } from "@/lib/radar-labels";
-import { formatUsd, type Sale, type SaleStore } from "@/lib/sale-types";
+import { formatDayMonth } from "@/lib/dates";
+import { formatLocal, formatUsd, type Fx, type Sale, type SaleStore } from "@/lib/sale-types";
 
-function StoreRow({ store, position }: { store: SaleStore; position: number }) {
+function StoreRow({ store, position, fx }: { store: SaleStore; position: number; fx: Fx | null }) {
   const { price, chance } = store;
   return (
     <li className="grid gap-x-6 gap-y-3 border-t border-border py-4 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)_minmax(0,1fr)]">
@@ -30,6 +31,13 @@ function StoreRow({ store, position }: { store: SaleStore; position: number }) {
               lançamento {formatUsd(price.launch)} ·{" "}
               {price.net === null ? "taxa: —" : `sobra ${formatUsd(price.net)} (taxa ${store.fee_pct}%)`}
             </p>
+            {fx && (
+              <p className="tnum text-sm">
+                ≈ {formatLocal(price.suggested, fx)} · faixa ≈ {formatLocal(price.low, fx)}–
+                {formatLocal(price.high, fx)} · lançamento ≈ {formatLocal(price.launch, fx)}
+                <span className="block text-xs text-muted-foreground">câmbio de {formatDayMonth(fx.day)}, estimativa</span>
+              </p>
+            )}
             <p className="text-xs text-muted-foreground">{price.basis}</p>
           </>
         ) : (
@@ -82,7 +90,7 @@ export function StoreTable({ sale }: { sale: Sale }) {
           {current.stores.length ? (
             <ol className="flex flex-col">
               {current.stores.map((store, index) => (
-                <StoreRow key={store.platform} store={store} position={index + 1} />
+                <StoreRow key={store.platform} store={store} position={index + 1} fx={current.fx ?? null} />
               ))}
             </ol>
           ) : (

@@ -19,6 +19,7 @@ from app import clock
 from app.ai.provider import get_text_provider
 from app.collectors.base import ListingCounter
 from app.constants import GLOBAL
+from app.fx import update_fx_rates
 from app.http import make_client
 from app.models import Platform, RawItem, Topic, TopicItem, TopicListing, TopicScore, TopicSignal
 from app.scoring import formulas
@@ -341,4 +342,6 @@ def run_after_cycle(session: Session) -> None:
     ciclo ja foi fechado quando `after` e chamado)."""
     settings = get_settings(session)
     with make_client() as http:
+        # Câmbio do dia (1x por dia; falha só vai para o log) antes do pipeline.
+        update_fx_rates(session, http, clock.today())
         make_after(settings, http)(session)

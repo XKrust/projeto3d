@@ -69,7 +69,13 @@ test.describe("/analisar · venda", () => {
     await expect(panel).toContainText("sem dados suficientes para esta loja");
     await expect(panel).toContainText("o tema ainda não tem nota no Brasil");
 
+    // câmbio: 5,99 × 5,43 = 32,53
+    await expect(panel).toContainText("≈ R$ 32,53");
+    await expect(panel).toContainText("lançamento ≈ R$ 27,10");
+    await expect(panel).toContainText("câmbio de 26/09, estimativa");
+
     await section.getByRole("tab", { name: "EUA" }).click();
+    await expect(section.getByRole("tabpanel")).not.toContainText("≈ R$");
     await expect(section.getByRole("tabpanel")).toContainText("taxa: —");
     await expect(section.getByRole("tabpanel")).toContainText("Alta");
 
@@ -85,6 +91,14 @@ test.describe("/analisar · venda", () => {
     await expect(card.getByRole("button", { name: "Copiado" })).toBeVisible();
     expect(await page.evaluate(() => navigator.clipboard.readText())).toBe("Busto Frieren STL (fan art)");
 
+    await expect(section).toContainText("Comunidades onde o tema está em alta no Reddit:");
+    await expect(section.getByRole("link", { name: "r/anime" })).toHaveAttribute("href", "https://www.reddit.com/r/anime/");
+    await expect(section).toContainText("4 posts do tema em alta nos últimos 30 dias");
+    await expect(section).toContainText("proíbem autopromoção");
+    await section.getByRole("button", { name: "Copiar hashtags" }).click();
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe("#frieren #animebust #sousounofrieren");
+    await expect(section.getByLabel(/^Divulgue em r\/anime e r\/3Dprinting/)).toBeVisible();
+
     const step = section.getByLabel("Publique primeiro no Cults3D (melhor encaixe no Brasil).");
     await step.check();
     await expect(step).toBeChecked();
@@ -93,12 +107,18 @@ test.describe("/analisar · venda", () => {
 
   test("sem chave do Gemini: lojas e preço saem, o anúncio explica e leva para Configurações", async ({ page }) => {
     const note = "Configure a chave do Gemini em Configurações para gerar o anúncio.";
-    await setup(page, { response: { status: 200, body: { ...sale, listing: null, listing_note: note } } });
+    const promotion = {
+      ...sale.promotion,
+      communities: [{ name: "r/3Dprinting", url: "https://www.reddit.com/r/3Dprinting/", why: "comunidade de impressão 3D", source: "tipo" }],
+    };
+    await setup(page, { response: { status: 200, body: { ...sale, listing: null, listing_note: note, promotion } } });
     const section = page.getByRole("region", { name: "Venda" });
     await section.getByRole("button", { name: "Preparar venda" }).click();
     await expect(section.getByRole("tabpanel")).toContainText("US$ 5,99");
     await expect(section.getByRole("note")).toContainText(note);
     await expect(section.getByRole("link", { name: "Abrir Configurações" })).toHaveAttribute("href", "/config");
+    await expect(section).toContainText("O app ainda não viu o tema no Reddit. Comunidades do tipo de modelo:");
+    await expect(section).toContainText("comunidade de impressão 3D");
   });
 
   test("análise com venda salva abre pronta", async ({ page }) => {

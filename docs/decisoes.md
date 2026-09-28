@@ -40,3 +40,6 @@
 | 2026-09-28 | Chance da 3b = oportunidade × qualidade, sem multiplicar de novo por (1 − saturação) | A saturação já está dentro da oportunidade; a fórmula da spec geral contava duas vezes |
 | 2026-09-28 | Preço da 3b em US$ (moeda das lojas); câmbio para moeda local fica para a 3c | O app não tem câmbio ainda e as lojas cobram em dólar/euro |
 | 2026-09-28 | Limite de título e tags por loja só com confirmação na página oficial (hoje só Etsy); resto usa o padrão do app | Mesma regra de `fee_pct`: não confiar em números de memória |
+| 2026-09-28 | Câmbio pela Frankfurter (taxas do BCE), 1x por dia; preço segue em US$ com "≈ moeda local" ao lado; RU/BY sem conversão | Grátis e sem chave; as lojas cobram em dólar/euro, então a conversão é só referência. O BCE não publica RUB nem BYN |
+| 2026-09-28 | "Onde divulgar" só sugere subreddits em que o tema apareceu ou que o coletor já acompanha, com aviso de autopromoção | Não inventar comunidade; muitas proíbem autopromoção |
+
