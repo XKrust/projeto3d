@@ -19,7 +19,7 @@ from datetime import date, timedelta
 
 from sqlmodel import Session, select
 
-from app.collectors.base import ListingCounter
+from app.collectors.base import CollectorError, ListingCounter
 from app.constants import GLOBAL
 from app.daily import claim_daily
 from app.hype.seasonal import event_ideas, load_events, upcoming_events
@@ -133,8 +133,11 @@ def update_seasonal_listings(
         for term in terms:
             try:
                 count = counter.count_listings(term)
-            except Exception:
-                logger.exception("Contagem sazonal falhou em %s para %r", platform, term)
+            except Exception as exc:
+                if isinstance(exc, CollectorError):  # erro conhecido da fonte: uma linha, sem traceback
+                    logger.warning("Contagem sazonal falhou em %s para %r: %s", platform, term, exc)
+                else:
+                    logger.exception("Contagem sazonal falhou em %s para %r", platform, term)
                 failures += 1
                 if failures >= MAX_CONSECUTIVE_FAILURES:
                     break

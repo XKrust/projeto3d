@@ -186,7 +186,8 @@ jobs:
         shell: pwsh
         run: |
           $app = "$env:LOCALAPPDATA\Programs\Radar3D"
-          Start-Process "$app\Radar3D.exe" -ArgumentList "--sair" -Wait
+          $sair = Start-Process "$app\Radar3D.exe" -ArgumentList "--sair" -PassThru
+          if (-not $sair.WaitForExit(60000)) { throw "Fechar não terminou em 60 s" }
           Start-Sleep 3
           if (Get-NetTCPConnection -LocalPort 3000, 8000 -State Listen -ErrorAction SilentlyContinue) { throw "Fechar não desligou" }
           if (Get-Process Radar3D -ErrorAction SilentlyContinue) { throw "O lançador continuou aberto" }
@@ -207,7 +208,10 @@ jobs:
           }
           Write-Host "::notice::Reabriu em $([int]$t.Elapsed.TotalSeconds) s"
           if ($t.Elapsed.TotalSeconds -ge 120) { throw "Reabrir demorou demais" }
-          Start-Process "$app\Radar3D.exe" -Wait   # segunda abertura: só abre o navegador e sai
+          # Segunda abertura: só abre o navegador e sai. Sem -Wait: no PowerShell 7 ele espera
+          # também os processos filhos (o navegador), que nunca fecham num robô.
+          $segunda = Start-Process "$app\Radar3D.exe" -PassThru
+          if (-not $segunda.WaitForExit(30000)) { throw "A segunda abertura não saiu em 30 s" }
           if (@(Get-Process Radar3D -ErrorAction SilentlyContinue).Count -ne 1) { throw "Abriu dois lançadores" }
           if (@(Get-NetTCPConnection -LocalPort 8000 -State Listen).Count -ne 1) { throw "Subiu dois backends" }
 

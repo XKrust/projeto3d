@@ -141,3 +141,14 @@ def test_403_raises_collector_error():
     with make_client() as http:
         with pytest.raises(CollectorError, match=r"Chave inválida ou sem permissão \(403\)"):
             SketchfabCollector(SETTINGS_NO_TOKEN, http).collect()
+
+
+@respx.mock
+def test_count_listings_non_json_answer_is_a_short_collector_error():
+    """Página de bloqueio (HTML) no lugar do JSON: erro curto, sem traceback no log."""
+    from app.collectors.base import CollectorError
+
+    respx.get(SEARCH_URL).mock(return_value=httpx.Response(200, text="<html>Just a moment...</html>"))
+    with make_client() as http:
+        with pytest.raises(CollectorError, match="Sketchfab respondeu sem JSON"):
+            SketchfabCollector(SETTINGS_NO_TOKEN, http).count_listings("dinosaur")

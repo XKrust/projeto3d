@@ -7,7 +7,7 @@ a resposta da busca nunca traz preco (o campo `price` so existe nos schemas de
 (so `cursors`/`next`/`previous`/`results`) — ver `docs/coletores.md`.
 """
 
-from app.collectors.base import CollectedItem, Collector
+from app.collectors.base import CollectorError, CollectedItem, Collector
 from app.constants import GLOBAL
 from app.http import get_with_retry
 
@@ -97,7 +97,10 @@ class SketchfabCollector(Collector):
         params: dict | None = {"type": "models", "q": query, "count": 24}
         while url:
             response = get_with_retry(self.http, "GET", url, params=params, headers=headers)
-            data = response.json()
+            try:
+                data = response.json()
+            except ValueError as exc:  # página de bloqueio/desafio no lugar do JSON
+                raise CollectorError(f"Sketchfab respondeu sem JSON ({response.status_code})") from exc
 
             if "count" in data:
                 return int(data["count"])

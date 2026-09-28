@@ -17,7 +17,7 @@ from sqlmodel import Session, select
 import app.collectors as collectors_pkg
 from app import clock
 from app.ai.provider import get_text_provider
-from app.collectors.base import ListingCounter
+from app.collectors.base import CollectorError, ListingCounter
 from app.constants import GLOBAL
 from app.fx import update_fx_rates
 from app.http import make_client
@@ -83,8 +83,11 @@ def update_listings(session: Session, counters: dict[str, ListingCounter], day: 
             try:
                 counts[topic_id] = counter.count_listings(topics[topic_id].name)
                 failures = 0
-            except Exception:
-                logger.exception("Contagem de anuncios falhou em %s para %r", platform, topics[topic_id].name)
+            except Exception as exc:
+                if isinstance(exc, CollectorError):  # erro conhecido da fonte: uma linha, sem traceback
+                    logger.warning("Contagem de anuncios falhou em %s para %r: %s", platform, topics[topic_id].name, exc)
+                else:
+                    logger.exception("Contagem de anuncios falhou em %s para %r", platform, topics[topic_id].name)
                 failures += 1
                 if failures >= MAX_CONSECUTIVE_COUNT_FAILURES:
                     logger.warning("Contagem de anuncios abandonada na plataforma %s", platform)

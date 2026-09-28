@@ -7,7 +7,7 @@ from datetime import date
 
 from sqlmodel import Session, select
 
-from app.collectors.base import ListingCounter
+from app.collectors.base import CollectorError, ListingCounter
 from app.daily import claim_daily
 from app.hype.entities import base_title, recent_releases, top_characters, usable
 from app.models import HypeListing
@@ -56,8 +56,11 @@ def update_hype_listings(
         for term in terms:
             try:
                 count = counter.count_listings(term)
-            except Exception:
-                logger.exception("Contagem do hype falhou em %s para %r", platform, term)
+            except Exception as exc:
+                if isinstance(exc, CollectorError):  # erro conhecido da fonte: uma linha, sem traceback
+                    logger.warning("Contagem do hype falhou em %s para %r: %s", platform, term, exc)
+                else:
+                    logger.exception("Contagem do hype falhou em %s para %r", platform, term)
                 failures += 1
                 if failures >= MAX_CONSECUTIVE_FAILURES:
                     break
