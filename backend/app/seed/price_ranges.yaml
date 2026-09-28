@@ -1,0 +1,20 @@
+# Faixa típica de preço de arquivo 3D pago no Cults3D, por categoria (US$), usada quando o
+# app não tem 3 anúncios parecidos com preço. Pesquisa de 28/09/2026 nas páginas de tag do
+# Cults3D (via busca; o site bloqueia acesso automatizado). Atualizar quando houver dado melhor.
+# Fontes:
+#   anime/figuras: https://cults3d.com/en/tags/anime , https://cults3d.com/en/tags/waifu
+#     (US$ 2,31 a 22,80; típico ~6,90)
+#   articulados/flexi: https://cults3d.com/en/tags/articulated (US$ 2,02 a 3,98; típico 2,99)
+#   miniaturas de RPG: https://cults3d.com/en/tags/miniatures (US$ 1,26 a 10,49; típico 2,53 a 6,82)
+#   decoração (vasos, luminárias): https://cults3d.com/en/categories/vases (€ 3,10 a 3,75)
+#   cosplay (capacetes): https://cults3d.com/en/tags/helmet+cosplay (US$ 7,50 a 40)
+
+source: "faixa típica do Cults3D (pesquisa de 28/09/2026)"
+categories:
+  anime: {typical_usd: 6.9, low_usd: 2.3, high_usd: 22.8, label: "figuras e bustos de anime"}
+  games: {typical_usd: 6.9, low_usd: 2.5, high_usd: 20.0, label: "personagens de jogos"}
+  filmes_series: {typical_usd: 8.0, low_usd: 2.5, high_usd: 22.0, label: "personagens de filmes e séries"}
+  toys_memes: {typical_usd: 3.0, low_usd: 2.0, high_usd: 4.0, label: "brinquedos articulados e memes"}
+  rpg_miniaturas: {typical_usd: 4.0, low_usd: 1.3, high_usd: 10.5, label: "miniaturas de RPG"}
+  decoracao: {typical_usd: 3.6, low_usd: 0.6, high_usd: 22.0, label: "decoração (vasos, luminárias)"}
+  outros: {typical_usd: 4.0, low_usd: 1.0, high_usd: 15.0, label: "modelos em geral"}
