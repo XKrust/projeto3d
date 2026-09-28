@@ -1,4 +1,4 @@
-from app.analyzer.validate import CRITERIA, validate_result
+from app.analyzer.validate import AUTO_RENDER_WHY, CRITERIA, validate_result
 
 
 def _imp(**kw):
@@ -129,3 +129,23 @@ def test_garbage_types_do_not_crash():
 
     assert result["improvements"] == []
     assert result["overall"] is None
+
+
+def test_photos_taken_by_the_app_do_not_judge_lighting_cover_or_clay_material():
+    raw = _raw(improvements=[_imp(criterion="render", problem="luz chapada"), _imp(criterion="anatomia")])
+
+    result = _validate(raw, auto_renders="clay")
+
+    for slug in ("render", "apresentacao", "materiais"):
+        assert result["criteria"][slug] == {"score": None, "why": AUTO_RENDER_WHY}
+    assert result["criteria"]["anatomia"]["score"] == 6
+    assert [i["criterion"] for i in result["improvements"]] == ["anatomia"]
+
+
+def test_photos_of_a_glb_keep_its_materials_in_the_evaluation():
+    result = _validate(_raw(), auto_renders="materials")
+
+    assert result["criteria"]["materiais"]["score"] == 6
+    assert result["criteria"]["render"]["score"] is None
+    assert result["criteria"]["apresentacao"]["score"] is None
+

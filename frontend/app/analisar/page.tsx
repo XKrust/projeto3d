@@ -27,6 +27,7 @@ async function buildForm(input: AnalyzeInput): Promise<FormData> {
   form.append("market", input.market);
   if (input.hours.trim()) form.append("hours", input.hours.trim());
   for (const url of input.referenceUrls) form.append("reference_urls", url);
+  if (input.autoRenders) form.append("auto_renders", input.autoRenders);
   return form;
 }
 

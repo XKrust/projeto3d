@@ -38,7 +38,8 @@ JSON inválido da IA ganha 1 nova tentativa (`errors.ask_json`).
 ## API
 
 - `POST /api/analyze` (multipart: `images`, `wireframe?`, `authorship`, `market`, `hours?`,
-  `reference_urls` repetido) → 201 com a análise.
+  `reference_urls` repetido, `auto_renders?` = `clay`/`materials` quando as fotos foram tiradas
+  pelo app do arquivo 3D) → 201 com a análise.
 - `GET /api/analyses` (até 50, mais nova primeiro), `GET /api/analyses/{id}` (com `previous`
   = análise anterior do mesmo tema), `GET /api/analyses/{id}/images/{nome}`.
 - Erros: 422 (validação, mensagens em PT), 409 sem chave do Gemini ou chave inválida (`AIKeyError`: 400 API_KEY_INVALID/401/403 do Gemini), 429 cota esgotada,
@@ -61,8 +62,11 @@ STL, OBJ, GLB, 3MF ou FBX (até 250 MB) viram 4 renders PNG de 1200 px **no nave
 costas, enquadrados pela forma da malha, em fundo escuro com luz principal e contraluz. STL e
 3MF (arquivos de impressão, em Z para cima) são girados para ficar em pé; STL/3MF/OBJ/FBX
 viram "argila" (as texturas ficam em arquivos separados); GLB mantém os materiais. As fotos
-ocupam as 4 vagas e seguem o fluxo normal (a IA não sabe que vieram do arquivo). Arquivo
-quebrado ou computador sem WebGL: mensagem pedindo prints. Wireframe não é gerado (o three.js
+ocupam as 4 vagas e seguem o fluxo normal, com `auto_renders` (`clay` na argila, `materials` no
+GLB): luz, fundo e ângulos são do app, então **render e apresentação** (e **materiais**, na
+argila) saem "não avaliável" com o motivo, a IA é avisada no prompt e melhorias desses critérios
+são descartadas (`validate.auto_render_skipped`). Arquivo quebrado ou computador sem WebGL:
+mensagem pedindo prints. Wireframe não é gerado (o three.js
 triangula a malha, e a topologia sairia errada).
 
 ## Custo

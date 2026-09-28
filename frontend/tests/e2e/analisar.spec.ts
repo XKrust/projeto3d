@@ -154,6 +154,7 @@ test.describe("/analisar", () => {
 
     expect(body).toContain("Content-Type: image/png");
     expect(body).not.toContain("Content-Type: image/jpeg");
+    expect(body).not.toContain('name="auto_renders"'); // fotos da pessoa: a IA avalia tudo
   });
 
   test("arquivo 3D vira 4 fotos e vai para a análise", async ({ page }) => {
@@ -191,6 +192,8 @@ test.describe("/analisar", () => {
     await expect(page.getByRole("region", { name: "Resultado da análise" })).toBeVisible();
     expect(body).toContain('filename="image-4.png"');
     expect(body).not.toContain('filename="image-5');
+    // A IA fica sabendo que as fotos (em argila) são do app: não julga luz, capa nem material.
+    expect(body).toMatch(/name="auto_renders"\r\n\r\nclay/);
   });
 
   test("arquivo que não dá para ler explica o que enviar", async ({ page }) => {

@@ -30,9 +30,11 @@ class FakeProvider:
     def __init__(self, responses):
         self.responses = list(responses)
         self.calls = 0
+        self.prompts = []
 
     def generate_json_with_images(self, prompt, images):
         self.calls += 1
+        self.prompts.append(prompt)
         response = self.responses.pop(0)
         if isinstance(response, Exception):
             raise response
@@ -133,7 +135,7 @@ def test_invalid_reference_link_is_refused(client):
     assert response.json()["detail"] == "Link de referência inválido: use um link de modelo do Sketchfab"
 
 
-@pytest.mark.parametrize("field", ["authorship", "market"])
+@pytest.mark.parametrize("field", ["authorship", "market", "auto_renders"])
 def test_invalid_choices_are_refused(client, field):
     _use(client, FakeProvider([]))
 
@@ -208,3 +210,18 @@ def test_wireframe_is_saved_and_counts_for_topology(client):
     assert body["input"]["wireframe"] == "wireframe.png"
     assert body["result"]["criteria"]["topologia"]["score"] == 6
     assert body["result"]["criteria"]["imprimibilidade"]["score"] is None  # digital
+
+
+@respx.mock
+def test_photos_taken_by_the_app_from_the_3d_file_are_told_to_the_ai(client):
+    provider = _use(client, FakeProvider([IDENTIFIED, CRITIQUE]))
+    _mock_sketchfab()
+
+    body = _post(client, auto_renders="clay").json()
+
+    assert "tiradas automaticamente pelo app a partir do arquivo 3D" in provider.prompts[1]
+    assert "argila" in provider.prompts[1]
+    assert body["result"]["criteria"]["render"]["score"] is None
+    assert body["result"]["criteria"]["materiais"]["score"] is None
+    assert body["result"]["criteria"]["anatomia"]["score"] is not None
+
