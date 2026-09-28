@@ -232,3 +232,25 @@ class CountryRank(SQLModel, table=True):
     demand: float  # 0–100, momentum médio dos 10 melhores temas do país (50 = neutro)
     payment: float  # 0–1, facilidade de pagar
     demand_measured: bool = False  # False: temas sem histórico ainda (procura neutra)
+
+
+class Analysis(SQLModel, table=True):
+    """Uma análise de modelo (Etapa 3a). Imagens em `data/analyses/<id>/`."""
+
+    id: int | None = Field(default=None, primary_key=True)
+    created_at: datetime
+    authorship: str  # autoral | fanart
+    market: str  # print | digital
+    hours: float | None = None
+    theme: str = Field(index=True)
+    category: str
+    style: str = ""
+    character: str | None = None
+    search_query: str = ""
+    image_count: int
+    has_wireframe: bool
+    files_json: str = "[]"  # nomes dos arquivos salvos, na ordem (imagens, depois wireframe)
+    references_json: str = "[]"
+    references_note: str | None = None
+    result_json: str
+    overall: float | None = None
