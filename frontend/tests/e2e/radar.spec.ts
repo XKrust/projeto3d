@@ -51,11 +51,7 @@ test.describe("/radar", () => {
 
     await page.goto("/radar");
 
-    await expect(
-      page.getByText(
-        "Nenhum tópico ainda. Clique em “Coletar agora” ou configure suas chaves em Configurações."
-      )
-    ).toBeVisible();
+    await expect(page.getByText(/A primeira coleta começa sozinha logo depois de abrir o app/)).toBeVisible();
   });
 
   test('clicar em "Coletar agora" mostra mensagem de coleta em andamento', async ({

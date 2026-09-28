@@ -114,3 +114,14 @@ encontrada; 422 "Escolha de 1 a 5 países" / "País inválido". `GET
 Tela (simplificada em 28/09/2026): no topo um **resumo** (`SaleSummary.tsx`: loja, preço com câmbio, chance, prazo do pico e alerta de fan-art de risco alto), depois o **anúncio pronto**; o resto fica recolhido em seções (`<details>`): todas as lojas e preços (+ vendas para cobrir as horas), plano de lançamento, onde divulgar, capa e variações. `sale_json.peak_day` alimenta o prazo. Arquivos: `frontend/components/analisar/SaleSection.tsx` (+ `StoreTable`, `ListingCard`,
 `LaunchChecklist`, `PromotionBlock`, `CoverBlock`, `VariationsBlock`); tipos em `frontend/lib/sale-types.ts`. Custo: até 2 chamadas ao Gemini
 por venda gerada (anúncio + variações em texto; capa com imagens).
+
+## Modelo do Gemini
+
+Padrão `gemini-flash-latest` (apelido oficial que sempre aponta para o Flash atual). Modelos
+com número fixo saem de linha: o `gemini-2.5-flash` passou a responder 404 "no longer
+available to new users" para chaves novas (setembro/2026), o que quebrava a análise.
+`app/ai/provider.py` tenta o modelo configurado e, em 404, 429 (cota daquele modelo) ou
+500/503 (sobrecarga, com 1 nova tentativa), os reservas `gemini-flash-latest` e
+`gemini-flash-lite-latest`. Configuração salva com um modelo aposentado (`RETIRED_MODELS`)
+usa o padrão. Chaves novas do AI Studio começam com `AQ.` (as antigas com `AIza`); a chave é
+salva sem espaços nas pontas.

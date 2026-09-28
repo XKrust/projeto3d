@@ -52,3 +52,5 @@
 | 2026-09-28 | `Radar3D-Setup.exe` na raiz (gravado pelo CI só em tag) e `.bat` movidos para `ferramentas-dev/` | Pedido do usuário: quem baixa o ZIP acha o instalador na hora, e arquivos .bat na raiz passam desconfiança |
 | 2026-09-28 | Chave do Gemini inválida vira mensagem própria (409 na análise, aviso na venda) | Antes aparecia "a IA não respondeu, tente de novo" e o usuário nunca descobria que a chave estava errada |
 | 2026-09-28 | Toda mudança de código na `main` publica uma versão (1.0.N) e atualiza o `.exe` da raiz, só depois de passar no teste do Windows | Pedido do usuário: o instalador da página inicial sempre atual; custo de ~40 MB por versão no histórico aceito |
+| 2026-09-28 | Lançador `Radar3D.exe` (C#, sem console) no lugar do `Radar3D.cmd`; ícone próprio; faixa de progresso da coleta | Usuário real viu várias janelas de cmd ("parece vírus"), fechou uma e o app caiu no meio da coleta; tela vazia sem aviso parecia quebrada |
+| 2026-09-28 | Gemini: `gemini-flash-latest` + reservas em 404/429/503 | O `gemini-2.5-flash` saiu para chaves novas e toda análise falhava |

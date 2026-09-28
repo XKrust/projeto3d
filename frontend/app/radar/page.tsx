@@ -105,8 +105,8 @@ function RadarContent() {
             O radar ainda está vazio.
           </h1>
           <p className="max-w-[60ch] text-[length:var(--text-md)] text-muted-foreground">
-            Nenhum tópico ainda. Clique em &#8220;Coletar agora&#8221; ou
-            configure suas chaves em Configurações.
+            A primeira coleta começa sozinha logo depois de abrir o app e leva alguns minutos; o
+            radar se preenche quando ela terminar. Colar chaves em Configurações traz mais fontes.
           </p>
         </section>
       )}

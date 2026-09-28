@@ -47,8 +47,12 @@ Invoke-WebRequest "https://github.com/astral-sh/uv/releases/download/$UvVersao/u
 Expand-Archive $uvZip -DestinationPath (Join-Path $tmp "uv")
 Copy-Item (Join-Path $tmp "uv\uv.exe") (Join-Path $dist "runtime\uv.exe")
 
-# 4. Lançadores, versão e leia-me.
-Copy-Item (Join-Path $PSScriptRoot "Radar3D.cmd"), (Join-Path $PSScriptRoot "Parar.cmd") $dist
+# 4. Lançador sem janelas (Radar3D.exe, C# no csc do .NET Framework), versão e leia-me.
+$csc = Join-Path $env:WINDIR "Microsoft.NET\Framework64\v4.0.30319\csc.exe"
+& $csc /nologo /target:winexe /optimize+ /langversion:5 /win32icon:(Join-Path $PSScriptRoot "radar3d.ico") `
+    /r:System.Windows.Forms.dll /r:System.Drawing.dll /out:(Join-Path $dist "Radar3D.exe") (Join-Path $PSScriptRoot "lancador\Radar3D.cs")
+if ($LASTEXITCODE -ne 0) { throw "csc falhou ao compilar o lançador" }
+Copy-Item (Join-Path $PSScriptRoot "Parar.cmd"), (Join-Path $PSScriptRoot "radar3d.ico") $dist
 Set-Content -Path (Join-Path $dist "VERSION") -Value $Versao -NoNewline -Encoding ascii
 Copy-Item (Join-Path $PSScriptRoot "LEIA-ME.txt") $dist
 Remove-Item -Recurse -Force $tmp
