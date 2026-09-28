@@ -36,5 +36,5 @@ export function formatRelativeTime(
     return `há ${diffHours} h`;
   }
   const diffDays = Math.floor(diffHours / 24);
-  return `há ${diffDays} dias`;
+  return diffDays === 1 ? "há 1 dia" : `há ${diffDays} dias`;
 }
