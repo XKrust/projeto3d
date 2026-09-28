@@ -210,9 +210,9 @@ jobs:
             }
             if (-not $radarPronto -and (Temas) -gt 0) { $radarPronto = [int]$t.Elapsed.TotalSeconds }
             if (-not $st.running -and ($viuRodando -or $st.finished_at)) { break }
-            # Radar pronto: segue consultando mais 3 minutos (com a concorrência sendo medida em
+            # Radar pronto: segue consultando mais 1 minuto (com a concorrência sendo medida em
             # segundo plano) e encerra, para o teste não esperar a contagem de anúncios inteira.
-            if ($radarPronto -and ($t.Elapsed.TotalSeconds - $radarPronto) -gt 180) { break }
+            if ($radarPronto -and ($t.Elapsed.TotalSeconds - $radarPronto) -gt 60) { break }
             Start-Sleep 2
           }
           $fasesTxt = ($fases.GetEnumerator() | ForEach-Object { "$($_.Key) aos $($_.Value) s" }) -join ", "
