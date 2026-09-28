@@ -53,6 +53,16 @@ Função: `backend/app/pipeline.py:compute_scores(session, day)`.
   são ignorados no radar e na tela de países.
 - Rodar de novo no mesmo dia atualiza as linhas existentes, sem duplicar.
 
+## Chance de venda no Analisador (Etapa 3b, `app/sale/chance.py`)
+
+- `chance = oportunidade × (0.5 + 0.05 · nota geral)`; sem nota, fator 0,75. Rótulos de
+  `sale_chance` (≥ 70 Alta, 40–69 Média, < 40 Baixa).
+- `oportunidade` = `TopicScore` do tópico no país e na loja, no último dia de score do país.
+  Sem linha daquela loja: maior oportunidade do tópico no país × `fit` da loja.
+- A saturação não entra de novo (a fórmula antiga da spec geral multiplicava por
+  `1 − saturação`): ela já pesa 0,35 dentro da oportunidade.
+- Sem tópico casado ou sem score no país: `value = null` com o motivo. Sempre estimativa.
+
 ## Tela inicial: ranking de países
 
 `app/country_rank.py`, roda no pipeline depois de `compute_scores` (países ativos). Grava um

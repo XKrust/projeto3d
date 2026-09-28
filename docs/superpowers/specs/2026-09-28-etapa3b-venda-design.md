@@ -1,6 +1,6 @@
 # Etapa 3b — Analisador: preparar a venda (design)
 
-Data: 28/09/2026. Status: rascunho; aguardando revisão desta spec.
+Data: 28/09/2026. Status: aprovada e implementada (28/09/2026).
 Continua a Etapa 3a (`2026-09-27-etapa3a-analisador-design.md`). Substitui o item 5
 ("Venda") do §7 da spec geral (`2026-09-26-radar3d-design.md`). Traz para a 3b a ideia #2
 (plano de lançamento, versão enxuta) de `docs/ideias-vendas.md`.
@@ -185,7 +185,8 @@ Montado pelo app, sem IA:
   "estimate": true
 }
 ```
-(`price` e `chance` podem ser `null`, com o motivo em `why`/`basis`.)
+(`price` pode ser `null`, com o motivo em `price_note`; `chance.value` e `chance.label` podem ser
+`null`, com o motivo em `chance.why`. Cada loja também traz `fee_pct`.)
 
 ## 10. API
 

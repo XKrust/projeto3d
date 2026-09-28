@@ -12,7 +12,7 @@ from sqlmodel import Session
 from app import clock
 from app.ai.provider import AIQuotaError, TextProvider
 from app.analyzer.errors import AIInvalidResponse
-from app.constants import COUNTRY_NAMES
+from app.constants import in_country
 from app.models import Analysis
 from app.sale.chance import chance_for_store, peak_for_topic
 from app.sale.listing import generate_listing, languages_for, top_tags
@@ -39,8 +39,7 @@ def _checklist(by_country: list[dict], peak) -> list[str]:
     if not ordered:
         return [NOTE_NO_STORES]
     first = ordered[0]
-    country_name = COUNTRY_NAMES.get(by_country[0]["country"], by_country[0]["country"])
-    steps = [f"Publique primeiro no {first['name']} (melhor encaixe no {country_name})."]
+    steps = [f"Publique primeiro no {first['name']} (melhor encaixe {in_country(by_country[0]['country'])})."]
     price = first.get("price")
     if price:
         steps.append(f"Nas primeiras 48 h, use o preço de lançamento ({_money(price['launch'])}) e depois "

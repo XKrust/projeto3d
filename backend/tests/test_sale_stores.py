@@ -65,3 +65,9 @@ def test_default_countries_skip_inactive(session):
 
 def test_default_countries_without_ranking(session):
     assert default_countries(session) == ["BR", "US", "GB"]
+
+
+def test_country_preposition_in_reason(session):
+    add_platform(session, "cults3d", strength={"US": 0.8, "DE": 0.7})
+    assert rank_stores(session, "US", market="print", category="anime")[0]["why"].startswith("Força de venda nos EUA")
+    assert rank_stores(session, "DE", market="print", category="anime")[0]["why"].startswith("Força de venda na Alemanha")

@@ -9,7 +9,7 @@ from datetime import date
 from sqlalchemy import func
 from sqlmodel import Session, select
 
-from app.constants import COUNTRY_NAMES
+from app.constants import COUNTRY_NAMES, in_country
 from app.models import Topic, TopicScore
 from app.scoring.formulas import sale_chance
 
@@ -37,7 +37,7 @@ def chance_for_store(session: Session, *, topic: Topic | None, country: str, pla
     country_name = COUNTRY_NAMES.get(country, country)
     rows = _last_rows(session, topic, country)
     if not rows:
-        return {"value": None, "label": None, "why": f"o tema ainda não tem nota no {country_name}"}
+        return {"value": None, "label": None, "why": f"o tema ainda não tem nota {in_country(country)}"}
     quality = "qualidade não avaliada" if overall is None else f"qualidade {_decimal(overall)}"
     factor = 0.75 if overall is None else 0.5 + 0.05 * overall
     store_row = next((row for row in rows if row.platform == platform), None)
@@ -47,7 +47,7 @@ def chance_for_store(session: Session, *, topic: Topic | None, country: str, pla
     else:
         best = max(row.opportunity for row in rows)
         opportunity = best * fit
-        why = f"oportunidade {round(best)} do tema no {country_name} × encaixe {_decimal(fit)} da loja × {quality}"
+        why = f"oportunidade {round(best)} do tema {in_country(country)} × encaixe {_decimal(fit)} da loja × {quality}"
     value = round(opportunity * factor)
     return {"value": value, "label": sale_chance(value), "why": why}
 

@@ -54,4 +54,4 @@ O usuário **não programa**. Tudo precisa rodar com duplo clique em `iniciar.ba
 
 ## Status
 
-Etapa 3a concluída (Analisador: análise crítica com referências, histórico). Também prontos: ranking diário de 15 países, lojas por força de venda, só temas de verdade no radar. Próxima: Etapa 3b (venda: título, loja, preço, chance). Consulte o plano mais recente em `docs/superpowers/plans/`.
+Etapas 3a e 3b concluídas (Analisador: análise crítica com referências e histórico; venda com lojas por país, preço, chance, anúncio pronto e checklist). Também prontos: ranking diário de 15 países, lojas por força de venda, só temas de verdade no radar. Próxima: Etapa 3c (onde divulgar, variações que vendem, nota da capa, risco de fan-art por loja, câmbio). Consulte o plano mais recente em `docs/superpowers/plans/`.

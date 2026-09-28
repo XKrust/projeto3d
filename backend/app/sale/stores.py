@@ -9,7 +9,7 @@ import json
 from sqlalchemy import func
 from sqlmodel import Session, select
 
-from app.constants import COUNTRIES, COUNTRY_NAMES
+from app.constants import COUNTRIES, in_country
 from app.models import CountryRank, Platform
 from app.scoring.formulas import platform_fit
 from app.settings_store import get_settings
@@ -41,7 +41,7 @@ def _why(country: str, strength: float, categories: list[str], category: str) ->
         affinity = f"forte em {label}"
     else:
         affinity = f"{label} não é o forte da loja"
-    return f"Força de venda no {COUNTRY_NAMES.get(country, country)}: {_decimal(strength)} · {affinity}"
+    return f"Força de venda {in_country(country)}: {_decimal(strength)} · {affinity}"
 
 
 def rank_stores(session: Session, country: str, *, market: str, category: str) -> list[dict]:

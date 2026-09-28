@@ -15,6 +15,9 @@
   criticar → validar → salvar; ver `docs/analisador.md`) e os provedores de IA
   (`generate_json` e `generate_json_with_images`). Tabela `Analysis`; imagens em
   `data/analyses/<id>/`.
+- `backend/app/sale/`: a venda da análise (Etapa 3b: tema no radar, lojas, preço, chance,
+  anúncio, checklist; ver `docs/analisador.md`). Grava em `Analysis.sale_json`/`sale_at`
+  (colunas acrescentadas por `ALTER TABLE` em `init_db`).
 - `backend/app/api/`: rotas REST.
 - `backend/app/seed/`: YAMLs editáveis (plataformas, eventos, entidades).
 - `frontend/`: as telas `/radar`, `/sazonal`, `/hype`, `/analisar` e `/config`.

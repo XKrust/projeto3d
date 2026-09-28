@@ -71,3 +71,10 @@ def test_peak_for_topic(session):
     assert peak_for_topic(session, topic, "BR") == peak
     assert peak_for_topic(session, None, "BR") is None
     assert peak_for_topic(session, topic, "US") is None
+
+
+def test_country_preposition(session):
+    topic = add_topic(session, "Frieren")
+    chance = chance_for_store(session, topic=topic, country="US", platform="etsy", platform_name="Etsy",
+                              fit=0.5, overall=6)
+    assert chance["why"] == "o tema ainda não tem nota nos EUA"
