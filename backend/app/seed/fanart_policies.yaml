@@ -1,0 +1,41 @@
+# Política de fan-art/propriedade intelectual por loja (Etapa 3c). Só entra nível com a
+# página oficial consultada (url + data). Nível é a leitura do app, não conselho jurídico:
+#   alto  = a loja exige direitos ou segura/modera o anúncio pago de IP de terceiros
+#   medio = a loja aceita e remove quando o dono da marca reclama
+# Loja fora deste arquivo: nível null, "conferir a política da loja".
+
+cults3d:
+  level: alto
+  summary: "Mantém fan-art grátis, mas modera anúncios pagos com termos de marcas protegidas."
+  url: https://cults3d.com/en/blog/articles/3d-printing-intellectual-property-law
+  checked: 2026-09-28
+
+myminifactory:
+  level: alto
+  summary: "Fan-art grátis é permitida; objeto pago de IP que você não tem direito fica retido na aprovação."
+  url: https://creator.myminifactory.com/ip-policy
+  checked: 2026-09-28
+
+fab:
+  level: alto
+  summary: "Exige que você tenha os direitos do conteúdo; produto removido por IP avisa quem comprou."
+  url: https://legal.epicgames.com/epicgames/content-guidelines
+  checked: 2026-09-28
+
+etsy:
+  level: medio
+  summary: "Remove o anúncio quando o dono da marca faz uma denúncia válida; repetição pode fechar a loja."
+  url: https://www.etsy.com/legal/ip/
+  checked: 2026-09-28
+
+cgtrader:
+  level: medio
+  summary: "IP de terceiros só com licença editorial (sem uso comercial); remove tudo do dono que reclamar."
+  url: https://help.cgtrader.com/hc/en-us/articles/360015193398-Editorial-License
+  checked: 2026-09-28
+
+booth:
+  level: medio
+  summary: "Aceita obras derivadas (二次創作) dentro das regras de cada dono; remove quando o dono pede."
+  url: https://booth.pm/rights_clearance
+  checked: 2026-09-28
