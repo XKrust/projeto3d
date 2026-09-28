@@ -47,13 +47,32 @@ Invoke-WebRequest "https://github.com/astral-sh/uv/releases/download/$UvVersao/u
 Expand-Archive $uvZip -DestinationPath (Join-Path $tmp "uv")
 Copy-Item (Join-Path $tmp "uv\uv.exe") (Join-Path $dist "runtime\uv.exe")
 
-# 4. Lançador sem janelas (Radar3D.exe, C# no csc do .NET Framework), versão e leia-me.
+# 4. WebView2 (a janela própria do app): DLLs do pacote oficial da Microsoft no NuGet, versão
+#    e conteúdo fixos. O motor em si (WebView2 Runtime) já vem no Windows 10/11.
+$wv2Versao = "1.0.4258.31"
+$wv2Hash = "56F7F4B8BF9AEE4B8EFEFBBDD4F67D5F74EBD1B100ED0806DA71BF76AF481AA9"
+$wv2Zip = Join-Path $tmp "webview2.zip"
+Invoke-WebRequest "https://api.nuget.org/v3-flatcontainer/microsoft.web.webview2/$wv2Versao/microsoft.web.webview2.$wv2Versao.nupkg" -OutFile $wv2Zip
+if ((Get-FileHash $wv2Zip -Algorithm SHA256).Hash -ne $wv2Hash) { throw "O pacote do WebView2 baixado não é o esperado" }
+$wv2 = Join-Path $tmp "webview2"
+Expand-Archive $wv2Zip -DestinationPath $wv2
+$wv2Core = Join-Path $wv2 "lib\net462\Microsoft.Web.WebView2.Core.dll"
+$wv2Forms = Join-Path $wv2 "lib\net462\Microsoft.Web.WebView2.WinForms.dll"
+Copy-Item $wv2Core, $wv2Forms $dist
+foreach ($arq in "x64", "arm64") {
+    $destino = Join-Path $dist "runtimes\win-$arq\native"
+    New-Item -ItemType Directory -Force $destino | Out-Null
+    Copy-Item (Join-Path $wv2 "runtimes\win-$arq\native\WebView2Loader.dll") $destino
+}
+
+# 5. Lançador sem janelas de console (Radar3D.exe, C# no csc do .NET Framework), versão e leia-me.
 $csc = Join-Path $env:WINDIR "Microsoft.NET\Framework64\v4.0.30319\csc.exe"
 $icone = Join-Path $PSScriptRoot "radar3d.ico"
 $saida = Join-Path $dist "Radar3D.exe"
 $fonte = Join-Path $PSScriptRoot "lancador\Radar3D.cs"
 $cscArgs = @("/nologo", "/target:winexe", "/optimize+", "/langversion:5", "/win32icon:$icone",
-          "/r:System.Windows.Forms.dll", "/r:System.Drawing.dll", "/out:$saida", $fonte)
+          "/r:System.Windows.Forms.dll", "/r:System.Drawing.dll", "/r:$wv2Core", "/r:$wv2Forms",
+          "/out:$saida", $fonte)
 $log = & $csc @cscArgs 2>&1
 if ($LASTEXITCODE -ne 0 -or -not (Test-Path $saida)) {
     Write-Host "::error title=csc::$(($log | Out-String) -replace "`r?`n", '%0A')"

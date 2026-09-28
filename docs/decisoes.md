@@ -55,3 +55,4 @@
 | 2026-09-28 | Lançador `Radar3D.exe` (C#, sem console) no lugar do `Radar3D.cmd`; ícone próprio; faixa de progresso da coleta | Usuário real viu várias janelas de cmd ("parece vírus"), fechou uma e o app caiu no meio da coleta; tela vazia sem aviso parecia quebrada |
 | 2026-09-28 | Gemini: `gemini-flash-latest` + reservas em 404/429/503 | O `gemini-2.5-flash` saiu para chaves novas e toda análise falhava |
 | 2026-09-28 | Notas calculadas antes da contagem de anúncios; faixa de progresso por fase | No Windows real, a primeira coleta levava mais de 13 min até existir qualquer nota, por causa da contagem educada de anúncios |
+| 2026-09-28 | App abre na própria janela (WebView2 no `Radar3D.exe`); fechar a janela mantém a coleta no ícone do relógio; sem WebView2, navegador | Usuário: abrir no navegador com "localhost" parecia site, não programa. WebView2 já vem no Windows 10/11 (sem baixar Chromium/Electron); DLLs do NuGet com hash fixo |

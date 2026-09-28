@@ -59,11 +59,13 @@ Filename: "{app}\Radar3D.exe"; Parameters: "--sair"; Flags: runhidden waituntilt
 Filename: "{app}\Parar.cmd"; Flags: runhidden waituntilterminated; RunOnceId: "PararRadar3D"
 
 [UninstallDelete]
-; O Python e o ambiente baixados saem junto; os dados (data\: banco, análises, logs) ficam,
-; para uma reinstalação não perder nada.
+; O Python, o ambiente e o cache da janela saem junto; os dados (data\: banco, análises, logs)
+; ficam, para uma reinstalação não perder nada.
 Type: filesandordirs; Name: "{localappdata}\Radar3D\venv"
 Type: filesandordirs; Name: "{localappdata}\Radar3D\python"
 Type: filesandordirs; Name: "{localappdata}\Radar3D\uv-cache"
+Type: filesandordirs; Name: "{localappdata}\Radar3D\webview"
+Type: files; Name: "{localappdata}\Radar3D\webview.pid"
 Type: filesandordirs; Name: "{app}"
 
 [Code]

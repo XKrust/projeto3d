@@ -1,27 +1,38 @@
 // Radar3D.exe — lançador do Radar 3D instalado (ver docs/instalador.md).
 //
-// Sem nenhuma janela de console: backend (Python) e telas (Node) rodam escondidos, com a
-// saída gravada em %LOCALAPPDATA%\Radar3D\data\*.log. Mostra uma janelinha de progresso
-// ao abrir e fica como ícone perto do relógio (Abrir / Pasta dos dados / Sair). Se uma
-// parte cair, reinicia sozinha. Ao sair, fecha tudo junto.
+// Abre o Radar 3D na própria janela (WebView2, o motor do Edge que já vem no Windows 10/11):
+// sem navegador, sem barra de endereço, sem "localhost" à vista. Nenhuma janela de console:
+// backend (Python) e telas (Node) rodam escondidos, com a saída em
+// %LOCALAPPDATA%\Radar3D\data\*.log. Mostra uma janelinha de progresso ao abrir e fica como
+// ícone perto do relógio (Abrir / Pasta dos dados / Sair): fechar a janela não interrompe a
+// coleta. Se uma parte cair, reinicia sozinha. Ao sair, fecha tudo junto. Sem o WebView2
+// (raro), abre no navegador.
 //
 // Compilado no GitHub Actions com o csc do .NET Framework 4.x (installer/montar.ps1), que
 // só aceita C# 5: nada de $"...", ?. ou nameof.
 //
-// Uso: Radar3D.exe            abre (ou só abre o navegador, se já estiver aberto)
+// Uso: Radar3D.exe            abre (ou traz a janela para a frente, se já estiver aberto)
 //      Radar3D.exe --sair     fecha o Radar 3D que estiver aberto
-// RADAR_NO_BROWSER=1 não abre o navegador (teste automático).
+// RADAR_NO_BROWSER=1: teste automático (nunca abre o navegador nem caixas de mensagem).
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Net.NetworkInformation;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using Microsoft.Web.WebView2.Core;
+using Microsoft.Web.WebView2.WinForms;
+
+// Sem isto o .NET trata o .exe como feito para o 4.0 e não lê os ícones em PNG do radar3d.ico.
+// O WebView2 já exige o 4.6.2 (o Windows 10/11 vem com o 4.8).
+[assembly: System.Runtime.Versioning.TargetFramework(".NETFramework,Version=v4.6.2")]
 
 namespace Radar3D
 {
@@ -29,6 +40,12 @@ namespace Radar3D
     {
         public const string MutexName = "Local\\Radar3D-Lancador";
         public const string ExitEventName = "Local\\Radar3D-Sair";
+        public const string ShowEventName = "Local\\Radar3D-Mostrar";
+
+        public static bool TestMode
+        {
+            get { return Environment.GetEnvironmentVariable("RADAR_NO_BROWSER") == "1"; }
+        }
 
         [STAThread]
         static int Main(string[] args)
@@ -43,13 +60,21 @@ namespace Radar3D
                 mutex.Dispose();  // senão esta cópia segura o "já estou aberto" da outra
                 if (sair)
                 {
-                    SignalExit();
+                    SignalEvent(ExitEventName);
                     WaitOtherInstanceGone(30000);
                     Launcher.WaitPortsFree(10000);
+                    Launcher.WaitWindowGone(10000);
                     return 0;
                 }
-                // Já aberto: só leva a pessoa para a tela (o teste automático não abre navegador).
-                if (Environment.GetEnvironmentVariable("RADAR_NO_BROWSER") != "1") Launcher.OpenBrowser();
+                // Já aberto: traz a janela dele para a frente. Esta cópia foi aberta pela pessoa,
+                // então pode passar a vez de ficar na frente para a outra.
+                try { AllowSetForegroundWindow(-1); } catch (Exception) { }
+                for (int i = 0; i < 20; i++)
+                {
+                    if (SignalEvent(ShowEventName)) return 0;
+                    Thread.Sleep(100);  // a outra cópia pode estar começando agora
+                }
+                if (!TestMode) Launcher.OpenBrowser();
                 return 0;
             }
             if (sair)
@@ -60,6 +85,16 @@ namespace Radar3D
                 return 0;
             }
 
+            // Erro inesperado vai para o lancador.log, nunca para a caixa de erro do .NET.
+            Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
+            Application.ThreadException += delegate(object s, ThreadExceptionEventArgs e)
+            {
+                Launcher.Log("lancador.log", "erro: " + e.Exception);
+            };
+            AppDomain.CurrentDomain.UnhandledException += delegate(object s, UnhandledExceptionEventArgs e)
+            {
+                Launcher.Log("lancador.log", "erro fatal: " + e.ExceptionObject);
+            };
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Launcher launcher = new Launcher();
@@ -86,18 +121,35 @@ namespace Radar3D
             }
         }
 
-        static void SignalExit()
+        static bool SignalEvent(string name)
         {
             try
             {
                 EventWaitHandle ev;
-                if (EventWaitHandle.TryOpenExisting(ExitEventName, out ev)) ev.Set();
+                if (EventWaitHandle.TryOpenExisting(name, out ev))
+                {
+                    ev.Set();
+                    ev.Dispose();
+                    return true;
+                }
             }
             catch (Exception) { }
+            return false;
         }
 
         [DllImport("user32.dll")]
         static extern bool SetProcessDPIAware();
+
+        [DllImport("user32.dll")]
+        static extern bool AllowSetForegroundWindow(int processId);
+    }
+
+    // Cores do app (design.md), para as janelas combinarem com as telas.
+    static class Palette
+    {
+        public static readonly Color Paper = Color.FromArgb(13, 9, 7);      // --color-paper
+        public static readonly Color Ink = Color.FromArgb(240, 236, 230);   // --color-ink
+        public static readonly Color Muted = Color.FromArgb(155, 149, 142);
     }
 
     sealed class Launcher : ApplicationContext
@@ -106,16 +158,28 @@ namespace Radar3D
         const int FrontendPort = 3000;
         const string Url = "http://localhost:3000/";
 
+        static readonly string BaseDir = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Radar3D");
+        static readonly string DataDir = Path.Combine(BaseDir, "data");
+        static readonly string WebViewDir = Path.Combine(BaseDir, "webview");
+        static readonly string WebViewPidFile = Path.Combine(BaseDir, "webview.pid");
+        static readonly object LogLock = new object();
+
         readonly string app;       // pasta do programa (onde está este .exe)
-        readonly string baseDir;   // %LOCALAPPDATA%\Radar3D
-        readonly string dataDir;   // %LOCALAPPDATA%\Radar3D\data
+        readonly Icon icon;
         readonly NotifyIcon tray;
         readonly SplashForm splash;
         readonly IntPtr job;
-        readonly object logLock = new object();
+        readonly EventWaitHandle exitEvent;
+        readonly EventWaitHandle showEvent;
 
         Process backend;
         Process frontend;
+        Form window;               // a janela do app (AppWindow), quando aberta
+        string lastUrl;            // tela que estava aberta quando a janela foi fechada
+        bool useBrowser;           // sem WebView2: abre no navegador
+        bool closeHintShown;
+        int windowRestarts;
         volatile bool quitting;
         volatile bool ready;
         int backendRestarts;
@@ -125,32 +189,43 @@ namespace Radar3D
         public Launcher()
         {
             app = AppDomain.CurrentDomain.BaseDirectory;
-            baseDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Radar3D");
-            dataDir = Path.Combine(baseDir, "data");
-            Directory.CreateDirectory(dataDir);
+            Directory.CreateDirectory(DataDir);
             job = JobObject.Create();
+            exitEvent = new EventWaitHandle(false, EventResetMode.AutoReset, Program.ExitEventName);
+            showEvent = new EventWaitHandle(false, EventResetMode.AutoReset, Program.ShowEventName);
 
-            Icon icon = LoadIcon();
+            icon = LoadIcon();
             splash = new SplashForm(icon);
             tray = new NotifyIcon();
-            tray.Icon = icon;
+            tray.Icon = new Icon(icon, SystemInformation.SmallIconSize);
             tray.Text = "Radar 3D — abrindo…";
             tray.ContextMenuStrip = BuildMenu();
-            tray.DoubleClick += delegate { OpenBrowser(); };
+            tray.DoubleClick += delegate { ShowApp(); };
             tray.Visible = true;
             splash.Show();
 
-            Thread exitWatcher = new Thread(WatchExitEvent);
-            exitWatcher.IsBackground = true;
-            exitWatcher.Start();
+            StartThread(WatchExitEvent);
+            StartThread(WatchShowEvent);
+            StartThread(Boot);
+        }
 
-            Thread boot = new Thread(Boot);
-            boot.IsBackground = true;
-            boot.Start();
+        static void StartThread(ThreadStart work)
+        {
+            Thread t = new Thread(work);
+            t.IsBackground = true;
+            t.Start();
         }
 
         Icon LoadIcon()
         {
+            // O .ico tem todos os tamanhos (16 a 256): fica nítido na barra de tarefas e no Alt+Tab.
+            try
+            {
+                Icon ico = new Icon(Path.Combine(app, "radar3d.ico"));
+                IntPtr ok = new Icon(ico, SystemInformation.SmallIconSize).Handle;  // lê mesmo (PNG)
+                if (ok != IntPtr.Zero) return ico;
+            }
+            catch (Exception) { }
             try { return Icon.ExtractAssociatedIcon(Application.ExecutablePath); }
             catch (Exception) { return SystemIcons.Application; }
         }
@@ -160,9 +235,9 @@ namespace Radar3D
             ContextMenuStrip menu = new ContextMenuStrip();
             ToolStripMenuItem abrir = new ToolStripMenuItem("Abrir o Radar 3D");
             abrir.Font = new Font(abrir.Font, FontStyle.Bold);
-            abrir.Click += delegate { OpenBrowser(); };
+            abrir.Click += delegate { ShowApp(); };
             ToolStripMenuItem pasta = new ToolStripMenuItem("Pasta dos dados e registros");
-            pasta.Click += delegate { Process.Start("explorer.exe", "\"" + dataDir + "\""); };
+            pasta.Click += delegate { Process.Start("explorer.exe", "\"" + DataDir + "\""); };
             ToolStripMenuItem sair = new ToolStripMenuItem("Sair do Radar 3D");
             sair.Click += delegate { Quit(); };
             menu.Items.Add(abrir);
@@ -224,7 +299,7 @@ namespace Radar3D
         bool PrepareBackend()
         {
             string versao = File.ReadAllText(Path.Combine(app, "VERSION")).Trim();
-            string venv = Path.Combine(baseDir, "venv");
+            string venv = Path.Combine(BaseDir, "venv");
             string marker = Path.Combine(venv, "radar3d-versao.txt");
             string python = Path.Combine(venv, "Scripts\\python.exe");
             string preparada = File.Exists(marker) ? File.ReadAllText(marker).Trim() : "";
@@ -246,7 +321,7 @@ namespace Radar3D
 
         Process StartBackend()
         {
-            string python = Path.Combine(baseDir, "venv\\Scripts\\python.exe");
+            string python = Path.Combine(BaseDir, "venv\\Scripts\\python.exe");
             string args = "-m uvicorn app.main:app --host 127.0.0.1 --port " + BackendPort;
             Process p = StartHidden(python, args, Path.Combine(app, "backend"), "backend.log", false);
             p.EnableRaisingEvents = true;
@@ -273,10 +348,10 @@ namespace Radar3D
             info.RedirectStandardError = true;
             info.StandardOutputEncoding = Encoding.UTF8;
             info.StandardErrorEncoding = Encoding.UTF8;
-            info.EnvironmentVariables["RADAR_DATA_DIR"] = dataDir;
-            info.EnvironmentVariables["UV_PYTHON_INSTALL_DIR"] = Path.Combine(baseDir, "python");
-            info.EnvironmentVariables["UV_PROJECT_ENVIRONMENT"] = Path.Combine(baseDir, "venv");
-            info.EnvironmentVariables["UV_CACHE_DIR"] = Path.Combine(baseDir, "uv-cache");
+            info.EnvironmentVariables["RADAR_DATA_DIR"] = DataDir;
+            info.EnvironmentVariables["UV_PYTHON_INSTALL_DIR"] = Path.Combine(BaseDir, "python");
+            info.EnvironmentVariables["UV_PROJECT_ENVIRONMENT"] = Path.Combine(BaseDir, "venv");
+            info.EnvironmentVariables["UV_CACHE_DIR"] = Path.Combine(BaseDir, "uv-cache");
             info.EnvironmentVariables["UV_PYTHON_PREFERENCE"] = "only-managed";
             info.EnvironmentVariables["UV_NO_PROGRESS"] = "1";
             info.EnvironmentVariables["PYTHONUTF8"] = "1";
@@ -285,7 +360,7 @@ namespace Radar3D
             info.EnvironmentVariables["HOSTNAME"] = "127.0.0.1";
             info.EnvironmentVariables["NODE_ENV"] = "production";
 
-            string logPath = Path.Combine(dataDir, logName);
+            string logPath = Path.Combine(DataDir, logName);
             RotateLog(logPath);
             Process p = new Process();
             p.StartInfo = info;
@@ -306,50 +381,180 @@ namespace Radar3D
 
         void SetReady()
         {
-            ready = true;
             RunOnUi(delegate
             {
-                splash.Hide();
-                tray.Text = "Radar 3D — aberto";
-                tray.ShowBalloonTip(8000, "Radar 3D aberto",
-                    "Ele fica aqui perto do relógio. Para fechar: botão direito no ícone → Sair.", ToolTipIcon.Info);
+                ready = true;
+                tray.Text = "Radar 3D";
+                string missing = WebViewMissing();
+                if (missing == null)
+                {
+                    ShowWindow();
+                    splash.Hide();
+                    return;
+                }
+                Log("lancador.log", "Sem a janela própria (" + missing + "): abrindo no navegador.");
+                UseBrowser();
             });
-            if (Environment.GetEnvironmentVariable("RADAR_NO_BROWSER") != "1") OpenBrowser();
+        }
+
+        // ---------------------------------------------------------------- a janela do app
+
+        // Nulo quando dá para abrir a janela própria; senão, o motivo (vai para o log).
+        string WebViewMissing()
+        {
+            foreach (string dll in new string[] { "Microsoft.Web.WebView2.Core.dll", "Microsoft.Web.WebView2.WinForms.dll" })
+            {
+                if (!File.Exists(Path.Combine(app, dll))) return "faltou " + dll;
+            }
+            try
+            {
+                string version = WebViewVersion();
+                if (string.IsNullOrEmpty(version)) return "WebView2 não instalado";
+                Log("lancador.log", "WebView2 " + version);
+                return null;
+            }
+            catch (Exception ex) { return ex.GetType().Name + ": " + ex.Message; }
+        }
+
+        // Separado (e fora de linha) para a falta das DLLs do WebView2 virar só uma exceção aqui.
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        static string WebViewVersion()
+        {
+            return CoreWebView2Environment.GetAvailableBrowserVersionString();
+        }
+
+        // Abrir pelo atalho, pelo ícone ou de novo pelo menu Iniciar: mostra o que já está aberto.
+        void ShowApp()
+        {
+            if (quitting) return;
+            if (!ready)
+            {
+                splash.Show();
+                splash.Activate();
+                return;
+            }
+            if (!useBrowser) ShowWindow();
+            else if (!Program.TestMode) OpenBrowser();
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        void ShowWindow()
+        {
+            AppWindow w = window as AppWindow;
+            if (w == null || w.IsDisposed)
+            {
+                w = new AppWindow(icon, WebViewDir, lastUrl ?? Url);
+                w.Log = delegate(string line) { Log("lancador.log", line); };
+                w.Failed = OnWindowFailed;
+                w.BrowserStarted = delegate(int pid) { WriteWebViewPid(pid); };
+                w.FormClosed += delegate { OnWindowClosed(w.LastUrl, w.FailedToOpen, w.Recreating); };
+                window = w;
+            }
+            w.ShowOnTop();
+        }
+
+        void OnWindowClosed(string url, bool failed, bool recreate)
+        {
+            window = null;
+            if (url != null) lastUrl = url;
+            if (quitting || failed) return;
+            if (recreate && ++windowRestarts <= 3)
+            {
+                RunOnUi(ShowWindow);
+                return;
+            }
+            if (!closeHintShown)
+            {
+                // Fechar a janela deixa a coleta seguindo; conta uma vez como abrir e sair.
+                closeHintShown = true;
+                tray.ShowBalloonTip(10000, "O Radar 3D continua aberto",
+                    "Ele segue coletando as tendências aqui perto do relógio. Para abrir de novo: dois cliques " +
+                    "no ícone. Para fechar de vez: botão direito no ícone → Sair.", ToolTipIcon.Info);
+            }
+        }
+
+        void OnWindowFailed(string reason)
+        {
+            if (quitting) return;
+            Log("lancador.log", "Sem a janela própria (" + reason + "): abrindo no navegador.");
+            UseBrowser();
+        }
+
+        void UseBrowser()
+        {
+            useBrowser = true;
+            splash.Hide();
+            tray.ShowBalloonTip(8000, "Radar 3D aberto",
+                "Ele abriu no navegador e fica aqui perto do relógio. Para fechar: botão direito no ícone → Sair.",
+                ToolTipIcon.Info);
+            if (!Program.TestMode) OpenBrowser();
+        }
+
+        static void WriteWebViewPid(int pid)
+        {
+            try { File.WriteAllText(WebViewPidFile, pid.ToString()); } catch (Exception) { }
+        }
+
+        // Espera o WebView2 da janela terminar de fechar (libera a pasta webview para o
+        // desinstalador).
+        public static void WaitWindowGone(int timeoutMs)
+        {
+            try
+            {
+                if (!File.Exists(WebViewPidFile)) return;
+                int pid = int.Parse(File.ReadAllText(WebViewPidFile).Trim());
+                Process p = Process.GetProcessById(pid);
+                if (p.ProcessName.StartsWith("msedgewebview2", StringComparison.OrdinalIgnoreCase)) p.WaitForExit(timeoutMs);
+            }
+            catch (Exception) { }
         }
 
         // ---------------------------------------------------------------- se uma parte cair
 
         void OnChildExited(bool isBackend)
         {
-            if (quitting || !ready) return;
-            int restarts = isBackend ? ++backendRestarts : ++frontendRestarts;
-            Log("lancador.log", string.Format("{0} parou; reiniciando ({1}ª vez)", isBackend ? "backend" : "telas", restarts));
-            if (restarts > 3)
+            try
             {
-                RunOnUi(delegate
+                if (quitting || !ready) return;
+                int restarts = isBackend ? ++backendRestarts : ++frontendRestarts;
+                Log("lancador.log", string.Format("{0} parou; reiniciando ({1}ª vez)", isBackend ? "backend" : "telas", restarts));
+                if (restarts > 3)
                 {
-                    tray.ShowBalloonTip(10000, "Radar 3D", "Uma parte do Radar 3D parou várias vezes. Feche e abra de novo; " +
-                        "se continuar, envie os arquivos da pasta dos dados.", ToolTipIcon.Warning);
-                });
-                return;
+                    RunOnUi(delegate
+                    {
+                        tray.ShowBalloonTip(10000, "Radar 3D", "Uma parte do Radar 3D parou várias vezes. Feche e abra de novo; " +
+                            "se continuar, envie os arquivos da pasta dos dados.", ToolTipIcon.Warning);
+                    });
+                    return;
+                }
+                Thread.Sleep(2000);
+                if (quitting) return;
+                if (isBackend) backend = StartBackend(); else frontend = StartFrontend();
             }
-            Thread.Sleep(2000);
-            if (quitting) return;
-            if (isBackend) backend = StartBackend(); else frontend = StartFrontend();
+            catch (Exception ex) { Log("lancador.log", "erro ao reiniciar: " + ex); }
         }
 
         // ---------------------------------------------------------------- sair
 
         void WatchExitEvent()
         {
-            EventWaitHandle ev = new EventWaitHandle(false, EventResetMode.AutoReset, Program.ExitEventName);
-            ev.WaitOne();
+            exitEvent.WaitOne();
             RunOnUi(Quit);
+        }
+
+        void WatchShowEvent()
+        {
+            while (true)
+            {
+                showEvent.WaitOne();
+                RunOnUi(ShowApp);
+            }
         }
 
         void Quit()
         {
             quitting = true;
+            if (window != null && !window.IsDisposed) window.Close();
             KillTree(frontend);
             KillTree(backend);
             KillPorts();
@@ -388,7 +593,7 @@ namespace Radar3D
         {
             // netstat -ano: "  TCP    127.0.0.1:3000   0.0.0.0:0   LISTENING   1234"
             string output = RunQuiet("netstat.exe", "-ano -p TCP");
-            System.Collections.Generic.List<int> pids = new System.Collections.Generic.List<int>();
+            List<int> pids = new List<int>();
             foreach (string raw in output.Split('\n'))
             {
                 string[] cols = raw.Split(new char[] { ' ', '\t', '\r' }, StringSplitOptions.RemoveEmptyEntries);
@@ -445,7 +650,7 @@ namespace Radar3D
 
         static bool PortBusy(int port)
         {
-            foreach (System.Net.IPEndPoint ep in IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpListeners())
+            foreach (IPEndPoint ep in IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpListeners())
             {
                 if (ep.Port == port) return true;
             }
@@ -471,7 +676,7 @@ namespace Radar3D
             quitting = true;
             KillTree(frontend);
             KillTree(backend);
-            if (Environment.GetEnvironmentVariable("RADAR_NO_BROWSER") == "1")
+            if (Program.TestMode)
             {
                 RunOnUi(delegate { tray.Visible = false; ExitThread(); });
                 return;
@@ -485,7 +690,7 @@ namespace Radar3D
                     MessageBoxIcon.Warning);
                 if (logName != null && r == DialogResult.Yes)
                 {
-                    try { Process.Start("notepad.exe", "\"" + Path.Combine(dataDir, logName) + "\""); } catch (Exception) { }
+                    try { Process.Start("notepad.exe", "\"" + Path.Combine(DataDir, logName) + "\""); } catch (Exception) { }
                 }
                 tray.Visible = false;
                 ExitThread();
@@ -519,17 +724,269 @@ namespace Radar3D
             catch (Exception) { }
         }
 
-        void Log(string logName, string line)
+        public static void Log(string logName, string line)
         {
-            lock (logLock)
+            lock (LogLock)
             {
                 try
                 {
-                    File.AppendAllText(Path.Combine(dataDir, logName), line + Environment.NewLine, Encoding.UTF8);
+                    Directory.CreateDirectory(DataDir);
+                    File.AppendAllText(Path.Combine(DataDir, logName), line + Environment.NewLine, Encoding.UTF8);
                 }
                 catch (Exception) { }
             }
         }
+    }
+
+    // A janela do Radar 3D: as telas (servidas em localhost:3000) dentro de um WebView2, sem nada
+    // de navegador em volta. Links para fora (lojas, Google AI Studio…) abrem no navegador padrão.
+    // Fechar a janela libera o WebView2 (memória); abrir de novo cria outra na mesma tela.
+    sealed class AppWindow : Form
+    {
+        // Itens de navegador tirados do menu do botão direito (ficam copiar, colar, emoji…).
+        static readonly string[] BrowserMenuItems = {
+            "back", "forward", "reload", "saveAs", "print", "share", "webCapture", "createQrCode",
+            "inspectElement", "openLinkInNewWindow", "saveLinkAs", "copyLinkToHighlight"
+        };
+
+        static readonly CoreWebView2WebErrorStatus[] ConnectionErrors = {
+            CoreWebView2WebErrorStatus.CannotConnect, CoreWebView2WebErrorStatus.ConnectionAborted,
+            CoreWebView2WebErrorStatus.ConnectionReset, CoreWebView2WebErrorStatus.Disconnected,
+            CoreWebView2WebErrorStatus.ServerUnreachable, CoreWebView2WebErrorStatus.Timeout,
+            CoreWebView2WebErrorStatus.ErrorHttpInvalidServerResponse
+        };
+
+        readonly WebView2 web;
+        readonly string userDataFolder;
+        readonly string startUrl;
+        string lastLocalUrl;
+        bool loadedOnce;
+        bool failing;
+        FormWindowState restoreState = FormWindowState.Maximized;
+
+        public Action<string> Log;
+        public Action<string> Failed;
+        public Action<int> BrowserStarted;
+        public string LastUrl;
+        public bool FailedToOpen;
+        public bool Recreating;
+
+        public AppWindow(Icon icon, string userDataFolder, string startUrl)
+        {
+            this.userDataFolder = userDataFolder;
+            this.startUrl = startUrl;
+            lastLocalUrl = startUrl;
+
+            Text = "Radar 3D";
+            Icon = icon;
+            BackColor = Palette.Paper;
+            MinimumSize = new Size(640, 480);
+            StartPosition = FormStartPosition.Manual;
+            Rectangle area = Screen.PrimaryScreen.WorkingArea;
+            Size = new Size(area.Width * 9 / 10, area.Height * 9 / 10);
+            Location = new Point(area.X + (area.Width - Width) / 2, area.Y + (area.Height - Height) / 2);
+            WindowState = FormWindowState.Maximized;
+
+            web = new WebView2();
+            web.Dock = DockStyle.Fill;
+            web.DefaultBackgroundColor = Palette.Paper;  // sem clarão branco enquanto a tela carrega
+            Controls.Add(web);
+        }
+
+        public void ShowOnTop()
+        {
+            if (!Visible) Show();
+            if (WindowState == FormWindowState.Minimized) WindowState = restoreState;
+            Activate();
+            SetForegroundWindow(Handle);
+        }
+
+        protected override void OnHandleCreated(EventArgs e)
+        {
+            base.OnHandleCreated(e);
+            TitleBar.Dark(Handle);
+        }
+
+        protected override void OnResize(EventArgs e)
+        {
+            base.OnResize(e);
+            if (WindowState != FormWindowState.Minimized) restoreState = WindowState;
+        }
+
+        protected override async void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+            try
+            {
+                CoreWebView2Environment env = await CoreWebView2Environment.CreateAsync(null, userDataFolder, null);
+                if (IsDisposed) return;
+                await web.EnsureCoreWebView2Async(env);
+            }
+            catch (Exception ex)
+            {
+                if (IsDisposed) return;
+                FailedToOpen = true;
+                if (Failed != null) Failed(ex.GetType().Name + ": " + ex.Message);
+                BeginInvoke((MethodInvoker)Close);
+                return;
+            }
+            try
+            {
+                if (IsDisposed) return;
+                Setup(web.CoreWebView2);
+                web.CoreWebView2.Navigate(startUrl);
+                web.Focus();
+            }
+            catch (Exception ex) { Write("janela: " + ex.Message); }
+        }
+
+        void Setup(CoreWebView2 core)
+        {
+            CoreWebView2Settings s = core.Settings;
+            s.AreDevToolsEnabled = Environment.GetEnvironmentVariable("RADAR_DEVTOOLS") == "1";
+            s.IsStatusBarEnabled = false;  // sem "http://localhost:3000/…" no canto ao passar nos links
+            try { s.IsPasswordAutosaveEnabled = false; } catch (Exception) { }  // a chave do Gemini não vira "senha salva"
+            try { s.IsGeneralAutofillEnabled = false; } catch (Exception) { }
+            core.NavigationStarting += OnNavigationStarting;
+            core.NewWindowRequested += OnNewWindowRequested;
+            core.NavigationCompleted += OnNavigationCompleted;
+            core.ProcessFailed += OnProcessFailed;
+            try { core.ContextMenuRequested += OnContextMenuRequested; } catch (Exception) { }
+            try { if (BrowserStarted != null) BrowserStarted((int)core.BrowserProcessId); } catch (Exception) { }
+        }
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            try
+            {
+                string current = web.CoreWebView2 != null ? web.CoreWebView2.Source : null;
+                LastUrl = IsAppPage(current) ? current : lastLocalUrl;
+            }
+            catch (Exception) { LastUrl = lastLocalUrl; }
+            base.OnFormClosing(e);
+        }
+
+        // Telas do Radar 3D (e as páginas internas de reconexão): ficam na janela.
+        static bool IsAppPage(string uri)
+        {
+            Uri u;
+            if (uri == null || !Uri.TryCreate(uri, UriKind.Absolute, out u)) return false;
+            return u.Scheme == Uri.UriSchemeHttp && u.Port == 3000 && (u.Host == "localhost" || u.Host == "127.0.0.1");
+        }
+
+        static bool IsInternal(string uri)
+        {
+            return uri != null && (uri.StartsWith("about:") || uri.StartsWith("data:"));
+        }
+
+        void OnNavigationStarting(object sender, CoreWebView2NavigationStartingEventArgs e)
+        {
+            if (IsAppPage(e.Uri)) { lastLocalUrl = e.Uri; return; }
+            if (IsInternal(e.Uri)) return;
+            e.Cancel = true;
+            OpenOutside(e.Uri);
+        }
+
+        void OnNewWindowRequested(object sender, CoreWebView2NewWindowRequestedEventArgs e)
+        {
+            // Nada de janelas extras: tela do app abre aqui mesmo; site de fora, no navegador.
+            e.Handled = true;
+            if (IsAppPage(e.Uri)) web.CoreWebView2.Navigate(e.Uri);
+            else OpenOutside(e.Uri);
+        }
+
+        static void OpenOutside(string uri)
+        {
+            Uri u;
+            if (!Uri.TryCreate(uri, UriKind.Absolute, out u)) return;
+            if (u.Scheme != Uri.UriSchemeHttp && u.Scheme != Uri.UriSchemeHttps && u.Scheme != Uri.UriSchemeMailto) return;
+            try
+            {
+                ProcessStartInfo info = new ProcessStartInfo(u.AbsoluteUri);
+                info.UseShellExecute = true;
+                Process.Start(info);
+            }
+            catch (Exception) { }
+        }
+
+        async void OnNavigationCompleted(object sender, CoreWebView2NavigationCompletedEventArgs e)
+        {
+            try
+            {
+                CoreWebView2 core = web.CoreWebView2;
+                if (!e.IsSuccess)
+                {
+                    // Só falha de conexão (404 e afins o próprio app mostra; cancelada é nossa).
+                    if (Array.IndexOf(ConnectionErrors, e.WebErrorStatus) < 0) return;
+                    // As telas estão reiniciando (o lançador sobe de novo sozinho): em vez da página
+                    // de erro do Edge, um aviso que tenta de novo a cada 3 segundos.
+                    if (!failing) Write("janela: não carregou " + lastLocalUrl + " (" + e.WebErrorStatus + ")");
+                    failing = true;
+                    core.NavigateToString(ReconnectPage(lastLocalUrl));
+                    return;
+                }
+                if (!IsAppPage(core.Source)) return;
+                failing = false;
+                if (loadedOnce) return;
+                loadedOnce = true;
+                string chars = await core.ExecuteScriptAsync("document.body ? document.body.innerText.length : 0");
+                Write("janela carregou: " + core.DocumentTitle + " (" + chars + " caracteres na tela)");
+            }
+            catch (Exception) { }
+        }
+
+        static string ReconnectPage(string target)
+        {
+            return "<!doctype html><html lang=\"pt-BR\"><head><meta charset=\"utf-8\"><title>Radar 3D</title>" +
+                "<meta http-equiv=\"refresh\" content=\"3;url=" + WebUtility.HtmlEncode(target) + "\"></head>" +
+                "<body style=\"margin:0;height:100vh;display:flex;align-items:center;justify-content:center;" +
+                "background:#0d0907;color:#f0ece6;font:16px 'Segoe UI',sans-serif;text-align:center\">" +
+                "<div><p style=\"font-size:22px;margin:0 0 10px\">Reconectando…</p>" +
+                "<p style=\"margin:0;color:#9b958e\">Uma parte do Radar 3D está reiniciando. " +
+                "Esta tela volta sozinha em alguns segundos.</p></div></body></html>";
+        }
+
+        void OnProcessFailed(object sender, CoreWebView2ProcessFailedEventArgs e)
+        {
+            Write("janela: processo do WebView2 falhou (" + e.ProcessFailedKind + ")");
+            if (e.ProcessFailedKind == CoreWebView2ProcessFailedKind.BrowserProcessExited)
+            {
+                // O WebView2 inteiro caiu: o lançador abre uma janela nova.
+                Recreating = true;
+                BeginInvoke((MethodInvoker)Close);
+            }
+            else if (e.ProcessFailedKind == CoreWebView2ProcessFailedKind.RenderProcessExited)
+            {
+                try { web.Reload(); } catch (Exception) { }
+            }
+        }
+
+        void OnContextMenuRequested(object sender, CoreWebView2ContextMenuRequestedEventArgs e)
+        {
+            IList<CoreWebView2ContextMenuItem> items = e.MenuItems;
+            for (int i = items.Count - 1; i >= 0; i--)
+            {
+                if (Array.IndexOf(BrowserMenuItems, items[i].Name) >= 0) items.RemoveAt(i);
+            }
+            // Separadores que sobraram nas pontas ou repetidos.
+            for (int i = items.Count - 1; i >= 0; i--)
+            {
+                if (items[i].Kind != CoreWebView2ContextMenuItemKind.Separator) continue;
+                if (i == 0 || i == items.Count - 1 || items[i - 1].Kind == CoreWebView2ContextMenuItemKind.Separator)
+                {
+                    items.RemoveAt(i);
+                }
+            }
+            if (items.Count == 0) e.Handled = true;  // clique direito no vazio: nenhum menu
+        }
+
+        void Write(string line)
+        {
+            if (Log != null) Log(line);
+        }
+
+        [DllImport("user32.dll")]
+        static extern bool SetForegroundWindow(IntPtr hwnd);
     }
 
     sealed class SplashForm : Form
@@ -540,19 +997,23 @@ namespace Radar3D
 
         public SplashForm(Icon icon)
         {
+            SuspendLayout();
+            // Medidas em 96 dpi; o Windows aumenta tudo junto em telas com zoom (125%, 150%…).
+            AutoScaleDimensions = new SizeF(96F, 96F);
+            AutoScaleMode = AutoScaleMode.Dpi;
             Text = "Radar 3D";
             Icon = icon;
             FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
             StartPosition = FormStartPosition.CenterScreen;
-            ClientSize = new Size(460, 170);
-            BackColor = Color.FromArgb(20, 17, 16);
-            ForeColor = Color.FromArgb(240, 236, 230);
+            ClientSize = new Size(480, 184);
+            BackColor = Palette.Paper;
+            ForeColor = Palette.Ink;
             Font = new Font("Segoe UI", 10f);
             ShowInTaskbar = true;
 
             PictureBox logo = new PictureBox();
-            logo.Image = new Icon(icon, 64, 64).ToBitmap();
+            try { logo.Image = new Icon(icon, 64, 64).ToBitmap(); } catch (Exception) { }
             logo.SizeMode = PictureBoxSizeMode.Zoom;
             logo.SetBounds(20, 22, 56, 56);
 
@@ -564,29 +1025,37 @@ namespace Radar3D
 
             status = new Label();
             status.Text = "Abrindo o Radar 3D…";
-            status.SetBounds(92, 56, 350, 44);
+            status.SetBounds(92, 58, 368, 58);
 
             ProgressBar bar = new ProgressBar();
             bar.Style = ProgressBarStyle.Marquee;
             bar.MarqueeAnimationSpeed = 30;
-            bar.SetBounds(20, 108, 420, 10);
+            bar.SetBounds(20, 124, 440, 8);
 
             detail = new Label();
-            detail.ForeColor = Color.FromArgb(150, 145, 138);
+            detail.ForeColor = Palette.Muted;
             detail.Font = new Font("Segoe UI", 8.5f);
             detail.AutoEllipsis = true;
-            detail.SetBounds(20, 128, 420, 30);
+            detail.SetBounds(20, 142, 440, 32);
 
             Controls.Add(logo);
             Controls.Add(title);
             Controls.Add(status);
             Controls.Add(bar);
             Controls.Add(detail);
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         public void SetStatus(string text) { status.Text = text; }
 
         public void SetDetail(string text) { detail.Text = text; }
+
+        protected override void OnHandleCreated(EventArgs e)
+        {
+            base.OnHandleCreated(e);
+            TitleBar.Dark(Handle);
+        }
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
@@ -598,6 +1067,30 @@ namespace Radar3D
                 return;
             }
             base.OnFormClosing(e);
+        }
+    }
+
+    // Barra de título escura como as telas (Windows 10 20H1+ e 11; no 11, da cor exata do fundo).
+    static class TitleBar
+    {
+        const int DarkMode = 20;
+        const int DarkModeOld = 19;  // Windows 10 1809 a 1909
+        const int CaptionColor = 35;
+
+        [DllImport("dwmapi.dll")]
+        static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
+
+        public static void Dark(IntPtr hwnd)
+        {
+            try
+            {
+                int on = 1;
+                if (DwmSetWindowAttribute(hwnd, DarkMode, ref on, 4) != 0) DwmSetWindowAttribute(hwnd, DarkModeOld, ref on, 4);
+                Color c = Palette.Paper;
+                int colorRef = c.R | (c.G << 8) | (c.B << 16);
+                DwmSetWindowAttribute(hwnd, CaptionColor, ref colorRef, 4);
+            }
+            catch (Exception) { }
         }
     }
 

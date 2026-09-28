@@ -52,10 +52,11 @@ jobs:
           if ("${{ inputs.versao }}") { $v = "${{ inputs.versao }}" -replace '^versao/', '' -replace '^v', '' }
           elseif ("${{ github.ref_type }}" -eq "tag") { $v = "${{ github.ref_name }}".TrimStart("v") }
           elseif ($main) {
-            # Próximo número depois da maior tag vBASE.N publicada (primeira: BASE.0).
-            $ns = git ls-remote --tags origin "refs/tags/v$base.*" | ForEach-Object {
-              if ($_ -match "refs/tags/v$([regex]::Escape($base))\.(\d+)$") { [int]$Matches[1] } }
-            $n = if ($ns) { ($ns | Measure-Object -Maximum).Maximum + 1 } else { 0 }
+            # Próximo número depois da maior tag vBASE.N publicada (primeira: BASE.0). @() e
+            # .Count: uma única tag v1.0.0 dá o número 0, que o "if" do PowerShell lê como falso.
+            $ns = @(git ls-remote --tags origin "refs/tags/v$base.*" | ForEach-Object {
+              if ($_ -match "refs/tags/v$([regex]::Escape($base))\.(\d+)$") { [int]$Matches[1] } })
+            $n = if ($ns.Count -gt 0) { ($ns | Measure-Object -Maximum).Maximum + 1 } else { 0 }
             $v = "$base.$n"
           }
           else { $v = "0.0.0-dev." + "${{ github.run_number }}" }
@@ -80,6 +81,25 @@ jobs:
           & $iscc "/DAppVersion=${{ steps.versao.outputs.valor }}" installer\radar3d.iss
           if ($LASTEXITCODE -ne 0) { throw "ISCC falhou" }
 
+      # O Windows 10/11 de quem instala já traz o WebView2 Runtime (motor da janela do app); o
+      # Windows Server do robô pode não trazer. Sem ele o app cairia no navegador e o teste da
+      # janela reprovaria.
+      - name: WebView2 Runtime no robô
+        timeout-minutes: 8
+        shell: pwsh
+        run: |
+          $chave = "SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}"
+          function Versao { foreach ($k in "HKLM:\$chave", "HKCU:\$($chave -replace 'WOW6432Node\\', '')") {
+              $v = (Get-ItemProperty $k -ErrorAction SilentlyContinue).pv
+              if ($v -and $v -ne "0.0.0.0") { return $v } } }
+          $v = Versao
+          if ($v) { Write-Host "::notice::WebView2 Runtime já instalado no robô: $v"; exit 0 }
+          Invoke-WebRequest "https://go.microsoft.com/fwlink/p/?LinkId=2124703" -OutFile "$env:RUNNER_TEMP\wv2setup.exe"
+          Start-Process "$env:RUNNER_TEMP\wv2setup.exe" -ArgumentList "/silent", "/install" -Wait
+          $v = Versao
+          if (-not $v) { throw "Não consegui instalar o WebView2 Runtime no robô" }
+          Write-Host "::notice::WebView2 Runtime instalado no robô: $v"
+
       - name: Teste - instalar
         timeout-minutes: 5
         shell: pwsh
@@ -87,19 +107,21 @@ jobs:
           $setup = Get-ChildItem dist\Radar3D-Setup-*.exe | Select-Object -First 1
           Start-Process $setup.FullName -ArgumentList "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/TASKS=desktopicon" -Wait
           $app = "$env:LOCALAPPDATA\Programs\Radar3D"
-          foreach ($f in "Radar3D.exe", "Parar.cmd", "runtime\node.exe", "runtime\uv.exe", "frontend\server.js", "backend\app\main.py", "VERSION") {
+          foreach ($f in "Radar3D.exe", "Parar.cmd", "runtime\node.exe", "runtime\uv.exe", "frontend\server.js", "backend\app\main.py", "VERSION",
+                         "Microsoft.Web.WebView2.Core.dll", "Microsoft.Web.WebView2.WinForms.dll", "runtimes\win-x64\native\WebView2Loader.dll") {
             if (-not (Test-Path "$app\$f")) { throw "Faltou $f na instalação" }
           }
           foreach ($lnk in "Radar 3D.lnk", "Fechar o Radar 3D.lnk") {
             if (-not (Test-Path "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\$lnk")) { throw "Atalho $lnk não criado" }
           }
 
-      - name: Teste - abrir sem nenhuma janela
+      - name: Teste - abrir na própria janela, sem cmd
         timeout-minutes: 12
         shell: pwsh
         run: |
           $env:RADAR_NO_BROWSER = "1"
           $app = "$env:LOCALAPPDATA\Programs\Radar3D"
+          $log = "$env:LOCALAPPDATA\Radar3D\data\lancador.log"
           Start-Process "$app\Radar3D.exe"
           $t = [Diagnostics.Stopwatch]::StartNew()
           $pronto = $false
@@ -110,18 +132,40 @@ jobs:
           }
           if (-not $pronto) { throw "Não ficou pronto em 10 minutos" }
           Write-Host "::notice::Primeira abertura pronta em $([int]$t.Elapsed.TotalSeconds) s (inclui baixar o Python)"
-          # Nenhum processo aberto pelo lançador pode ter janela (nada de cmd preto na tela).
-          $lancador = (Get-Process Radar3D).Id
+          # A janela do app (WebView2) carregou a tela de verdade: o lançador grava no log.
+          $janela = $null
+          $t2 = [Diagnostics.Stopwatch]::StartNew()
+          while ($t2.Elapsed.TotalSeconds -lt 90) {
+            if (Test-Path $log) {
+              $janela = Select-String -Path $log -Pattern "janela carregou" | Select-Object -Last 1
+              if ($janela) { break }
+              $sem = Select-String -Path $log -Pattern "Sem a janela própria" | Select-Object -Last 1
+              if ($sem) { throw "Não abriu a janela própria: $($sem.Line)" }
+            }
+            Start-Sleep 1
+          }
+          if (-not $janela) { throw "A janela do app não carregou a tela em 90 s. Log: $(if (Test-Path $log) { Get-Content $log -Raw })" }
+          $chars = [int]([regex]::Match($janela.Line, '\((\d+) caracteres').Groups[1].Value)
+          if ($chars -lt 50) { throw "A janela abriu vazia: $($janela.Line)" }
+          $lancadorProc = Get-Process Radar3D
+          if ($lancadorProc.MainWindowTitle -ne "Radar 3D") { throw "Janela do app não está visível (título: '$($lancadorProc.MainWindowTitle)')" }
+          Write-Host "::notice::$($janela.Line) — $([int]$t2.Elapsed.TotalSeconds) s depois de pronto"
+          Select-String -Path $log -Pattern "^erro|^janela:" | ForEach-Object { Write-Host "::warning::lancador.log: $($_.Line)" }
+          # Fora a janela do app, nenhum processo pode ter janela (nada de cmd preto na tela).
+          # Os do WebView2 (msedgewebview2) desenham dentro da janela do app.
+          $lancador = $lancadorProc.Id
           $todos = Get-CimInstance Win32_Process
           $filhos = @($lancador); $novos = @($lancador)
           while ($novos.Count) { $novos = @($todos | Where-Object { $novos -contains $_.ParentProcessId } | ForEach-Object ProcessId); $filhos += $novos }
           $nomes = @()
           foreach ($id in ($filhos | Where-Object { $_ -ne $lancador })) {
             $p = Get-Process -Id $id -ErrorAction SilentlyContinue
-            if ($p) { $nomes += $p.ProcessName; if ($p.MainWindowHandle -ne 0) { throw "Janela visível: $($p.ProcessName)" } }
-            if ($p -and $p.ProcessName -eq "cmd") { throw "O lançador abriu um cmd" }
+            if (-not $p) { continue }
+            $nomes += $p.ProcessName
+            if ($p.ProcessName -eq "cmd") { throw "O lançador abriu um cmd" }
+            if ($p.ProcessName -ne "msedgewebview2" -and $p.MainWindowHandle -ne 0) { throw "Janela visível: $($p.ProcessName)" }
           }
-          Write-Host "::notice::Processos do Radar 3D (todos sem janela): $(($nomes | Sort-Object -Unique) -join ', ')"
+          Write-Host "::notice::Processos do Radar 3D (só a janela do app aparece): $(($nomes | Sort-Object -Unique) -join ', ')"
           $ok = @(
             "http://127.0.0.1:8000/api/health", "http://127.0.0.1:3000/", "http://127.0.0.1:3000/radar",
             "http://127.0.0.1:3000/analisar", "http://127.0.0.1:3000/config", "http://127.0.0.1:3000/api/health",
@@ -193,6 +237,8 @@ jobs:
           if (Get-Process Radar3D -ErrorAction SilentlyContinue) { throw "O lançador continuou aberto" }
           $sobra = Get-CimInstance Win32_Process | Where-Object { $_.ExecutablePath -and ($_.ExecutablePath -like "$app*" -or $_.ExecutablePath -like "$env:LOCALAPPDATA\Radar3D\*") }
           if ($sobra) { throw "Sobraram processos: $(($sobra | ForEach-Object Name) -join ', ')" }
+          $webview = Get-CimInstance Win32_Process -Filter "Name='msedgewebview2.exe'" | Where-Object { $_.CommandLine -like "*Radar3D\webview*" }
+          if ($webview) { throw "A janela do app deixou $(@($webview).Count) processos do WebView2 abertos" }
 
       - name: Teste - reabrir rápido e não duplicar
         timeout-minutes: 4
@@ -200,16 +246,19 @@ jobs:
         run: |
           $env:RADAR_NO_BROWSER = "1"
           $app = "$env:LOCALAPPDATA\Programs\Radar3D"
+          $log = "$env:LOCALAPPDATA\Radar3D\data\lancador.log"
+          function Carregou { @(Select-String -Path $log -Pattern "janela carregou" -ErrorAction SilentlyContinue).Count }
+          $antes = Carregou
           $t = [Diagnostics.Stopwatch]::StartNew()
           Start-Process "$app\Radar3D.exe"
           while ($t.Elapsed.TotalSeconds -lt 120) {
-            try { if ((Invoke-WebRequest "http://127.0.0.1:3000/api/health" -UseBasicParsing -TimeoutSec 5).StatusCode -eq 200) { break } } catch {}
+            if ((Carregou) -gt $antes) { break }
             Start-Sleep 1
           }
-          Write-Host "::notice::Reabriu em $([int]$t.Elapsed.TotalSeconds) s"
-          if ($t.Elapsed.TotalSeconds -ge 120) { throw "Reabrir demorou demais" }
-          # Segunda abertura: só abre o navegador e sai. Sem -Wait: no PowerShell 7 ele espera
-          # também os processos filhos (o navegador), que nunca fecham num robô.
+          Write-Host "::notice::Reabriu (janela com a tela carregada) em $([int]$t.Elapsed.TotalSeconds) s"
+          if ($t.Elapsed.TotalSeconds -ge 120) { throw "Reabrir demorou demais. Log: $(Get-Content $log -Tail 15 | Out-String)" }
+          # Segunda abertura: só traz a janela aberta para a frente e sai. Sem -Wait: no
+          # PowerShell 7 ele espera também os processos filhos.
           $segunda = Start-Process "$app\Radar3D.exe" -PassThru
           if (-not $segunda.WaitForExit(30000)) { throw "A segunda abertura não saiu em 30 s" }
           if (@(Get-Process Radar3D -ErrorAction SilentlyContinue).Count -ne 1) { throw "Abriu dois lançadores" }
