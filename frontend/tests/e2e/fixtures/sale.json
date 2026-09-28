@@ -1,0 +1,41 @@
+{
+  "countries": ["BR", "US"],
+  "topic": {"id": 12, "name": "Frieren", "slug": "frieren"},
+  "by_country": [
+    {"country": "BR", "stores": [
+      {"platform": "cults3d", "name": "Cults3D", "fee_pct": 20, "fit": 0.8,
+       "why": "Força de venda no Brasil: 0,8 · generalista",
+       "price": {"suggested": 5.99, "low": 4.99, "high": 6.99, "launch": 4.99, "net": 4.79,
+                 "basis": "mediana de 23 anúncios de Frieren no Cults3D"},
+       "price_note": null,
+       "chance": {"value": 64, "label": "Média", "why": "oportunidade 80 no Cults3D (Brasil) × qualidade 6,9"}},
+      {"platform": "etsy", "name": "Etsy", "fee_pct": null, "fit": 0.21,
+       "why": "Força de venda no Brasil: 0,3 · Anime não é o forte da loja",
+       "price": null, "price_note": "sem dados suficientes para esta loja",
+       "chance": {"value": null, "label": null, "why": "o tema ainda não tem nota no Brasil"}}
+    ]},
+    {"country": "US", "stores": [
+      {"platform": "etsy", "name": "Etsy", "fee_pct": null, "fit": 0.63,
+       "why": "Força de venda no EUA: 0,9 · Anime não é o forte da loja",
+       "price": {"suggested": 7.99, "low": 5.99, "high": 9.99, "launch": 5.99, "net": null,
+                 "basis": "mediana de 9 anúncios de Frieren em todas as lojas"},
+       "price_note": null,
+       "chance": {"value": 72, "label": "Alta", "why": "oportunidade 76 no Etsy (EUA) × qualidade 6,9"}}
+    ]}
+  ],
+  "hours_to_cover": {"sales": 21, "hours": 10, "hourly_rate_usd": 10, "price": 4.79},
+  "listing": {"listings": [
+    {"platform": "cults3d", "lang": "en", "title": "Frieren Bust STL (fan art)", "tags": ["frieren", "anime bust"],
+     "description": "Bust of Frieren, split in 3 parts for printing.", "trimmed": false, "flagged": false},
+    {"platform": "cults3d", "lang": "pt", "title": "Busto Frieren STL (fan art)", "tags": ["frieren", "busto anime"],
+     "description": "Busto da Frieren em 3 partes.", "trimmed": true, "flagged": true}
+  ]},
+  "listing_note": null,
+  "checklist": [
+    "Publique primeiro no Cults3D (melhor encaixe no Brasil).",
+    "Nas primeiras 48 h, use o preço de lançamento (US$ 4,99) e depois volte para US$ 5,99.",
+    "Em até 2 dias, publique também no Etsy.",
+    "O pico do tema está previsto para 08/10: publique antes disso."
+  ],
+  "estimate": true
+}

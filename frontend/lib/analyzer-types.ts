@@ -1,5 +1,7 @@
 // Formato de GET /api/analyses/{id} (backend/app/analyzer/store.py, spec 3a §8).
 
+import type { Sale } from "@/lib/sale-types";
+
 export type Criterion = { score: number | null; why: string };
 
 export type Strength = { text: string; image: number | null; area: string; flagged: boolean };
@@ -48,6 +50,7 @@ export type Analysis = {
     overall: number | null;
   };
   previous: { id: number; overall: number | null } | null;
+  sale: Sale | null;
 };
 
 export type AnalysisSummary = {
