@@ -42,6 +42,13 @@ def add_score(session, topic, *, country="BR", platform="cults3d", opportunity=6
     return row
 
 
+def clear_platforms(session):
+    """Tira as lojas reais do seed (semeadas quando o `client` sobe)."""
+    for platform in session.exec(select(Platform)).all():
+        session.delete(platform)
+    session.commit()
+
+
 def add_platform(session, slug, *, markets=("print",), strength=None, categories=(), sells=True, fee_pct=None):
     platform = Platform(slug=slug, name=slug.capitalize(), markets_json=json.dumps(list(markets)),
                         strength_json=json.dumps(strength or {"BR": 0.5, "US": 0.5}), sells=sells,
