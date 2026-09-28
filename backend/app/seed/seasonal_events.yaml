@@ -131,7 +131,7 @@ events:
   - {slug: dia_das_criancas_br, name: Dia das Crianças, countries: [BR], rule: {fixed: "10-12"}, ideas: criancas}
   - slug: dia_das_maes
     name: Dia das Mães
-    countries: [BR, US]
+    countries: [BR, US, IT, CA, AU, NL]
     rule: {nth_weekday: {month: 5, weekday: 6, n: 2}}
     ideas: maes
   - slug: dia_dos_pais_br
@@ -179,3 +179,18 @@ events:
     ideas: japao_festas
   - {slug: tanabata, name: Tanabata, countries: [JP], rule: {fixed: "07-07"}, ideas: tanabata}
   - {slug: obon, name: Obon, countries: [JP], rule: {fixed: "08-13"}, ideas: obon}
+  # Países acrescentados em 27/09/2026.
+  - {slug: dia_de_muertos, name: Día de Muertos, countries: [MX], rule: {fixed: "11-02"}, ideas: halloween}
+  - {slug: dia_de_las_madres_mx, name: Día de las Madres, countries: [MX], rule: {fixed: "05-10"}, ideas: maes}
+  - {slug: dzien_matki_pl, name: Dzień Matki, countries: [PL], rule: {fixed: "05-26"}, ideas: maes}
+  - slug: dia_da_mulher_ru_by
+    name: 8 de Março (Dia da Mulher)
+    countries: [RU, BY]
+    rule: {fixed: "03-08"}
+    ideas: namorados
+  - {slug: ano_novo_ru_by, name: Ano Novo, countries: [RU, BY], rule: {fixed: "12-31"}, ideas: natal}
+  - slug: thanksgiving_ca
+    name: Thanksgiving (Canadá)
+    countries: [CA]
+    rule: {nth_weekday: {month: 10, weekday: 0, n: 2}}
+    ideas: thanksgiving

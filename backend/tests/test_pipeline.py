@@ -11,7 +11,7 @@ from app import pipeline
 from app import scheduler as scheduler_mod
 from app.api import sources as sources_api
 from app.collectors.base import Collector, CollectedItem, CollectorError
-from app.constants import GLOBAL
+from app.constants import GLOBAL, COUNTRIES
 from app.main import create_app
 from app.models import Platform, RawItem, Topic, TopicItem, TopicListing, TopicScore, TopicSignal
 from app.pipeline import compute_scores, make_after, run_pipeline, update_listings
@@ -394,7 +394,7 @@ def test_run_pipeline_extracts_counts_once_per_day_scores_and_enriches(session, 
     topic = session.exec(select(Topic).where(Topic.name == "Nova Serie Qualquer")).one()
     assert counter.queries == ["Nova Serie Qualquer"]  # 2a rodada: ja ha TopicListing do dia
     assert session.exec(select(TopicListing)).one().topic_id == topic.id
-    assert {s.country for s in _scores(session, topic=topic)} == {"BR", "US", "GB", "DE", "FR", "ES", "JP"}
+    assert {s.country for s in _scores(session, topic=topic)} == set(COUNTRIES)
     assert enriched == [True]
 
 

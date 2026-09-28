@@ -2,12 +2,14 @@
 
 Para cada país: os 3 melhores temas (maior nota de oportunidade no último dia com score,
 cada tema contado uma vez pela loja que o radar mostra) e as 3 lojas que vendem com maior
-força ali. Não há mais "% de chance": era a média de percentis dentro do próprio país e
-dava ~80% em todo lugar, sem diferenciar nada. País inativo vem sem temas.
+força ali, mais a posição no ranking diário de possibilidade de venda (`app/country_rank.py`)
+com o movimento da semana. A lista vem ordenada pelo ranking. País inativo vem sem temas e
+sem posição.
 """
 
 import json
 from collections import defaultdict
+from datetime import timedelta
 
 from fastapi import APIRouter, Depends
 from sqlalchemy import func
@@ -15,13 +17,14 @@ from sqlmodel import Session, select
 
 from app.constants import COUNTRIES, COUNTRY_NAMES
 from app.db import get_session
-from app.models import Platform, Topic, TopicScore
+from app.models import CountryRank, Platform, Topic, TopicScore
 from app.settings_store import get_settings
 
 router = APIRouter()
 
 TOP_THEMES = 3
 TOP_STORES = 3
+WEEK_DAYS = 7
 
 
 def _best_opportunities(session: Session, country: str) -> list[tuple[float, int]]:
@@ -57,10 +60,47 @@ def _strongest_stores(session: Session) -> dict[str, list[str]]:
     return result
 
 
+def _ranks(session: Session, active: set[str]) -> dict[str, dict]:
+    """país ativo → posição de hoje no ranking, com o movimento da semana.
+
+    `change_week` > 0 = subiu (posição de 7 dias atrás − posição de agora; sem registro de
+    7 dias atrás, usa o mais antigo da semana). `days_at_position` = dias seguidos, até o
+    último dia com ranking, na mesma posição."""
+    last_day = session.exec(select(func.max(CountryRank.day))).first()
+    if last_day is None:
+        return {}
+    history: dict[str, dict] = defaultdict(dict)
+    for row in session.exec(select(CountryRank).where(CountryRank.day <= last_day)).all():
+        history[row.country][row.day] = row
+    result = {}
+    for country, by_day in history.items():
+        today = by_day.get(last_day)
+        if today is None or country not in active:
+            continue
+        week = [d for d in by_day if (last_day - d).days <= WEEK_DAYS]
+        before = by_day[min(week)]
+        streak = 0
+        day = last_day
+        while day in by_day and by_day[day].position == today.position:
+            streak += 1
+            day = day - timedelta(days=1)
+        result[country] = {
+            "position": today.position,
+            "score": today.score,
+            "audience": today.audience,
+            "demand": today.demand,
+            "payment": today.payment,
+            "change_week": before.position - today.position,
+            "days_at_position": streak,
+        }
+    return result
+
+
 @router.get("/countries")
 def read_countries(session: Session = Depends(get_session)) -> list[dict]:
     active = set(get_settings(session).get("countries", []))
     stores = _strongest_stores(session)
+    ranks = _ranks(session, active)
     result = []
     for code in COUNTRIES:
         # País inativo não é coletado: os temas antigos ficariam parados, então não mostra.
@@ -73,6 +113,8 @@ def read_countries(session: Session = Depends(get_session)) -> list[dict]:
                 "top_topics": [session.get(Topic, topic_id).name for _, topic_id in best[:TOP_THEMES]],
                 "stores": stores[code],
                 "topics": len(best),
+                "rank": ranks.get(code),
             }
         )
-    return result
+    # Ranqueados primeiro (1º, 2º…); depois os sem posição, na ordem padrão.
+    return sorted(result, key=lambda c: c["rank"]["position"] if c["rank"] else len(COUNTRIES) + 1)

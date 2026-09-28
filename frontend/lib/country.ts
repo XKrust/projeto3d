@@ -8,7 +8,9 @@ import { useSyncExternalStore } from "react";
 const STORAGE_KEY = "radar3d.country";
 const EVENT = "radar3d-country";
 export const DEFAULT_COUNTRY = "BR";
-const KNOWN_COUNTRIES = new Set(["BR", "US", "GB", "DE", "FR", "ES", "JP"]);
+const KNOWN_COUNTRIES = new Set([
+  "BR", "US", "GB", "DE", "FR", "ES", "JP", "RU", "BY", "MX", "IT", "CA", "AU", "PL", "NL",
+]);
 
 // Código fora da lista (URL digitada errada, valor velho guardado) é ignorado.
 function valid(code: string | null | undefined): string | null {

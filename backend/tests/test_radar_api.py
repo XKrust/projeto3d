@@ -1,3 +1,4 @@
+from app.constants import COUNTRIES
 import json
 from datetime import date, timedelta
 
@@ -96,8 +97,8 @@ def test_meta_lists_constants_and_platforms(client, platforms):
     r = client.get("/api/radar/meta")
     assert r.status_code == 200
     body = r.json()
-    assert body["countries"] == ["BR", "US", "GB", "DE", "FR", "ES", "JP"]
-    assert body["country_groups"] == {"Europa": ["GB", "DE", "FR", "ES"]}
+    assert body["countries"] == COUNTRIES
+    assert body["country_groups"] == {"Europa": ["GB", "DE", "FR", "ES", "IT", "PL", "NL"]}
     assert "toys_memes" in body["categories"]
     assert body["markets"] == ["print", "digital"]
     # Só as lojas que vendem aparecem no filtro (Sketchfab e ArtStation viraram só sinal).

@@ -23,6 +23,7 @@ from app.http import make_client
 from app.models import Platform, RawItem, Topic, TopicItem, TopicListing, TopicScore, TopicSignal
 from app.scoring import formulas
 from app.settings_store import get_settings
+from app.country_rank import compute_country_ranks
 from app.daily import claim_daily
 from app.hype.competition import update_hype_listings
 from app.hype.seasonal_ideas import update_seasonal_listings, update_seasonal_signals
@@ -281,7 +282,7 @@ def run_pipeline(
     enrich: Callable[[Session], None] | None = None,
 ) -> None:
     """extract_topics -> update_listings (1x por dia) -> update_hype_listings (1x por
-    dia) -> compute_scores -> enrich."""
+    dia) -> compute_scores -> compute_country_ranks -> enrich."""
     day = clock.today()
     extract_topics(session, day)
 
@@ -303,6 +304,8 @@ def run_pipeline(
     )
 
     compute_scores(session, day)
+    # Ranking de países (usa as notas de hoje): quem subiu, quem caiu.
+    compute_country_ranks(session, day)
 
     if enrich is not None:
         enrich(session)

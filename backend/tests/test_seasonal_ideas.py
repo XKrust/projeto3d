@@ -6,7 +6,7 @@ from sqlmodel import Session, select
 
 from app import clock
 from app.collectors.base import CollectorError
-from app.constants import GLOBAL
+from app.constants import GLOBAL, COUNTRIES
 from app.hype.seasonal import event_ideas, load_events, top_models, upcoming_events
 from app.hype.seasonal_ideas import (
     update_seasonal_listings,
@@ -135,7 +135,7 @@ def test_update_seasonal_signals_runs_once_per_day(session):
         select(SeasonalIdeaSignal).where(SeasonalIdeaSignal.idea == "Caveira", SeasonalIdeaSignal.country == "BR")
     ).one()
     assert row.signal == 50  # a 2ª rodada no mesmo dia não gravou nada
-    assert len(session.exec(select(SeasonalIdeaSignal).where(SeasonalIdeaSignal.idea == "Caveira")).all()) == 7
+    assert len(session.exec(select(SeasonalIdeaSignal).where(SeasonalIdeaSignal.idea == "Caveira")).all()) == len(COUNTRIES)
 
 
 def test_update_seasonal_listings_only_upcoming_events(session, monkeypatch):

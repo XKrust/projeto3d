@@ -17,10 +17,30 @@ type CountryCard = {
   /** As lojas que vendem com mais força no país. */
   stores: string[];
   topics: number;
+  /** Posição no ranking diário de possibilidade de venda (null = país inativo). */
+  rank: {
+    position: number;
+    score: number;
+    audience: number;
+    demand: number;
+    payment: number;
+    change_week: number;
+    days_at_position: number;
+  } | null;
 };
 
-// Tela inicial: escolher o país. Cada card mostra o que vende lá: os temas em alta e as
-// lojas mais fortes (ver docs/score.md). Sem "% de chance": não diferenciava os países.
+function movement(rank: NonNullable<CountryCard["rank"]>): string {
+  if (rank.change_week > 0) return `↑ ${rank.change_week} na semana`;
+  if (rank.change_week < 0) return `↓ ${-rank.change_week} na semana`;
+  if (rank.position === 1) {
+    return rank.days_at_position === 1 ? "1º desde hoje" : `1º há ${rank.days_at_position} dias`;
+  }
+  return "= estável na semana";
+}
+
+// Tela inicial: ranking diário dos países por possibilidade de venda (público nas lojas de
+// arquivo 3D + procura subindo + facilidade de pagar; ver docs/score.md), com os temas em
+// alta e as lojas mais fortes de cada um.
 export default function Inicio() {
   const router = useRouter();
   const current = useStoredCountry();
@@ -38,24 +58,29 @@ export default function Inicio() {
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-12 px-4 sm:px-8">
       <header className="flex flex-col gap-3">
-        <h1 className="text-[length:var(--text-display)] font-bold">Onde você vai vender?</h1>
-        <p className="max-w-[58ch] text-[length:var(--text-md)] leading-snug text-muted-foreground">
-          Escolha o país. Radar, Sazonal e Hype passam a mostrar o que vende lá. Em cada
-          país: os temas em alta agora e as lojas onde mais se vende.
+        <h1 className="text-[length:var(--text-display)] font-bold">Onde vender agora</h1>
+        <p className="max-w-[62ch] text-[length:var(--text-md)] leading-snug text-muted-foreground">
+          Países em ordem de possibilidade de venda, atualizada todo dia. A nota junta o
+          tamanho do público nas lojas de arquivo 3D (Similarweb, mensal), se a procura dos
+          temas está subindo e se dá para pagar com cartão. Clique num país para ver o que
+          modelar para ele.
         </p>
       </header>
 
       {isLoading || !data ? (
         <p className="text-muted-foreground">{error ? error.message : "Carregando…"}</p>
       ) : (
-        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {[...data]
-            .sort((a, b) => Number(b.active) - Number(a.active) || b.topics - a.topics)
-            .map((country) => {
+        <ul aria-label="Ranking de países" className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {data.map((country) => {
               const selected = country.code === current;
               const card = (
                 <>
                   <span className="flex w-full min-w-0 items-center gap-3">
+                    {country.rank && (
+                      <span className="tnum w-9 shrink-0 font-heading text-[length:var(--text-xl)] font-extrabold leading-none tracking-[-0.04em]">
+                        {country.rank.position}º
+                      </span>
+                    )}
                     <Flag
                       code={country.code}
                       className="h-9 w-13.5 shrink-0 rounded-md shadow-[0_0_0_1px_var(--color-rule)]"
@@ -69,6 +94,23 @@ export default function Inicio() {
                       </span>
                     )}
                   </span>
+                  {country.rank && (
+                    <span className="flex w-full flex-col gap-1">
+                      <span className="flex flex-wrap items-baseline gap-x-2">
+                        <span className="tnum font-heading text-[length:var(--text-2xl)] font-extrabold leading-none tracking-[-0.04em]">
+                          {Math.round(country.rank.score)}
+                        </span>
+                        <span className="text-sm text-muted-foreground">
+                          /100 possibilidade de venda (estimativa)
+                        </span>
+                      </span>
+                      <span className="text-sm font-medium text-foreground">{movement(country.rank)}</span>
+                      <span className="text-xs text-muted-foreground">
+                        Público {Math.round(country.rank.audience)} · Procura {Math.round(country.rank.demand)}
+                        {country.rank.payment < 1 ? " · Pagamento difícil (sanções)" : ""}
+                      </span>
+                    </span>
+                  )}
                   <span className="flex w-full flex-col gap-1">
                     <span className="text-xs uppercase tracking-[0.08em] text-muted-foreground">
                       Temas em alta
@@ -99,7 +141,7 @@ export default function Inicio() {
                     <button
                       type="button"
                       onClick={() => choose(country.code)}
-                      aria-label={`${country.name}: ${country.top_topics.length ? `temas em alta ${country.top_topics.join(", ")}` : "ainda sem temas"}. Onde mais se vende: ${country.stores.join(", ")}`}
+                      aria-label={`${country.name}${country.rank ? `, ${country.rank.position}º lugar, nota ${Math.round(country.rank.score)} de 100 (estimativa)` : ""}: ${country.top_topics.length ? `temas em alta ${country.top_topics.join(", ")}` : "ainda sem temas"}. Onde mais se vende: ${country.stores.join(", ")}`}
                       className={`${base} hover:bg-muted ${selected ? "ring-2 ring-primary" : ""}`}
                     >
                       {card}

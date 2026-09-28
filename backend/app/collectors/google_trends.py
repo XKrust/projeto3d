@@ -1,9 +1,13 @@
 """Coletor Google Trends RSS: buscas em alta por pais, sem necessidade de chave."""
 
+import logging
+
 from defusedxml import ElementTree as ET
 
 from app.collectors.base import CollectedItem, Collector
 from app.http import get_with_retry
+
+logger = logging.getLogger(__name__)
 
 FEED_URL = "https://trends.google.com/trending/rss?geo={country}"
 NS = {"ht": "https://trends.google.com/trending/rss"}
@@ -86,8 +90,20 @@ class GoogleTrendsCollector(Collector):
     interval_minutes = 60
 
     def collect(self) -> list[CollectedItem]:
+        """Um feed por país. Falha num país só pula aquele país; falhando todos, a
+        coleta falha (e aparece como erro em /config)."""
         items: list[CollectedItem] = []
-        for country in self.settings["countries"]:
-            response = get_with_retry(self.http, "GET", FEED_URL.format(country=country))
+        errors: list[Exception] = []
+        countries = self.settings["countries"]
+        for country in countries:
+            try:
+                response = get_with_retry(self.http, "GET", FEED_URL.format(country=country))
+                response.raise_for_status()
+            except Exception as exc:  # noqa: BLE001 — um país não derruba os outros
+                logger.warning("Google Trends falhou para %s: %s", country, exc)
+                errors.append(exc)
+                continue
             items.extend(parse_feed(response.text, country))
+        if countries and len(errors) == len(countries):
+            raise errors[0]
         return items

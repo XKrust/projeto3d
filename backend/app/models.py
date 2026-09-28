@@ -214,3 +214,20 @@ class DailyAttempt(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     task: str
     day: date
+
+
+class CountryRank(SQLModel, table=True):
+    """Ranking diário de países por possibilidade de venda (ver docs/score.md).
+
+    `score` = 0.60·audience + 0.25·demand + 0.15·payment·100 (0–100, estimativa)."""
+
+    __table_args__ = (UniqueConstraint("day", "country"),)
+
+    id: int | None = Field(default=None, primary_key=True)
+    day: date = Field(index=True)
+    country: str = Field(index=True)
+    score: float
+    position: int
+    audience: float  # 0–100, público nas lojas de arquivo 3D (US = 100)
+    demand: float  # 0–100, momentum médio dos 10 melhores temas do país (50 = neutro)
+    payment: float  # 0–1, facilidade de pagar

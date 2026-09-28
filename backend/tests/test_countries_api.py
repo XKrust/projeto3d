@@ -2,7 +2,7 @@ from datetime import date, timedelta
 
 from sqlmodel import Session
 
-from app.models import Topic, TopicScore
+from app.models import CountryRank, Topic, TopicScore
 from app.platforms import seed_platforms
 from app.settings_store import update_settings
 
@@ -32,10 +32,10 @@ def _countries(client):
     return {c["code"]: c for c in client.get("/api/countries").json()}
 
 
-def test_countries_list_all_seven_in_order(client):
+def test_countries_without_ranking_keep_the_default_order(client):
     body = client.get("/api/countries").json()
 
-    assert [c["code"] for c in body] == ["BR", "US", "GB", "DE", "FR", "ES", "JP"]
+    assert [c["code"] for c in body][:7] == ["BR", "US", "GB", "DE", "FR", "ES", "JP"]
     assert body[0]["name"] == "Brasil"
 
 
@@ -125,3 +125,41 @@ def test_closed_store_scores_do_not_count(client, engine):
         _score(session, _topic(session, "Frieren"), platform="cults3d", opportunity=60.0)
 
     assert _countries(client)["BR"]["top_topics"] == ["Frieren"]
+
+
+def _rank(session, country, day, position, score=50.0):
+    session.add(CountryRank(day=day, country=country, score=score, position=position, audience=50, demand=50,
+                            payment=1.0))
+    session.commit()
+
+
+def test_countries_come_ranked_with_weekly_movement(client, engine):
+    with Session(engine) as session:
+        update_settings(session, {"countries": ["BR", "US", "JP"]})
+        for d in range(8):
+            day = DAY - timedelta(days=7 - d)
+            # Há 7 dias: JP 1º, US 2º, BR 3º. De 5 dias atrás até hoje: US 1º.
+            if d < 2:
+                order = ["JP", "US", "BR"]
+            else:
+                order = ["US", "BR", "JP"]
+            for pos, code in enumerate(order, start=1):
+                _rank(session, code, day, pos)
+
+    body = client.get("/api/countries").json()
+
+    assert [c["code"] for c in body[:3]] == ["US", "BR", "JP"]
+    us, br, jp = body[:3]
+    assert us["rank"]["position"] == 1
+    assert us["rank"]["change_week"] == 1  # subiu 1 posição em 7 dias
+    assert us["rank"]["days_at_position"] == 6  # 1º há 6 dias (inclui hoje)
+    assert br["rank"]["change_week"] == 1
+    assert jp["rank"]["change_week"] == -2
+    assert set(us["rank"]) >= {"score", "audience", "demand", "payment"}
+    assert body[3]["rank"] is None  # país inativo vem depois, sem posição
+
+
+def test_all_fifteen_countries_are_listed(client):
+    codes = [c["code"] for c in client.get("/api/countries").json()]
+
+    assert set(codes) == {"BR", "US", "GB", "DE", "FR", "ES", "JP", "RU", "BY", "MX", "IT", "CA", "AU", "PL", "NL"}

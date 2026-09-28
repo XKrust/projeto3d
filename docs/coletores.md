@@ -679,3 +679,5 @@ implementada**. Revisitar se o MakerWorld publicar uma API pública.
    (siga o padrão das seções existentes, como "Printables" ou "Sketchfab" acima) — inclusive
    qualquer achado de investigação (bloqueio por Cloudflare, campo que a API não expõe,
    comportamento inesperado do robots.txt etc.).
+
+- **Google Trends por país:** falha no feed de um país pula só aquele país; só falha a coleta inteira se todos falharem.

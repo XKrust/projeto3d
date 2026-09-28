@@ -18,7 +18,7 @@ from app.settings_store import get_settings
 
 router = APIRouter()
 
-COUNTRY_GROUPS = {"Europa": ["GB", "DE", "FR", "ES"]}
+COUNTRY_GROUPS = {"Europa": ["GB", "DE", "FR", "ES", "IT", "PL", "NL"]}
 SPARKLINE_DAYS = 30
 
 

@@ -9,6 +9,8 @@ from app.constants import COUNTRIES
 from app.models import Setting
 
 SETTINGS_KEY = "settings"
+# Os 7 países da primeira versão (bancos salvos antes de `countries_seen` existir).
+ORIGINAL_COUNTRIES = ["BR", "US", "GB", "DE", "FR", "ES", "JP"]
 MASK_PREFIX = "••••"  # "••••"
 
 DEFAULTS: dict = {
@@ -29,7 +31,10 @@ DEFAULTS: dict = {
         "igdb_client_secret": "",
         "gemini": "",
     },
-    "countries": ["BR", "US", "GB", "DE", "FR", "ES", "JP"],
+    "countries": list(COUNTRIES),
+    # Países que já existiam quando o usuário salvou: um país novo no app entra ativo uma
+    # vez (ver `get_settings`); se o usuário desligar depois, fica desligado.
+    "countries_seen": list(COUNTRIES),
     "modeling_days": 7,
     "lead_days": 21,
     "weights": {"demand": 0.40, "momentum": 0.25, "saturation": 0.35},
@@ -77,8 +82,18 @@ def _save(session: Session, settings: dict) -> None:
 
 
 def get_settings(session: Session) -> dict:
-    """Retorna as configuracoes efetivas: DEFAULTS com merge profundo do que foi salvo."""
-    return _deep_merge(DEFAULTS, _load_saved(session))
+    """Retorna as configuracoes efetivas: DEFAULTS com merge profundo do que foi salvo.
+
+    País acrescentado ao app depois do último salvamento entra ativo (uma vez só)."""
+    saved = _load_saved(session)
+    if "countries" in saved:
+        seen = saved.get("countries_seen", ORIGINAL_COUNTRIES)
+        new = [code for code in COUNTRIES if code not in seen]
+        if new:
+            saved["countries"] = [*saved["countries"], *new]
+            saved["countries_seen"] = list(COUNTRIES)
+            _save(session, saved)
+    return _deep_merge(DEFAULTS, saved)
 
 
 def _unmask_patch(patch: dict, current: dict) -> dict:

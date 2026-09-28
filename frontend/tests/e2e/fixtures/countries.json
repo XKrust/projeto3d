@@ -1,9 +1,132 @@
 [
-  {"code": "BR", "name": "Brasil", "active": true, "top_topics": ["Sousou no Frieren", "Minecraft", "Articulated Dragon"], "stores": ["Cults3D", "MyMiniFactory", "Fab"], "topics": 27},
-  {"code": "US", "name": "EUA", "active": true, "top_topics": ["Hollow Knight", "Pokemon"], "stores": ["Etsy", "Cults3D", "MyMiniFactory"], "topics": 30},
-  {"code": "GB", "name": "Reino Unido", "active": false, "top_topics": [], "stores": ["Cults3D", "Etsy", "MyMiniFactory"], "topics": 0},
-  {"code": "DE", "name": "Alemanha", "active": true, "top_topics": [], "stores": ["Cults3D", "Etsy", "Fab"], "topics": 0},
-  {"code": "FR", "name": "França", "active": true, "top_topics": ["One Piece"], "stores": ["Cults3D", "Fab", "Etsy"], "topics": 12},
-  {"code": "ES", "name": "Espanha", "active": true, "top_topics": ["Dragon Ball"], "stores": ["Cults3D", "Fab", "Etsy"], "topics": 10},
-  {"code": "JP", "name": "Japão", "active": true, "top_topics": ["The Apothecary Diaries", "Dandadan"], "stores": ["BOOTH", "Fab", "Cults3D"], "topics": 22}
+  {
+    "code": "US",
+    "name": "EUA",
+    "active": true,
+    "top_topics": [
+      "Hollow Knight",
+      "Pokemon"
+    ],
+    "stores": [
+      "Etsy",
+      "Cults3D",
+      "MyMiniFactory"
+    ],
+    "topics": 30,
+    "rank": {
+      "position": 1,
+      "score": 87.5,
+      "audience": 100.0,
+      "demand": 70.0,
+      "payment": 1.0,
+      "change_week": 0,
+      "days_at_position": 12
+    }
+  },
+  {
+    "code": "RU",
+    "name": "Rússia",
+    "active": true,
+    "top_topics": [
+      "Dandadan"
+    ],
+    "stores": [
+      "Cults3D",
+      "Fab",
+      "Printables"
+    ],
+    "topics": 15,
+    "rank": {
+      "position": 2,
+      "score": 36.1,
+      "audience": 25.9,
+      "demand": 80.0,
+      "payment": 0.3,
+      "change_week": 2,
+      "days_at_position": 3
+    }
+  },
+  {
+    "code": "BR",
+    "name": "Brasil",
+    "active": true,
+    "top_topics": [
+      "Sousou no Frieren",
+      "Minecraft",
+      "Articulated Dragon"
+    ],
+    "stores": [
+      "Cults3D",
+      "Fab",
+      "MyMiniFactory"
+    ],
+    "topics": 27,
+    "rank": {
+      "position": 3,
+      "score": 33.8,
+      "audience": 9.6,
+      "demand": 52.0,
+      "payment": 1.0,
+      "change_week": -1,
+      "days_at_position": 1
+    }
+  },
+  {
+    "code": "JP",
+    "name": "Japão",
+    "active": true,
+    "top_topics": [
+      "The Apothecary Diaries",
+      "Dandadan"
+    ],
+    "stores": [
+      "BOOTH",
+      "Fab",
+      "Cults3D"
+    ],
+    "topics": 22,
+    "rank": {
+      "position": 4,
+      "score": 32.0,
+      "audience": 24.2,
+      "demand": 10.0,
+      "payment": 1.0,
+      "change_week": 0,
+      "days_at_position": 5
+    }
+  },
+  {
+    "code": "DE",
+    "name": "Alemanha",
+    "active": true,
+    "top_topics": [],
+    "stores": [
+      "Cults3D",
+      "Etsy",
+      "Fab"
+    ],
+    "topics": 0,
+    "rank": {
+      "position": 5,
+      "score": 31.9,
+      "audience": 27.3,
+      "demand": 50.0,
+      "payment": 1.0,
+      "change_week": 0,
+      "days_at_position": 2
+    }
+  },
+  {
+    "code": "GB",
+    "name": "Reino Unido",
+    "active": false,
+    "top_topics": [],
+    "stores": [
+      "Cults3D",
+      "Etsy",
+      "MyMiniFactory"
+    ],
+    "topics": 0,
+    "rank": null
+  }
 ]

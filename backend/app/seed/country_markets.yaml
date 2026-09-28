@@ -1,0 +1,50 @@
+# Tamanho do público de cada país nas lojas de ARQUIVO 3D. Ver docs/score.md
+# ("Ranking de países"). Dados: Similarweb, agosto/2026, "traffic by country" (só o top 5
+# de cada site é público). Atualizar 1x por mês: trocar os números e a data.
+#
+# audience(país) = soma, em cada loja, de visitas × peso × participação do país.
+# País fora do top 5 de uma loja: participação desconhecida; conta metade da 5ª colocada
+# (o teto possível), para não zerar nem inflar.
+# peso: quanto das visitas é compra de arquivo 3D (Printables é quase tudo grátis; no
+# BOOTH só uma parte pequena é modelo 3D). Estimativa, editável aqui.
+
+date: "2026-08"
+sites:
+  - name: Cults3D
+    url: https://www.similarweb.com/website/cults3d.com/
+    visits_m: 14.5
+    weight: 1.0
+    shares: {US: 22.91, RU: 7.59, DE: 5.86, FR: 5.2, GB: 4.62}
+  - name: Printables
+    url: https://www.similarweb.com/website/printables.com/
+    visits_m: 17.8
+    weight: 0.3
+    shares: {US: 28.93, DE: 8.61, RU: 7.08, CA: 4.49, GB: 4.0}
+  - name: CGTrader
+    url: https://www.similarweb.com/website/cgtrader.com/
+    visits_m: 4.7
+    weight: 1.0
+    shares: {US: 18.29, IN: 11.97, GB: 4.49, FR: 4.11, DE: 3.59}
+  - name: MyMiniFactory
+    url: https://www.similarweb.com/website/myminifactory.com/
+    visits_m: 2.6
+    weight: 1.0
+    shares: {US: 27.82, DE: 11.12, GB: 6.78, CA: 6.01, FR: 5.29}
+  - name: Fab
+    url: https://www.similarweb.com/website/fab.com/
+    visits_m: 4.1
+    weight: 1.0
+    shares: {US: 14.9, CN: 10.22, RU: 5.07, IN: 4.86, DE: 4.21}
+  - name: BOOTH
+    url: https://www.similarweb.com/website/booth.pm/
+    visits_m: 25.8
+    weight: 0.05
+    shares: {JP: 81.19, US: 5.73, KR: 3.12, TW: 1.35, HK: 1.04}
+
+# Facilidade de pagar (0–1). Rússia e Bielorrússia: Visa, Mastercard, PayPal e Stripe
+# bloqueados pelas sanções; o comprador precisa de meio indireto. Fontes:
+# https://support.stripe.com/questions/sanctions-on-russia-and-belarus
+# https://dtf.ru/howto/3446468-kak-oplatit-cults-3d-rossii-i-belarusi-poshagovoe-rukovodstvo
+payment:
+  RU: 0.3
+  BY: 0.3

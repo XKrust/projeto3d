@@ -19,6 +19,14 @@ export const COUNTRY_LABELS: Record<string, string> = {
   DE: "Alemanha",
   FR: "França",
   ES: "Espanha",
+  RU: "Rússia",
+  BY: "Bielorrússia",
+  MX: "México",
+  IT: "Itália",
+  CA: "Canadá",
+  AU: "Austrália",
+  PL: "Polônia",
+  NL: "Holanda",
 };
 
 export const MARKET_LABELS: Record<string, string> = {
@@ -76,6 +84,14 @@ export const COUNTRY_IN: Record<string, string> = {
   DE: "na Alemanha",
   FR: "na França",
   ES: "na Espanha",
+  RU: "na Rússia",
+  BY: "na Bielorrússia",
+  MX: "no México",
+  IT: "na Itália",
+  CA: "no Canadá",
+  AU: "na Austrália",
+  PL: "na Polônia",
+  NL: "na Holanda",
 };
 
 /** "Onde vender: Cults3D · Mercado Livre · Etsy" (as 3 melhores lojas do tema). */

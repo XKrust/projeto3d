@@ -16,17 +16,24 @@ test.describe("tela inicial (países)", () => {
     await page.route("**/api/radar?*", (route) => route.fulfill({ json: [] }));
   });
 
-  test("cada país mostra os temas em alta e as lojas fortes, sem porcentagem", async ({ page }) => {
+  test("países em ranking de possibilidade de venda, com o movimento da semana", async ({ page }) => {
     await page.goto("/");
 
-    await expect(page.getByRole("heading", { level: 1, name: "Onde você vai vender?" })).toBeVisible();
-    const brasil = page.getByRole("button", { name: /^Brasil/ });
-    await expect(brasil).toContainText("Sousou no Frieren · Minecraft · Articulated Dragon");
-    await expect(brasil).toContainText("Cults3D · MyMiniFactory · Fab");
-    await expect(page.getByRole("button", { name: /^Japão/ })).toContainText("BOOTH");
+    await expect(page.getByRole("heading", { level: 1, name: "Onde vender agora" })).toBeVisible();
+    const cards = page.getByRole("list", { name: "Ranking de países" }).getByRole("listitem");
+    await expect(cards.nth(0)).toContainText("1º");
+    await expect(cards.nth(0)).toContainText("EUA");
+    await expect(cards.nth(0)).toContainText("1º há 12 dias");
+    await expect(cards.nth(1)).toContainText("Rússia");
+    await expect(cards.nth(1)).toContainText("↑ 2 na semana");
+    await expect(cards.nth(1)).toContainText("Pagamento difícil (sanções)");
+    await expect(cards.nth(2)).toContainText("↓ 1 na semana");
+    await expect(cards.nth(2)).toContainText("Sousou no Frieren · Minecraft · Articulated Dragon");
+    await expect(cards.nth(2)).toContainText("Cults3D · Fab · MyMiniFactory");
+    await expect(cards.nth(0)).toContainText("88");
+    await expect(cards.nth(0)).toContainText("(estimativa)");
     await expect(page.getByRole("button", { name: /^Alemanha/ })).toContainText("Ainda sem temas");
     await expect(page.getByRole("link", { name: "Reino Unido: inativo, ative em Configurações" })).toBeVisible();
-    await expect(page.getByText("%")).toHaveCount(0);
   });
 
   test("escolher Japao leva ao radar com country=JP e lembra a escolha", async ({ page }) => {

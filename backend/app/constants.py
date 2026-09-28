@@ -2,7 +2,11 @@
 
 GLOBAL = "GLOBAL"
 
-COUNTRIES: list[str] = ["BR", "US", "GB", "DE", "FR", "ES", "JP"]
+COUNTRIES: list[str] = [
+    "BR", "US", "GB", "DE", "FR", "ES", "JP",
+    # Acrescentados em 27/09/2026: maiores públicos das lojas de arquivo 3D.
+    "RU", "BY", "MX", "IT", "CA", "AU", "PL", "NL",
+]
 
 COUNTRY_NAMES: dict[str, str] = {
     "BR": "Brasil",
@@ -12,6 +16,14 @@ COUNTRY_NAMES: dict[str, str] = {
     "FR": "França",
     "ES": "Espanha",
     "JP": "Japão",
+    "RU": "Rússia",
+    "BY": "Bielorrússia",
+    "MX": "México",
+    "IT": "Itália",
+    "CA": "Canadá",
+    "AU": "Austrália",
+    "PL": "Polônia",
+    "NL": "Holanda",
 }
 
 CATEGORIES: list[str] = [

@@ -118,3 +118,11 @@ def test_init_db_adds_new_columns_to_an_old_database(tmp_path):
         assert cults.sells is True
         assert cults.edited is False
         assert cults.categories_json == "[]"
+
+
+def test_every_platform_has_strength_for_every_country():
+    from app.constants import COUNTRIES
+    from app.platforms import load_seed
+
+    for entry in load_seed():
+        assert set(entry["strength"]) == set(COUNTRIES), entry["slug"]

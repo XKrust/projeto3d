@@ -15,8 +15,8 @@
   fee_pct: null
   sells: true
   categories: []
-  strength: {BR: 0.8, US: 0.8, GB: 0.8, DE: 0.8, FR: 0.9, ES: 0.8, JP: 0.3}
-  notes: "Maior marketplace generalista de STL pago; empresa francesa, forte na Europa e com comunidade grande no Brasil. Fontes: https://emrldlabs.com/blog/printables-cults3d-myminifactory-stl-marketplace-compared/ (27/09/2026)."
+  strength: {BR: 0.8, US: 0.8, GB: 0.8, DE: 0.8, FR: 0.9, ES: 0.8, JP: 0.3, RU: 0.8, BY: 0.6, MX: 0.7, IT: 0.8, CA: 0.8, AU: 0.8, PL: 0.7, NL: 0.8}
+  notes: "Maior marketplace generalista de STL pago (preços em euro); empresa francesa. Público (Similarweb 08/2026): EUA 22,9%, Rússia 7,6%, Alemanha 5,9%, França 5,2%, Reino Unido 4,6%. Fontes: https://emrldlabs.com/blog/printables-cults3d-myminifactory-stl-marketplace-compared/ (27/09/2026)."
 
 - slug: myminifactory
   name: MyMiniFactory
@@ -24,7 +24,7 @@
   fee_pct: null
   sells: true
   categories: [rpg_miniaturas, games]
-  strength: {BR: 0.4, US: 0.7, GB: 0.8, DE: 0.6, FR: 0.6, ES: 0.6, JP: 0.2}
+  strength: {BR: 0.4, US: 0.7, GB: 0.8, DE: 0.6, FR: 0.6, ES: 0.6, JP: 0.2, RU: 0.3, BY: 0.2, MX: 0.4, IT: 0.6, CA: 0.8, AU: 0.7, PL: 0.5, NL: 0.6}
   notes: "Nicho premium de miniaturas de RPG/tabletop, com os compradores que mais pagam; empresa britânica; comissão menor exige assinatura. Comprou o Thingiverse em 02/2026. Fonte: https://emrldlabs.com/blog/printables-cults3d-myminifactory-stl-marketplace-compared/ (27/09/2026)."
 
 - slug: etsy
@@ -33,8 +33,8 @@
   fee_pct: null
   sells: true
   categories: [decoracao, toys_memes, outros]
-  strength: {BR: 0.3, US: 0.9, GB: 0.8, DE: 0.7, FR: 0.6, ES: 0.6, JP: 0.2}
-  notes: "Centenas de milhões de compradores, forte em decoração, presentes e peças impressas; fraca no Brasil e no Japão. Fonte: https://www.eufymake.com/blogs/business-ideas/best-3d-print-sell-profitable-items (27/09/2026)."
+  strength: {BR: 0.3, US: 0.9, GB: 0.8, DE: 0.7, FR: 0.6, ES: 0.6, JP: 0.2, RU: 0.0, BY: 0.0, MX: 0.3, IT: 0.6, CA: 0.8, AU: 0.8, PL: 0.4, NL: 0.6}
+  notes: "Centenas de milhões de compradores, forte em decoração, presentes e downloads digitais; fraca no Brasil e no Japão; suspendeu Rússia e Bielorrússia em 2022. Fonte: https://www.eufymake.com/blogs/business-ideas/best-3d-print-sell-profitable-items (27/09/2026)."
 
 - slug: mercadolivre
   name: Mercado Livre
@@ -42,7 +42,7 @@
   fee_pct: null
   sells: false
   categories: []
-  strength: {BR: 0.0, US: 0.0, GB: 0.0, DE: 0.0, FR: 0.0, ES: 0.0, JP: 0.0}
+  strength: {BR: 0.0, US: 0.0, GB: 0.0, DE: 0.0, FR: 0.0, ES: 0.0, JP: 0.0, RU: 0.0, BY: 0.0, MX: 0.0, IT: 0.0, CA: 0.0, AU: 0.0, PL: 0.0, NL: 0.0}
   notes: "Fora da recomendação: vende peça física, e o usuário vende arquivo 3D (modelado no Blender), não objeto impresso."
 
 - slug: printables
@@ -51,7 +51,7 @@
   fee_pct: 20.0
   sells: true
   categories: [decoracao, outros]
-  strength: {BR: 0.4, US: 0.5, GB: 0.5, DE: 0.6, FR: 0.5, ES: 0.5, JP: 0.3}
+  strength: {BR: 0.4, US: 0.5, GB: 0.5, DE: 0.6, FR: 0.5, ES: 0.5, JP: 0.3, RU: 0.5, BY: 0.3, MX: 0.4, IT: 0.5, CA: 0.6, AU: 0.5, PL: 0.6, NL: 0.6}
   notes: "Comissao de 20% sobre pagamentos de download de conteudo digital, confirmada em https://www.prusa3d.com/page/printables-club-store-terms-and-conditions-for-creators_236503/ (26/09/2026). Publico grande mas acostumado a baixar de graca; vende melhor peca funcional. Fonte: https://emrldlabs.com/blog/printables-cults3d-myminifactory-stl-marketplace-compared/ (27/09/2026)."
 
 - slug: fab
@@ -60,7 +60,7 @@
   fee_pct: 12.0
   sells: true
   categories: [games, filmes_series]
-  strength: {BR: 0.6, US: 0.7, GB: 0.7, DE: 0.7, FR: 0.7, ES: 0.6, JP: 0.5}
+  strength: {BR: 0.6, US: 0.7, GB: 0.7, DE: 0.7, FR: 0.7, ES: 0.6, JP: 0.5, RU: 0.5, BY: 0.3, MX: 0.5, IT: 0.6, CA: 0.7, AU: 0.7, PL: 0.6, NL: 0.7}
   notes: "Loja da Epic que substituiu a Sketchfab Store e o ArtStation Marketplace; criador fica com 88%, confirmado em https://www.unrealengine.com/en-US/blog/fab-content-marketplace-launches-in-october-publishing-portal-opens-today (27/09/2026). Forte em assets para jogos."
 
 - slug: cgtrader
@@ -69,7 +69,7 @@
   fee_pct: null
   sells: true
   categories: [games, filmes_series]
-  strength: {BR: 0.5, US: 0.6, GB: 0.6, DE: 0.6, FR: 0.5, ES: 0.5, JP: 0.3}
+  strength: {BR: 0.5, US: 0.6, GB: 0.6, DE: 0.6, FR: 0.5, ES: 0.5, JP: 0.3, RU: 0.4, BY: 0.3, MX: 0.4, IT: 0.5, CA: 0.6, AU: 0.6, PL: 0.5, NL: 0.6}
   notes: "Marketplace de modelos 3D para jogos, render e impressão."
 
 - slug: booth
@@ -78,7 +78,7 @@
   fee_pct: null
   sells: true
   categories: [anime]
-  strength: {BR: 0.2, US: 0.3, GB: 0.2, DE: 0.2, FR: 0.2, ES: 0.2, JP: 0.9}
+  strength: {BR: 0.2, US: 0.3, GB: 0.2, DE: 0.2, FR: 0.2, ES: 0.2, JP: 0.9, RU: 0.2, BY: 0.2, MX: 0.2, IT: 0.2, CA: 0.2, AU: 0.2, PL: 0.2, NL: 0.2}
   notes: "Marketplace japones (pixiv); forte em modelos 3D para VRChat e anime."
 
 - slug: sketchfab
@@ -87,7 +87,7 @@
   fee_pct: null
   sells: false
   categories: []
-  strength: {BR: 0.0, US: 0.0, GB: 0.0, DE: 0.0, FR: 0.0, ES: 0.0, JP: 0.0}
+  strength: {BR: 0.0, US: 0.0, GB: 0.0, DE: 0.0, FR: 0.0, ES: 0.0, JP: 0.0, RU: 0.0, BY: 0.0, MX: 0.0, IT: 0.0, CA: 0.0, AU: 0.0, PL: 0.0, NL: 0.0}
   notes: "A Sketchfab Store fechou em 22/10/2024; as vendas passaram para a Fab. Fica só como sinal de tendência. Fonte: https://en.wikipedia.org/wiki/Sketchfab (27/09/2026)."
 
 - slug: artstation
@@ -96,5 +96,5 @@
   fee_pct: null
   sells: false
   categories: []
-  strength: {BR: 0.0, US: 0.0, GB: 0.0, DE: 0.0, FR: 0.0, ES: 0.0, JP: 0.0}
+  strength: {BR: 0.0, US: 0.0, GB: 0.0, DE: 0.0, FR: 0.0, ES: 0.0, JP: 0.0, RU: 0.0, BY: 0.0, MX: 0.0, IT: 0.0, CA: 0.0, AU: 0.0, PL: 0.0, NL: 0.0}
   notes: "O ArtStation Marketplace migrou para a Fab em 2025; o site ficou como portfolio. Fica só como sinal de tendência. Fonte: https://www.unrealengine.com/en-US/blog/fab-content-marketplace-launches-in-october-publishing-portal-opens-today (27/09/2026)."

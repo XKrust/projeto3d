@@ -64,3 +64,21 @@ def test_default_source_weights_include_anilist(session):
     from app.settings_store import get_settings
 
     assert get_settings(session)["source_weights"]["anilist"] == 0.10
+
+
+def test_new_countries_are_activated_once_for_old_databases(session):
+    # Banco antigo: só os 7 países originais salvos. Os novos entram ativos uma vez...
+    from app.settings_store import SETTINGS_KEY, get_settings, update_settings
+    from app.models import Setting
+    import json as _json
+
+    session.add(Setting(key=SETTINGS_KEY, value_json=_json.dumps({"countries": ["BR", "JP"]})))
+    session.commit()
+
+    countries = get_settings(session)["countries"]
+    assert "RU" in countries and "MX" in countries
+    assert "US" not in countries  # país original desligado pelo usuário continua desligado
+
+    # ...e se o usuário desligar um novo depois, fica desligado.
+    update_settings(session, {"countries": [c for c in countries if c != "RU"]})
+    assert "RU" not in get_settings(session)["countries"]

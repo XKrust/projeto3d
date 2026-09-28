@@ -53,16 +53,27 @@ Função: `backend/app/pipeline.py:compute_scores(session, day)`.
   são ignorados no radar e na tela de países.
 - Rodar de novo no mesmo dia atualiza as linhas existentes, sem duplicar.
 
-## Tela inicial de países
+## Tela inicial: ranking de países
 
-`GET /api/countries` (`app/api/countries.py`) → um item por país de `COUNTRIES`:
-`{code, name, active, top_topics, stores, topics}`.
+`app/country_rank.py`, roda no pipeline depois de `compute_scores` (países ativos). Grava um
+`CountryRank(day, country, score, position, audience, demand, payment)` por dia.
 
-- **`top_topics`:** os 3 temas de maior `opportunity` do país no último dia com score (cada
-  tema conta uma vez, pela loja que o radar mostra). País inativo vem vazio.
-- **`stores`:** as 3 lojas que vendem com maior força no país (`strength`), só as que vendem.
-- **Sem "% de chance":** era a média de percentis dentro do próprio país e dava ~80% em
-  todo lugar, sem diferenciar nada.
+- **score** (0–100, estimativa) = `0,60·público + 0,25·procura + 0,15·pagamento·100`.
+- **público** (`audience_index`): visitas × peso × participação do país em 6 lojas de arquivo
+  3D (Similarweb, `seed/country_markets.yaml`, agosto/2026), maior país = 100. País fora do
+  top 5 de uma loja conta metade da 5ª participação. Muda 1x por mês (atualizar o YAML).
+- **procura**: momentum médio (0–100) dos 10 temas de maior oportunidade do país; 50 sem
+  temas. É o que mexe no ranking no dia a dia.
+- **pagamento**: 1; Rússia e Bielorrússia 0,3 (cartão/PayPal/Stripe bloqueados por sanções).
+
+`GET /api/countries` → ordenado pelo ranking (inativos no fim), cada item `{code, name,
+active, top_topics (3), stores (3 lojas mais fortes), topics, rank}`; `rank` =
+`{position, score, audience, demand, payment, change_week, days_at_position}` ou `null`.
+`change_week` > 0 = subiu (posição de 7 dias atrás − agora); `days_at_position` = dias
+seguidos na mesma posição.
+
+Países (15): BR, US, GB, DE, FR, ES, JP + RU, BY, MX, IT, CA, AU, PL, NL. País novo entra
+ativo uma vez em bancos antigos (`countries_seen` em `settings_store.py`).
 
 ## Quem é tema de verdade (`app/topics/theme.py`)
 

@@ -123,3 +123,20 @@ def test_fete_des_meres_moves_when_pentecost():
     assert resolve(event["rule"], 2027) == date(2027, 5, 30)
     assert resolve(event["rule"], 2023) == date(2023, 6, 4)
     assert resolve(event["rule"], 2034) == date(2034, 6, 4)
+
+
+@pytest.mark.parametrize(
+    ("country", "slug"),
+    [
+        ("MX", "dia_de_muertos"),
+        ("MX", "dia_de_las_madres_mx"),
+        ("RU", "dia_da_mulher_ru_by"),
+        ("BY", "ano_novo_ru_by"),
+        ("IT", "dia_das_maes"),
+        ("PL", "dzien_matki_pl"),
+        ("CA", "thanksgiving_ca"),
+    ],
+)
+def test_new_countries_have_their_own_dates(country, slug):
+    slugs = {e["slug"] for e in load_events() if country in e["countries"]}
+    assert slug in slugs

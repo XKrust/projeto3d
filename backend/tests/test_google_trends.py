@@ -52,3 +52,15 @@ def test_collect_generates_items_for_each_country():
 
     assert {item.country for item in items} == set(COUNTRIES)
     assert len(items) == 5 * len(COUNTRIES)
+
+
+@respx.mock
+def test_one_country_failing_does_not_stop_the_others():
+    br_xml = (FIXTURES / "br.xml").read_text(encoding="utf-8")
+    respx.get("https://trends.google.com/trending/rss?geo=BR").mock(return_value=httpx.Response(200, text=br_xml))
+    respx.get("https://trends.google.com/trending/rss?geo=BY").mock(return_value=httpx.Response(404))
+
+    with make_client() as http:
+        items = GoogleTrendsCollector({"countries": ["BY", "BR"]}, http).collect()
+
+    assert {item.country for item in items} == {"BR"}
