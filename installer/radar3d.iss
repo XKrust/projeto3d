@@ -26,7 +26,8 @@ Compression=lzma2/max
 SolidCompression=yes
 WizardStyle=modern
 UninstallDisplayName=Radar 3D
-UninstallDisplayIcon={sys}\shell32.dll,13
+UninstallDisplayIcon={app}\Radar3D.exe
+SetupIconFile=radar3d.ico
 CloseApplications=no
 
 [Languages]
@@ -42,16 +43,19 @@ Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdi
 ; Atualização: tira os arquivos da versão anterior (os dados ficam em %LOCALAPPDATA%\Radar3D).
 Type: filesandordirs; Name: "{app}\frontend"
 Type: filesandordirs; Name: "{app}\backend"
+Type: files; Name: "{app}\Radar3D.cmd"
+Type: files; Name: "{autoprograms}\Parar Radar 3D.lnk"
 
 [Icons]
-Name: "{autoprograms}\Radar 3D"; Filename: "{app}\Radar3D.cmd"; WorkingDir: "{app}"; IconFilename: "{sys}\shell32.dll"; IconIndex: 13
-Name: "{autoprograms}\Parar Radar 3D"; Filename: "{app}\Parar.cmd"; WorkingDir: "{app}"; IconFilename: "{sys}\shell32.dll"; IconIndex: 27
-Name: "{autodesktop}\Radar 3D"; Filename: "{app}\Radar3D.cmd"; WorkingDir: "{app}"; IconFilename: "{sys}\shell32.dll"; IconIndex: 13; Tasks: desktopicon
+Name: "{autoprograms}\Radar 3D"; Filename: "{app}\Radar3D.exe"; WorkingDir: "{app}"
+Name: "{autoprograms}\Fechar o Radar 3D"; Filename: "{app}\Radar3D.exe"; Parameters: "--sair"; WorkingDir: "{app}"
+Name: "{autodesktop}\Radar 3D"; Filename: "{app}\Radar3D.exe"; WorkingDir: "{app}"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\Radar3D.cmd"; Description: "Abrir o Radar 3D agora"; Flags: postinstall nowait skipifsilent shellexec
+Filename: "{app}\Radar3D.exe"; Description: "Abrir o Radar 3D agora"; Flags: postinstall nowait skipifsilent
 
 [UninstallRun]
+Filename: "{app}\Radar3D.exe"; Parameters: "--sair"; Flags: runhidden waituntilterminated; RunOnceId: "FecharRadar3D"
 Filename: "{app}\Parar.cmd"; Flags: runhidden waituntilterminated; RunOnceId: "PararRadar3D"
 
 [UninstallDelete]
@@ -69,6 +73,8 @@ function PrepareToInstall(var NeedsRestart: Boolean): String;
 var
   ResultCode: Integer;
 begin
+  if FileExists(ExpandConstant('{app}\Radar3D.exe')) then
+    Exec(ExpandConstant('{app}\Radar3D.exe'), '--sair', ExpandConstant('{app}'), SW_HIDE, ewWaitUntilTerminated, ResultCode);
   if FileExists(ExpandConstant('{app}\Parar.cmd')) then
     Exec(ExpandConstant('{app}\Parar.cmd'), '', ExpandConstant('{app}'), SW_HIDE, ewWaitUntilTerminated, ResultCode);
   Result := '';

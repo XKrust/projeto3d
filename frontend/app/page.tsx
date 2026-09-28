@@ -69,6 +69,20 @@ export default function Inicio() {
         </p>
       </header>
 
+      {data && !data.some((country) => country.top_topics.length > 0) && (
+        <section
+          aria-label="Primeira coleta"
+          className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-border bg-card p-5"
+        >
+          <h2 className="font-heading text-[length:var(--text-lg)] font-bold">Preparando as tendências</h2>
+          <p className="max-w-[70ch] text-sm leading-relaxed text-muted-foreground">
+            Na primeira vez, o Radar 3D coleta dados de lojas e redes de vários países. Isso começa
+            sozinho logo depois de abrir e leva alguns minutos; esta tela e o Radar se preenchem
+            quando terminar. Colar chaves em Configurações traz mais fontes.
+          </p>
+        </section>
+      )}
+
       {isLoading || !data ? (
         <p className="text-muted-foreground">{error ? error.message : "Carregando…"}</p>
       ) : (
@@ -121,11 +135,15 @@ export default function Inicio() {
                       Temas em alta
                     </span>
                     <span className="text-base font-medium leading-snug text-foreground">
-                      {!country.active
-                        ? "Ative em Configurações"
-                        : country.top_topics.length
-                          ? country.top_topics.join(" · ")
-                          : "Ainda sem temas: clique em Coletar agora no Radar"}
+                      {!country.active ? (
+                        "Ative em Configurações"
+                      ) : country.top_topics.length ? (
+                        country.top_topics.join(" · ")
+                      ) : (
+                        <span className="text-sm font-normal text-muted-foreground">
+                          aparecem depois da primeira coleta
+                        </span>
+                      )}
                     </span>
                   </span>
                   {country.stores.length > 0 && (

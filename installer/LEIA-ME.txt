@@ -2,7 +2,7 @@ RADAR 3D
 ========
 
 Abrir:      menu Iniciar > Radar 3D  (ou o atalho na área de trabalho)
-Desligar:   menu Iniciar > Parar Radar 3D
+Fechar:     ícone perto do relógio > Sair  (ou menu Iniciar > Fechar o Radar 3D)
 
 Na primeira vez que abrir, o Radar 3D baixa o Python e as bibliotecas dele
 (uns 100 MB). Isso leva alguns minutos e precisa de internet. Não feche a janela.
@@ -13,6 +13,7 @@ O navegador abre sozinho em http://localhost:3000
 Seus dados (banco, análises, logs) ficam em:
   %LOCALAPPDATA%\Radar3D\data
 Desinstalar não apaga essa pasta. Se algo der errado, os arquivos backend.log e
-frontend.log dessa pasta mostram o motivo.
+frontend.log dessa pasta mostram o motivo (o ícone perto do relógio
+tem o atalho "Pasta dos dados e registros").
 
 Chaves de API (Gemini, Reddit etc.): tela Configurações. Nenhuma é obrigatória.

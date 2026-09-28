@@ -1,8 +1,22 @@
 """Checagem do anúncio devolvido pela IA (spec 3b §7) — funções puras."""
 
+import re
+
 from app.analyzer.validate import _flagged  # mesma lista de bajulação da análise (3a)
 from app.sale.limits import limits_for
 from app.topics.normalize import is_cjk, normalize
+
+_IMAGE_REF = re.compile(
+    r"\s*\(?\b(?:na|da|nas|das|em|in|on)?\s*(?:image(?:m|ns)|images?)\s+\d+(?:\s*(?:e|and|,)\s*\d+)*\)?",
+    re.IGNORECASE,
+)
+
+
+def clean_strength(text: str) -> str:
+    """Tira "na imagem 1" dos pontos fortes: é referência interna da análise, não pode
+    aparecer num anúncio público."""
+    return " ".join(_IMAGE_REF.sub("", text).split()).strip(" ,.;")
+
 
 FAN_ART = {"en": "fan art", "pt": "fan art", "ja": "ファンアート"}
 _FAN_ART_SPELLINGS = ("fan art", "fanart", "fan-art", "ファンアート")
@@ -68,6 +82,7 @@ def validate_listings(raw: dict, requested: set[tuple[str, str]], *, authorship:
             title, title_cut = trim_words(title, limit)
         tags, tags_cut = _tags(item.get("tags"), platform)
         description = item.get("description").strip() if isinstance(item.get("description"), str) else ""
+        description = " ".join(_IMAGE_REF.sub("", description).split())
         result.append({
             "platform": platform, "lang": lang, "title": title, "tags": tags, "description": description,
             "trimmed": title_cut or tags_cut, "flagged": _flagged(title, description),

@@ -21,6 +21,7 @@ from app.collectors.base import ListingCounter
 from app.constants import GLOBAL
 from app.fx import update_fx_rates
 from app.http import make_client
+from app.runner import set_collect_phase
 from app.models import Platform, RawItem, Topic, TopicItem, TopicListing, TopicScore, TopicSignal
 from app.scoring import formulas
 from app.settings_store import get_settings
@@ -282,31 +283,43 @@ def run_pipeline(
     *,
     enrich: Callable[[Session], None] | None = None,
 ) -> None:
-    """extract_topics -> update_listings (1x por dia) -> update_hype_listings (1x por
-    dia) -> compute_scores -> compute_country_ranks -> enrich."""
+    """extract_topics -> notas (compute_scores + ranking de países) -> concorrência (contagem de
+    anúncios nas lojas, 1x por dia) -> notas de novo -> enrich.
+
+    As notas vêm antes da concorrência de propósito: contar anúncios faz centenas de buscas com
+    3–5 s de pausa entre elas (coleta educada) e leva mais de 10 minutos na primeira vez. Antes,
+    o radar ficava vazio esse tempo todo; agora fica pronto em segundos e a concorrência só
+    refina a saturação quando termina."""
     day = clock.today()
     extract_topics(session, day)
+    # Top 5 de modelos por data sazonal: procura (local, rápido).
+    update_seasonal_signals(session, day)
 
+    compute_scores(session, day)
+    # Ranking de países (usa as notas de hoje): quem subiu, quem caiu.
+    compute_country_ranks(session, day)
+
+    set_collect_phase("concorrencia")
+    measured = False
     has_listing_today = session.exec(select(TopicListing.id).where(TopicListing.day == day)).first() is not None
     if not has_listing_today:
         top_n = int(get_settings(session)["top_n_saturation"])
-        update_listings(session, counters, day, top_n)
+        measured = update_listings(session, counters, day, top_n) > 0 or measured
     # Concorrência dos lançamentos do hype (1x por dia; a função se protege sozinha).
-    update_hype_listings(session, counters, day)
-    # Top 5 de modelos por data sazonal: procura e concorrência (1x por dia cada).
-    update_seasonal_signals(session, day)
+    measured = bool(update_hype_listings(session, counters, day)) or measured
     settings = get_settings(session)
-    update_seasonal_listings(
+    measured = bool(update_seasonal_listings(
         session,
         counters,
         day,
         lead_days=int(settings["lead_days"]),
         modeling_days=int(settings["modeling_days"]),
-    )
+    )) or measured
 
-    compute_scores(session, day)
-    # Ranking de países (usa as notas de hoje): quem subiu, quem caiu.
-    compute_country_ranks(session, day)
+    if measured:
+        # Com a concorrência medida, a saturação muda: recalcula notas e ranking.
+        compute_scores(session, day)
+        compute_country_ranks(session, day)
 
     if enrich is not None:
         enrich(session)

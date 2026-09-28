@@ -126,3 +126,28 @@ def test_generate_listing_retries_invalid_json():
     assert variations is None
     assert len(provider.prompts) == 2
     assert '"presuportada"' in provider.prompts[0]
+
+
+def test_strengths_lose_internal_image_references():
+    from app.sale.listing import clean_strength
+
+    assert clean_strength("A base circular na imagem 1 dá estabilidade visual") == "A base circular dá estabilidade visual"
+    assert clean_strength("Mechas do cabelo (imagem 2)") == "Mechas do cabelo"
+    assert clean_strength("Nas imagens 1 e 3 a pose tem apelo") == "a pose tem apelo"
+    prompt = build_prompt(identified={"theme": "Robô", "character": None, "style": "", "category": "outros"},
+                          market="print", authorship="autoral", strengths=["A base circular na imagem 1 dá estabilidade"],
+                          tags=[], pairs=[("cults3d", "pt")])
+    assert "imagem 1" not in prompt.split("Pontos fortes verificados")[1].split("\n")[0]
+
+
+def test_description_loses_image_references():
+    raw = {"listings": [_listing(description="A base circular na imagem 1 dá estabilidade. Pronto para imprimir.")]}
+    result = validate_listings(raw, PAIRS, authorship="autoral")[0]
+    assert result["description"] == "A base circular dá estabilidade. Pronto para imprimir."
+
+
+def test_english_image_references_removed():
+    from app.sale.listing import clean_strength
+
+    assert clean_strength("The circular base in image 1 adds stability") == "The circular base adds stability"
+    assert clean_strength("Pose shown in images 2 and 3") == "Pose shown"

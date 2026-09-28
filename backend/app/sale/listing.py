@@ -4,7 +4,7 @@ from collections import Counter
 
 from app.ai.provider import TextProvider
 from app.analyzer.errors import ask_json
-from app.sale.validate import FAN_ART, trim_words, validate_listings  # noqa: F401 (reexportados)
+from app.sale.validate import FAN_ART, clean_strength, trim_words, validate_listings  # noqa: F401 (reexportados)
 from app.sale.variations import prompt_types
 
 LANG_NAMES = {"en": "inglês", "pt": "português do Brasil", "ja": "japonês"}
@@ -55,7 +55,7 @@ def build_prompt(*, identified: dict, market: str, authorship: str, strengths: l
     kind = "arquivo STL para impressão 3D" if market == "print" else "asset 3D digital"
     fan_art = ("É fan art: o título precisa conter \"fan art\" (em japonês, ファンアート) e não pode "
                "sugerir produto oficial." if authorship == "fanart" else "É um modelo autoral.")
-    strengths_text = "; ".join(strengths) or "nenhum informado"
+    strengths_text = "; ".join(t for t in (clean_strength(x) for x in strengths) if t) or "nenhum informado"
     tags_text = ", ".join(tags) or "nenhuma coletada"
     return f"""Você escreve anúncios de modelos 3D para lojas online. Tom: vendedor profissional, direto,
 sem exagero (nada de "incrível", "perfeito", "amazing", "perfect").
@@ -71,7 +71,8 @@ Escreva um anúncio para cada par loja + idioma abaixo, e só para eles:
 
 Regras: título com o que a pessoa busca primeiro (tema, personagem, tipo de peça); até 15 tags
 curtas; descrição de 3 a 5 frases dizendo o que é, o formato e o que vem no arquivo, sem
-prometer o que não foi informado.
+prometer o que não foi informado. Nunca cite "imagem 1", "imagem 2" nem fale das imagens: o
+comprador lê o anúncio, não a análise.
 
 Sugira também de 3 a 5 variações deste modelo que vendem mais, só destes tipos: {prompt_types(market)}.
 Para cada uma, diga em uma frase por que vale para ESTE modelo (em português).

@@ -19,7 +19,7 @@ def _fake_client(monkeypatch, captured: dict, error: Exception | None = None):
             return SimpleNamespace(text=json.dumps({"ok": True}))
 
     class FakeClient:
-        def __init__(self, api_key):
+        def __init__(self, api_key, **kwargs):
             self.models = FakeModels()
 
     monkeypatch.setattr(provider_module, "Client", FakeClient)

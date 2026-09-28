@@ -7,7 +7,7 @@ import app.collectors as collectors_pkg
 from app.db import get_session
 from app.models import Source
 from app.pipeline import run_after_cycle
-from app.runner import start_cycle_in_background
+from app.runner import collect_progress, start_cycle_in_background
 from app.settings_store import get_settings
 
 router = APIRouter()
@@ -53,3 +53,10 @@ def start_collect(request: Request, source: str | None = None) -> dict:
     if started:
         return {"started": True, "message": "Coleta iniciada."}
     return {"started": False, "message": "Já existe uma coleta em andamento."}
+
+
+@router.get("/collect/status")
+def read_collect_status() -> dict:
+    """Coleta em andamento: `running`, `phase` ("coleta" ou "notas"), fonte `current`,
+    `done`/`total` e horários. A tela usa para mostrar o progresso e se atualizar no fim."""
+    return collect_progress()

@@ -9,25 +9,33 @@ Arquivos em `installer/` e o workflow `.github/workflows/instalador.yml`.
     `runtime\node.exe server.js`;
   - `backend\` — código, `pyproject.toml` e `uv.lock` (sem as bibliotecas);
   - `runtime\node.exe` (22.x LTS) e `runtime\uv.exe` (versão fixa em `montar.ps1`);
-  - `Radar3D.cmd` (abrir), `Parar.cmd` (desligar), `VERSION`, `LEIA-ME.txt`.
+  - `Radar3D.exe` (lançador sem janelas), `radar3d.ico`, `Parar.cmd` (reserva), `VERSION`, `LEIA-ME.txt`.
 - **Do usuário**: `%LOCALAPPDATA%\Radar3D`
   - `data\` — banco, análises, `backend.log`, `frontend.log` (`RADAR_DATA_DIR`);
   - `python\`, `venv\`, `uv-cache\` — Python e bibliotecas baixados pelo `uv` na primeira
     abertura e depois de cada atualização (a versão preparada fica em
     `venv\radar3d-versao.txt`).
-- Atalhos: menu Iniciar (**Radar 3D**, **Parar Radar 3D**) e, se marcado, área de trabalho.
+- Atalhos: menu Iniciar (**Radar 3D**, **Fechar o Radar 3D**) e, se marcado, área de trabalho.
 - Instala só para o usuário (sem administrador). Desinstalar tira o programa, o Python e o
   venv, e **mantém** `data\`. Instalar por cima desliga o app antes (`PrepareToInstall`).
 
-## `Radar3D.cmd`
+## `Radar3D.exe` (lançador, `installer/lancador/Radar3D.cs`)
 
-1. Se `http://127.0.0.1:3000/api/health` responde, o Radar já está aberto: só abre o
-   navegador. Porta 3000/8000 ocupada por outro programa → mensagem clara.
-2. `uv sync --frozen --no-dev --no-install-project` quando a versão mudou.
-3. Backend: `venv\Scripts\python.exe -m uvicorn app.main:app` em `127.0.0.1:8000`
-   (minimizado), espera `/api/health` (até 3 min).
-4. Telas: `node.exe server.js` em `127.0.0.1:3000`, espera `/api/health` pelo proxy.
-5. Abre o navegador (`RADAR_NO_BROWSER=1` pula, usado no teste automático).
+Programa Windows sem console (C# 5, compilado no CI com o `csc` do .NET Framework 4.x que
+vem em todo Windows 10/11). **Nenhuma janela de cmd aparece.**
+
+1. Janelinha "Abrindo o Radar 3D…" (na 1ª vez explica que está baixando o Python) e ícone
+   perto do relógio: **Abrir o Radar 3D**, **Pasta dos dados e registros**, **Sair**.
+2. Já aberto (outra cópia): só abre o navegador. Sobrou um Radar 3D rodando sem lançador:
+   reaproveita. Porta 3000/8000 de outro programa: mensagem clara.
+3. `uv sync --frozen --no-dev --no-install-project` quando a versão mudou (saída em
+   `data\preparo.log`, última linha aparece na janelinha).
+4. Backend (`venv\Scripts\python.exe -m uvicorn`, `data\backend.log`) e telas
+   (`runtime\node.exe server.js`, `data\frontend.log`) **escondidos**, num Job Object: morrem
+   junto com o lançador. Se um cair, reinicia sozinho (até 3 vezes; `data\lancador.log`).
+5. Abre o navegador (`RADAR_NO_BROWSER=1` pula).
+6. `Radar3D.exe --sair` (atalho "Fechar o Radar 3D", desinstalador e atualização) fecha a
+   cópia aberta. `Parar.cmd` fica só como reserva do desinstalador (roda escondido).
 
 ## Montar e publicar
 
@@ -36,10 +44,12 @@ Windows do GitHub:
 
 1. `npm ci` → `installer/montar.ps1 -Versao X` monta `dist\Radar3D`.
 2. Inno Setup (`installer/radar3d.iss`) gera `dist\Radar3D-Setup-X.exe`.
-3. **Teste de verdade**: instala em modo silencioso, confere arquivos e atalho, abre com
-   `Radar3D.cmd`, checa telas, API pelo proxy, CSS e o banco em `LOCALAPPDATA`, abre de novo
-   (não duplica), desliga com `Parar.cmd`, reabre sem baixar nada e desinstala (dados
-   ficam, venv sai). Falha mostra o fim dos logs como anotação do job.
+3. **Teste de verdade** num Windows: instala; abre pelo `Radar3D.exe` e confere que **nenhum
+   processo dele tem janela** (nem cmd); checa telas, API, CSS e o banco; faz uma **coleta
+   real** (internet de verdade) consultando a API sem parar e reprova se qualquer consulta
+   falhar ou uma parte cair; fecha pelo atalho sem sobrar processo; reabre rápido sem
+   duplicar; **instala por cima com o app aberto** (atualização); desinstala (dados ficam,
+   venv sai). Falha mostra o fim dos logs como anotação do job.
 4. **Publicação automática:** todo push na `main` que mexe em `backend/`, `frontend/`,
    `installer/` ou `ferramentas-dev/` (não em docs) gera uma versão nova depois que os testes
    passam: `installer/VERSAO` (ex. `1.0`) + o próximo número livre (`1.0.0`, `1.0.1`…).

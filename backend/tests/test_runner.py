@@ -293,3 +293,51 @@ def test_connection_error_has_friendly_message(session):
     assert result.ran == ["fake_ok"]
     assert result.failed["fake_offline"].startswith("Sem conexão com o site")
     assert session.get(Source, "fake_offline").status == "error"
+
+
+def test_progress_is_reported_during_and_after_background_cycle(session, monkeypatch):
+    import threading
+
+    from app import runner
+
+    seen = []
+    release = threading.Event()
+
+    class SlowCollector(FakeOkCollector):
+        name = "slow"
+        label = "Lenta"
+
+        def collect(self):
+            seen.append(runner.collect_progress())
+            release.wait(5)
+            return []
+
+    engine = session.get_bind()
+    from sqlmodel import Session as S
+
+    started = runner.start_cycle_in_background(lambda: S(engine), collectors=[SlowCollector, FakeOkCollector],
+                                               http=object())
+    assert started
+    for _ in range(100):
+        if seen:
+            break
+        threading.Event().wait(0.02)
+    status = runner.collect_progress()
+    assert status["running"] is True
+    assert status["phase"] == "coleta"
+    assert status["current"] == "Lenta"
+    assert status["total"] == 2 and status["done"] == 0
+    release.set()
+    for _ in range(200):
+        if not runner.collect_progress()["running"]:
+            break
+        threading.Event().wait(0.02)
+    final = runner.collect_progress()
+    assert final["running"] is False
+    assert final["done"] == 2
+    assert final["finished_at"] is not None
+
+
+def test_collect_status_endpoint(client):
+    body = client.get("/api/collect/status").json()
+    assert set(body) >= {"running", "phase", "current", "done", "total"}

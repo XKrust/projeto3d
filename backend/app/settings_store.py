@@ -47,7 +47,7 @@ DEFAULTS: dict = {
         # renormalizados pelos grupos presentes no dia (ver pipeline).
         "anilist": 0.10,
     },
-    "gemini_model": "gemini-2.5-flash",
+    "gemini_model": "gemini-flash-latest",
     "top_n_saturation": 50,
     # Etapa 3b: valor da hora do modelador, para "≈ N vendas para cobrir as horas".
     "hourly_rate_usd": 10,
@@ -139,13 +139,21 @@ def _validate(settings: dict) -> None:
         )
 
 
+def _strip_keys(patch: dict) -> dict:
+    """Chave colada com espaço ou quebra de linha no fim não pode virar "chave inválida"."""
+    keys = patch.get("api_keys")
+    if isinstance(keys, dict):
+        patch = {**patch, "api_keys": {k: v.strip() if isinstance(v, str) else v for k, v in keys.items()}}
+    return patch
+
+
 def update_settings(session: Session, patch: dict) -> dict:
     """Aplica `patch` (merge profundo) sobre as configuracoes atuais e persiste.
 
     Lanca `ValueError` com mensagem em portugues se o resultado for invalido.
     """
     current = get_settings(session)
-    unmasked_patch = _unmask_patch(patch, current)
+    unmasked_patch = _unmask_patch(_strip_keys(patch), current)
     merged = _deep_merge(current, unmasked_patch)
     _validate(merged)
     _save(session, merged)

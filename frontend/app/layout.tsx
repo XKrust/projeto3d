@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
+import { CollectBanner } from "@/components/CollectBanner";
 import { Nav } from "@/components/Nav";
 import "./globals.css";
 
@@ -38,7 +39,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Suspense fallback={null}>
           <Nav />
         </Suspense>
-        <main className="flex flex-1 flex-col pt-24 sm:pt-28">{children}</main>
+        <main className="flex flex-1 flex-col gap-6 pt-24 sm:pt-28">
+          <CollectBanner />
+          {children}
+        </main>
         <footer className="mx-auto w-full max-w-6xl px-4 pb-8 pt-16 sm:px-8">
           <p className="border-t border-border pt-4 text-sm text-muted-foreground">
             Radar 3D · roda só no seu computador · notas de oportunidade, chance

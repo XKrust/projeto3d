@@ -58,7 +58,7 @@ def test_invalid_gemini_key_is_reported(client, monkeypatch):
                                               "status": "INVALID_ARGUMENT"}}, None)
 
     class FakeClient:
-        def __init__(self, api_key):
+        def __init__(self, api_key, **kwargs):
             self.models = FakeModels()
 
     monkeypatch.setattr("app.ai.provider.Client", FakeClient)
