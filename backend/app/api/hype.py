@@ -60,6 +60,8 @@ def _reason(days_to_release: int | None, competition: dict[str, int]) -> str:
         timing = "Estreia amanhã"
     elif days_to_release == 0:
         timing = "Estreia hoje"
+    elif days_to_release == -1:
+        timing = "Estreou ontem"
     else:
         timing = f"Estreou há {-days_to_release} dias"
     if not competition:

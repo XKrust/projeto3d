@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import useSWR from "swr";
+import useSWR, { useSWRConfig } from "swr";
 import { LaunchChecklist } from "@/components/analisar/LaunchChecklist";
 import { CoverBlock } from "@/components/analisar/CoverBlock";
 import { ListingCard } from "@/components/analisar/ListingCard";
@@ -26,6 +26,7 @@ function HoursToCover({ sale }: { sale: Sale }) {
   const info = sale.hours_to_cover;
   const [rate, setRate] = useState(String(info?.hourly_rate_usd ?? 10));
   const [status, setStatus] = useState("");
+  const { mutate } = useSWRConfig();
   if (!info) return null;
   const value = Number(rate.replace(",", "."));
   const sales = salesToCover(info.hours, value, info.price);
@@ -37,6 +38,8 @@ function HoursToCover({ sale }: { sale: Sale }) {
     }
     try {
       await apiPut("/api/settings", { hourly_rate_usd: value });
+      // Atualiza o cache de /config, senão um "Salvar" lá devolveria o valor antigo.
+      await mutate("/api/settings");
       setStatus("Valor da hora salvo.");
     } catch {
       setStatus("Não consegui salvar o valor da hora.");

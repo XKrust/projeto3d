@@ -5,6 +5,8 @@ calculada pelo app (10 × itens ok / itens avaliados).
 """
 
 import json
+import time
+from collections.abc import Callable
 
 import httpx
 
@@ -17,6 +19,8 @@ from app.models import Analysis, RawItem
 
 MAX_REFERENCES = 3
 MAX_COMPARISONS = 3
+MAX_ATTEMPTS = 6
+BUDGET_SECONDS = 20.0
 
 CHECKS: dict[str, str] = {
     "fundo": "Fundo limpo, sem distrair",
@@ -38,11 +42,17 @@ def cover_image(analysis: Analysis) -> ImageInput | None:
     return {"data": path.read_bytes(), "mime_type": _MIME.get(path.suffix.lstrip("."), "image/jpeg")}
 
 
-def top_covers(http: httpx.Client, items: list[RawItem]) -> tuple[list[dict], list[ImageInput]]:
-    """Até 3 capas dos anúncios comparáveis mais curtidos que baixarem."""
+def top_covers(http: httpx.Client, items: list[RawItem],
+               monotonic: Callable[[], float] = time.monotonic) -> tuple[list[dict], list[ImageInput]]:
+    """Até 3 capas dos anúncios comparáveis mais curtidos que baixarem, tentando no máximo 6
+    e por no máximo 20 s no total (a venda é síncrona e não pode ficar pendurada)."""
     refs: list[dict] = []
     images: list[ImageInput] = []
-    for item in sorted((i for i in items if i.thumb_url), key=lambda i: i.likes or 0, reverse=True):
+    deadline = monotonic() + BUDGET_SECONDS
+    ranked = sorted((i for i in items if i.thumb_url), key=lambda i: i.likes or 0, reverse=True)
+    for item in ranked[:MAX_ATTEMPTS]:
+        if monotonic() >= deadline:
+            break
         image = download_image(http, item.thumb_url)
         if image is None:
             continue
@@ -53,10 +63,11 @@ def top_covers(http: httpx.Client, items: list[RawItem]) -> tuple[list[dict], li
     return refs, images
 
 
-def build_prompt(*, market: str, n_refs: int) -> str:
+def build_prompt(*, market: str, n_refs: int, scope: str = "tema") -> str:
     checks = "\n".join(f'- "{slug}": {label}' for slug, label in CHECKS.items()
                        if slug != "escala" or market == "print")
-    refs = (f"As {n_refs} imagens seguintes são capas dos anúncios mais curtidos do mesmo tema "
+    origin = "do mesmo tema" if scope == "tema" else "de modelos parecidos (mesma categoria)"
+    refs = (f"As {n_refs} imagens seguintes são capas dos anúncios mais curtidos {origin} "
             f"(referência 1 a {n_refs})." if n_refs else "Não há capas de referência desta vez.")
     return f"""Você revisa a CAPA (imagem principal) de um anúncio de modelo 3D. A primeira imagem é a
 capa do usuário. {refs}
@@ -101,6 +112,7 @@ def validate_cover(raw: dict, *, market: str, n_refs: int) -> dict:
 
 
 def evaluate_cover(provider: TextProvider, cover: ImageInput, refs: list[dict], ref_images: list[ImageInput],
-                   *, market: str) -> dict:
-    raw = ask_json(provider, build_prompt(market=market, n_refs=len(refs)), [cover, *ref_images], required="checks")
-    return {**validate_cover(raw, market=market, n_refs=len(refs)), "references": refs}
+                   *, market: str, scope: str = "tema") -> dict:
+    raw = ask_json(provider, build_prompt(market=market, n_refs=len(refs), scope=scope), [cover, *ref_images],
+                   required="checks")
+    return {**validate_cover(raw, market=market, n_refs=len(refs)), "references": refs, "scope": scope}

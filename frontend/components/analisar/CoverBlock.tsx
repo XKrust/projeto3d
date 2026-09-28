@@ -43,7 +43,11 @@ export function CoverBlock({ cover }: { cover: Cover }) {
       </ul>
       {cover.references.length > 0 && (
         <div className="flex flex-col gap-3">
-          <p className="text-sm text-muted-foreground">Capas dos anúncios mais curtidos do tema:</p>
+          <p className="text-sm text-muted-foreground">
+            {cover.scope === "parecidos"
+              ? "Capas dos anúncios parecidos mais curtidos (o tema ainda não está no radar):"
+              : "Capas dos anúncios mais curtidos do tema:"}
+          </p>
           <ul className="grid gap-3 sm:grid-cols-3">
             {cover.references.map((ref, index) => (
               <li key={ref.thumb_url} className="flex flex-col gap-2 rounded-[var(--radius-card)] bg-card p-3">

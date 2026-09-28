@@ -1,0 +1,5 @@
+# Scripts do Windows precisam de CRLF: com LF o cmd pode errar os "goto" e rótulos.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.iss text eol=crlf
+*.ps1 text eol=crlf

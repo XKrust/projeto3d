@@ -416,3 +416,18 @@ def test_old_scores_of_closed_stores_are_ignored(session, client, platforms):
 
     assert item["best_platform"]["slug"] == "cults3d"
     assert "sketchfab" not in [p["slug"] for p in item["platforms"]]
+
+
+def test_median_price_counts_each_listing_once(session, client, platforms):
+    """O mesmo anúncio coletado em vários dias conta uma vez (preço do dia mais recente)."""
+    from datetime import timedelta
+    topic = _topic(session, "Labubu")
+    _score(session, topic, platform="cults3d", opportunity=90.0)
+    for offset in range(5):
+        _link(session, topic, _raw_item(session, source="cults3d", external_id="caro",
+                                        day=DAY - timedelta(days=offset), price_usd=30.0))
+    for external_id in ("a", "b"):
+        _link(session, topic, _raw_item(session, source="cults3d", external_id=external_id, price_usd=5.0))
+
+    r = client.get("/api/radar", params={"country": "BR"})
+    assert r.json()[0]["median_price_usd"] == 5.0

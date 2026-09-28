@@ -31,8 +31,12 @@ def _haystack(item: RawItem) -> str:
     return normalize(" ".join([item.title, *json.loads(item.tags_json or "[]")]))
 
 
-def evidence(items: list[RawItem], market: str) -> dict[str, dict]:
-    """tipo → {count, total}: quantos anúncios comparáveis citam o tipo (só com ≥ 5)."""
+SCOPES = {"tema": "do tema", "parecidos": "parecidos"}
+
+
+def evidence(items: list[RawItem], market: str, scope: str = "tema") -> dict[str, dict]:
+    """tipo → {count, total, scope}: quantos anúncios comparáveis citam o tipo (só com ≥ 5).
+    `scope`: "tema" (anúncios do tema) ou "parecidos" (mesma categoria, tema fora do radar)."""
     if len(items) < MIN_ITEMS_FOR_EVIDENCE:
         return {}
     texts = [_haystack(item) for item in items]
@@ -40,7 +44,7 @@ def evidence(items: list[RawItem], market: str) -> dict[str, dict]:
     for slug in types_for(market):
         words = [normalize(w) for w in TYPES[slug][2]]
         count = sum(1 for text in texts if any(matches_phrase(text, w) for w in words))
-        result[slug] = {"count": count, "total": len(items)}
+        result[slug] = {"count": count, "total": len(items), "scope": scope}
     return result
 
 
@@ -48,7 +52,7 @@ def _proof(slug: str, proof: dict[str, dict]) -> str | None:
     data = proof.get(slug)
     if not data:
         return None
-    return f"{data['count']} de {data['total']} anúncios do tema oferecem"
+    return f"{data['count']} de {data['total']} anúncios {SCOPES[data.get('scope', 'tema')]} oferecem"
 
 
 def validate_variations(raw: object, *, market: str, proof: dict[str, dict]) -> list[dict]:

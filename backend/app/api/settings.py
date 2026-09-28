@@ -67,7 +67,10 @@ def write_platform(
         platform.strength_json = json.dumps(current_strength)
 
     if "fee_pct" in patch:
-        platform.fee_pct = patch["fee_pct"]
+        fee = patch["fee_pct"]
+        if fee is not None and (not isinstance(fee, (int, float)) or isinstance(fee, bool) or not 0 <= fee <= 100):
+            raise HTTPException(status_code=422, detail="A taxa deve estar entre 0 e 100")
+        platform.fee_pct = fee
 
     if "notes" in patch:
         platform.notes = patch["notes"]

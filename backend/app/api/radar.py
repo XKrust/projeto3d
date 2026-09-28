@@ -141,9 +141,16 @@ def read_radar(
         .join(RawItem, TopicItem.raw_item_id == RawItem.id)
         .where(TopicItem.topic_id.in_(ordered_topic_ids), RawItem.price_usd > 0)
     ).all()
-    prices_by_topic_and_source: dict[tuple[int, str], list[float]] = defaultdict(list)
+    # Um preço por anúncio: o mesmo item coletado em vários dias conta uma vez só (o do dia
+    # mais recente), igual a app/sale/pricing.py.
+    latest: dict[tuple[int, str, str], RawItem] = {}
     for topic_item, raw_item in topic_items:
-        prices_by_topic_and_source[(topic_item.topic_id, raw_item.source)].append(raw_item.price_usd)
+        key = (topic_item.topic_id, raw_item.source, raw_item.external_id)
+        if key not in latest or raw_item.day > latest[key].day:
+            latest[key] = raw_item
+    prices_by_topic_and_source: dict[tuple[int, str], list[float]] = defaultdict(list)
+    for (topic_id, source, _), raw_item in latest.items():
+        prices_by_topic_and_source[(topic_id, source)].append(raw_item.price_usd)
 
     # ---- sparkline: uma unica consulta para os ultimos 30 dias de todos os topicos
     window_start = last_day - timedelta(days=SPARKLINE_DAYS - 1)

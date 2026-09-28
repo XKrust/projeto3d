@@ -1,5 +1,9 @@
 # Como rodar (para quem não programa)
 
+> Para usar, o jeito mais simples é o **instalador** (`Radar3D-Setup-*.exe` em Releases,
+> ver `README.md` e `docs/instalador.md`): não precisa instalar Node.js nem nada antes.
+> Os passos abaixo são para rodar direto do código.
+
 1. Instale o **Node.js LTS** em https://nodejs.org (se já tiver, pule este passo).
 2. Dê dois cliques em `iniciar.bat`. Na primeira vez ele instala tudo sozinho (o `uv`, as
    dependências do backend e do frontend, e compila o frontend), e isso demora alguns
