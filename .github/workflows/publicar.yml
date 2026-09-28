@@ -1,0 +1,18 @@
+# Publica uma versão sem precisar criar tag à mão: enviar o branch versao/X.Y.Z (a partir da
+# main) monta e testa o instalador, cria a tag vX.Y.Z com a Release e grava o
+# Radar3D-Setup.exe na raiz da main. Ver docs/instalador.md.
+name: Publicar versão
+
+on:
+  push:
+    branches: ["versao/*"]
+
+permissions:
+  contents: write
+
+jobs:
+  publicar:
+    uses: ./.github/workflows/instalador.yml
+    with:
+      versao: ${{ github.ref_name }}
+    secrets: inherit

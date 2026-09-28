@@ -40,7 +40,9 @@ Windows do GitHub:
    `Radar3D.cmd`, checa telas, API pelo proxy, CSS e o banco em `LOCALAPPDATA`, abre de novo
    (não duplica), desliga com `Parar.cmd`, reabre sem baixar nada e desinstala (dados
    ficam, venv sai). Falha mostra o fim dos logs como anotação do job.
-4. O `.exe` fica como artefato do job. **Tag `v*`** (ex.: `git tag v1.0.0 && git push
+4. O `.exe` fica como artefato do job. **Publicar uma versão:** enviar o branch
+   `versao/X.Y.Z` a partir da `main` (`git push origin main:versao/0.2.0`; workflow
+   `publicar.yml`) ou criar a tag `vX.Y.Z`. Os dois caminhos fazem o mesmo: **Tag `v*`** (ex.: `git tag v1.0.0 && git push
    origin v1.0.0`) publica o instalador na Release da tag **e** o grava como
    `Radar3D-Setup.exe` na raiz da `main` (commit do `github-actions[bot]`). É esse arquivo que
    aparece na página inicial do repositório e vem no "Download ZIP".
