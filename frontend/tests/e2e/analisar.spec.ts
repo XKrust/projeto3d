@@ -8,6 +8,7 @@ const analysis = fixture("analysis.json");
 const analyses = fixture("analyses.json");
 const metaFixture = fixture("meta.json");
 const IMAGE = path.join(__dirname, "fixtures", "modelo.png");
+const STL = path.join(__dirname, "fixtures", "peca.stl");
 
 // PNG RGBA 2000×4 totalmente transparente (render com fundo transparente, maior que 1600 px).
 function transparentPng(width = 2000, height = 4): Buffer {
@@ -153,5 +154,64 @@ test.describe("/analisar", () => {
 
     expect(body).toContain("Content-Type: image/png");
     expect(body).not.toContain("Content-Type: image/jpeg");
+  });
+
+  test("arquivo 3D vira 4 fotos e vai para a análise", async ({ page }) => {
+    await setup(page, { status: 201, body: analysis });
+    let body = "";
+    await page.route("**/api/analyze", async (route) => {
+      body = route.request().postDataBuffer()?.toString("latin1") ?? "";
+      await route.fulfill({ status: 201, json: analysis });
+    });
+    await page.goto("/analisar");
+
+    await page.getByLabel("Imagens do modelo (1 a 4)").setInputFiles(STL);
+
+    const chosen = page.getByRole("list", { name: "Imagens escolhidas" });
+    await expect(chosen.getByRole("listitem")).toHaveCount(4, { timeout: 30_000 });
+    await expect(page.getByText(/Fotos tiradas de peca\.stl: capa em 3\/4, frente, lado e costas/)).toBeVisible();
+    await expect(chosen.getByRole("listitem").first()).toContainText("Capa");
+    // Foto de verdade (1200 px, não vazia): a peça clara aparece sobre o fundo escuro.
+    const stats = await chosen.getByRole("img").first().evaluate(async (img: HTMLImageElement) => {
+      await img.decode();
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext("2d")!;
+      ctx.drawImage(img, 0, 0);
+      const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+      let bright = 0;
+      for (let i = 0; i < data.length; i += 4) if (data[i] > 120) bright++;
+      return { width: img.naturalWidth, bright: bright / (data.length / 4) };
+    });
+    expect(stats.width).toBe(1200);
+    expect(stats.bright).toBeGreaterThan(0.05);
+
+    await page.getByRole("button", { name: "Analisar", exact: true }).click();
+    await expect(page.getByRole("region", { name: "Resultado da análise" })).toBeVisible();
+    expect(body).toContain('filename="image-4.png"');
+    expect(body).not.toContain('filename="image-5');
+  });
+
+  test("arquivo que não dá para ler explica o que enviar", async ({ page }) => {
+    await setup(page, { status: 201, body: analysis });
+    await page.goto("/analisar");
+
+    await page.getByLabel("Imagens do modelo (1 a 4)").setInputFiles({
+      name: "pack.zip",
+      mimeType: "application/zip",
+      buffer: Buffer.from("PK"),
+    });
+    await expect(page.getByText("pack.zip é um arquivo compactado: extraia e envie o STL, OBJ ou GLB de dentro dele.")).toBeVisible();
+
+    await page.getByLabel("Imagens do modelo (1 a 4)").setInputFiles({
+      name: "quebrado.stl",
+      mimeType: "model/stl",
+      buffer: Buffer.from("isto não é um STL"),
+    });
+    await expect(
+      page.getByText("Não consegui abrir esse arquivo 3D. Exporte em STL, OBJ ou GLB, ou envie prints do modelo."),
+    ).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole("button", { name: "Analisar", exact: true })).toBeDisabled();
   });
 });

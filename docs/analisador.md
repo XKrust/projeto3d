@@ -5,7 +5,8 @@ Specs: `docs/superpowers/specs/2026-09-27-etapa3a-analisador-design.md` (anális
 
 ## O que faz
 
-Tela `/analisar`: o usuário envia 1 a 4 imagens (render ou foto) e um wireframe opcional,
+Tela `/analisar`: o usuário envia 1 a 4 imagens (render ou foto) **ou o próprio arquivo 3D**
+(o app tira 4 fotos dele no computador, ver "Arquivo 3D" abaixo) e um wireframe opcional,
 responde autoria (autoral/fan-art), mercado (impressão/digital) e horas, e pode colar até 2
 links de modelos do Sketchfab. Recebe uma **análise honesta**, rotulada "avaliação por IA":
 nota por critério, pontos fortes, o que melhorar (onde + problema + **como corrigir** +
@@ -46,10 +47,23 @@ JSON inválido da IA ganha 1 nova tentativa (`errors.ask_json`).
 
 ## Tela
 
-`frontend/app/analisar/page.tsx` + `frontend/components/analisar/`. A tela reduz cada imagem
+`frontend/app/analisar/page.tsx` + `frontend/components/analisar/`. Área de arrastar (ou
+clicar) com miniaturas, "Capa" na 1ª e botão de remover; arquivos novos somam aos que já estão.
+Arquivo que não dá para ler (`.zip`, `.blend`…) diz o que enviar. A tela reduz cada imagem
 para ≤ 1600 px (JPEG 0,85) antes de enviar (`lib/resize-image.ts`). Progresso com mensagens
 fixas a cada 8 s. Fan-art mostra aviso de direitos autorais. Sem chave: link "Abrir
 Configurações".
+
+### Arquivo 3D (`frontend/lib/render-model.ts`)
+
+STL, OBJ, GLB, 3MF ou FBX (até 250 MB) viram 4 renders PNG de 1200 px **no navegador**
+(three.js, baixado só quando alguém escolhe um arquivo 3D): capa em 3/4, frente, lado e
+costas, enquadrados pela forma da malha, em fundo escuro com luz principal e contraluz. STL e
+3MF (arquivos de impressão, em Z para cima) são girados para ficar em pé; STL/3MF/OBJ/FBX
+viram "argila" (as texturas ficam em arquivos separados); GLB mantém os materiais. As fotos
+ocupam as 4 vagas e seguem o fluxo normal (a IA não sabe que vieram do arquivo). Arquivo
+quebrado ou computador sem WebGL: mensagem pedindo prints. Wireframe não é gerado (o three.js
+triangula a malha, e a topologia sairia errada).
 
 ## Custo
 
