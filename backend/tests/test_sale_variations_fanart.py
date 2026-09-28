@@ -22,7 +22,7 @@ def test_types_by_market():
 
 def test_evidence_counts_offers():
     proof = evidence(ITEMS, "print")
-    assert proof["presuportada"] == {"count": 2, "total": 5}
+    assert proof["presuportada"] == {"count": 2, "total": 5, "scope": "tema"}
     assert proof["busto"]["count"] == 2
     assert proof["chibi"]["count"] == 1
     assert proof["partes"]["count"] == 1
@@ -68,3 +68,9 @@ def test_inspired_tip_only_with_high_risk():
     assert inspired_tip([{"fanart": fanart_for_store("etsy")}]) is None
     assert inspired_tip([{"fanart": fanart_for_store("etsy")}, {"fanart": fanart_for_store("fab")}]) == INSPIRED_TIP
     assert inspired_tip([{"fanart": None}]) is None
+
+
+def test_evidence_scope_wording_for_similar_listings():
+    proof = evidence(ITEMS, "print", "parecidos")
+    result = default_variations(market="print", proof=proof)
+    assert result[0]["why"] == "2 de 5 anúncios parecidos oferecem"

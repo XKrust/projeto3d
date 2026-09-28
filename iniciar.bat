@@ -55,7 +55,16 @@ if errorlevel 1 (
 popd
 
 rem 5. Prepara o frontend (dependencias e build de producao).
-if not exist "frontend\node_modules" (
+rem    Reinstala quando nao ha node_modules ou quando o package-lock.json e mais novo que a
+rem    ultima instalacao (o npm grava node_modules\.package-lock.json ao instalar): senao uma
+rem    atualizacao que traz uma dependencia nova quebraria o build.
+set "PRECISA_NPM=0"
+if not exist "frontend\node_modules\.package-lock.json" set "PRECISA_NPM=1"
+if "%PRECISA_NPM%"=="0" (
+    powershell -NoProfile -Command "if ((Get-Item 'frontend\package-lock.json').LastWriteTime -gt (Get-Item 'frontend\node_modules\.package-lock.json').LastWriteTime) { exit 1 } else { exit 0 }"
+    if errorlevel 1 set "PRECISA_NPM=1"
+)
+if "%PRECISA_NPM%"=="1" (
     echo Instalando dependencias do frontend ^(pode demorar na primeira vez^)...
     pushd frontend
     call npm install
@@ -75,7 +84,7 @@ rem (senao uma atualizacao do visual nunca apareceria).
 set "PRECISA_BUILD=0"
 if not exist "frontend\.next\BUILD_ID" set "PRECISA_BUILD=1"
 if "%PRECISA_BUILD%"=="0" (
-    powershell -NoProfile -Command "$b=(Get-Item 'frontend\.next\BUILD_ID').LastWriteTime; $n=Get-ChildItem 'frontend\app','frontend\components','frontend\lib','frontend\package.json' -Recurse -File | Sort-Object LastWriteTime -Descending | Select-Object -First 1; if ($n.LastWriteTime -gt $b) { exit 1 } else { exit 0 }"
+    powershell -NoProfile -Command "$b=(Get-Item 'frontend\.next\BUILD_ID').LastWriteTime; $n=Get-ChildItem 'frontend\app','frontend\components','frontend\lib','frontend\public','frontend\package.json','frontend\package-lock.json','frontend\next.config.ts' -Recurse -File -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1; if ($n.LastWriteTime -gt $b) { exit 1 } else { exit 0 }"
     if errorlevel 1 set "PRECISA_BUILD=1"
 )
 

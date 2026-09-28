@@ -45,3 +45,5 @@
 | 2026-09-28 | Variações vêm na mesma chamada do anúncio; a capa é uma 2ª chamada com imagens; nota da capa = % de itens ok do checklist | Economiza cota; a nota calculada pelo app segue a regra da 3a (a IA não dá nota final) |
 | 2026-09-28 | Risco de fan-art só com política oficial consultada; níveis alto/médio são leitura do app; Printables fica "conferir" | Não afirmar regra de loja sem fonte; os termos da Prusa não foram confirmados |
 
+| 2026-09-28 | Proxy do Next com `proxyTimeout` de 3 min | O padrão (30 s) cortava a análise (2 chamadas à IA + referências) e a venda (anúncio + capa) no meio |
+| 2026-09-28 | `.bat` sempre com CRLF (`.gitattributes`) | Com LF (ZIP do GitHub) o cmd pode errar `goto`/rótulos |

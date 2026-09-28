@@ -7,14 +7,14 @@ fica `None` e `listing_note` explica o motivo.
 import json
 import logging
 
-from sqlmodel import Session
+from sqlmodel import Session, select
 
 from app import clock
 from app.ai.provider import AIQuotaError, TextProvider
 from app.analyzer.errors import AIInvalidResponse
 from app.constants import in_country
 from app.fx import fx_for_country
-from app.models import Analysis
+from app.models import Analysis, TopicItem
 from app.http import make_client
 from app.sale.chance import chance_for_store, peak_for_topic
 from app.sale.cover import cover_image, evaluate_cover, top_covers
@@ -24,7 +24,7 @@ from app.sale.match import match_topic
 from app.sale.pricing import comparable_items, price_for_store, sales_to_cover
 from app.sale.promotion import build_promotion
 from app.sale.stores import rank_stores
-from app.sale.variations import default_variations, evidence, validate_variations
+from app.sale.variations import MIN_ITEMS_FOR_EVIDENCE, default_variations, evidence, validate_variations
 from app.settings_store import get_settings
 
 logger = logging.getLogger(__name__)
@@ -50,7 +50,8 @@ def _checklist(by_country: list[dict], peak, communities: list[dict]) -> list[st
     if not ordered:
         return [NOTE_NO_STORES]
     first = ordered[0]
-    steps = [f"Publique primeiro no {first['name']} (melhor encaixe {in_country(by_country[0]['country'])})."]
+    first_country = next(c["country"] for c in by_country if c["stores"])
+    steps = [f"Publique primeiro no {first['name']} (melhor encaixe {in_country(first_country)})."]
     price = first.get("price")
     if price:
         steps.append(f"Nas primeiras 48 h, use o preço de lançamento ({_money(price['launch'])}) e depois "
@@ -97,7 +98,8 @@ def _listing(provider: TextProvider | None, analysis: Analysis, pairs, tags) -> 
     return (listings, None, variations) if listings else (None, NOTE_INVALID, variations)
 
 
-def _cover(provider: TextProvider | None, analysis: Analysis, items: list, skip_note: str | None) -> tuple[dict | None, str | None]:
+def _cover(provider: TextProvider | None, analysis: Analysis, items: list, skip_note: str | None,
+           scope: str) -> tuple[dict | None, str | None]:
     """Nota da capa (2ª chamada da venda). `skip_note`: a cota já acabou no anúncio."""
     if provider is None:
         return None, COVER_NO_KEY
@@ -109,7 +111,7 @@ def _cover(provider: TextProvider | None, analysis: Analysis, items: list, skip_
     try:
         with make_client() as http:
             refs, ref_images = top_covers(http, items)
-        return evaluate_cover(provider, image, refs, ref_images, market=analysis.market), None
+        return evaluate_cover(provider, image, refs, ref_images, market=analysis.market, scope=scope), None
     except AIQuotaError:
         return None, COVER_QUOTA
     except AIInvalidResponse:
@@ -117,6 +119,20 @@ def _cover(provider: TextProvider | None, analysis: Analysis, items: list, skip_
     except Exception:  # noqa: BLE001
         logger.exception("Falha ao avaliar a capa")
         return None, COVER_DOWN
+
+
+def _evidence_items(session: Session, topic, items: list) -> tuple[list, str]:
+    """Anúncios do próprio tema quando há pelo menos 5; senão todos os comparáveis, que então
+    são "parecidos" (mesma categoria), para os textos não dizerem "do tema" sem ser."""
+    if topic is not None and items:
+        linked = set(session.exec(
+            select(TopicItem.raw_item_id).where(TopicItem.topic_id == topic.id,
+                                                TopicItem.raw_item_id.in_([i.id for i in items]))
+        ).all())
+        own = [i for i in items if i.id in linked]
+        if len(own) >= MIN_ITEMS_FOR_EVIDENCE:
+            return own, "tema"
+    return items, "parecidos"
 
 
 def build_sale(session: Session, analysis: Analysis, countries: list[str], provider: TextProvider | None) -> dict:
@@ -153,11 +169,12 @@ def build_sale(session: Session, analysis: Analysis, countries: list[str], provi
                     aliases=[topic.name, *aliases] if topic else [])
     pairs = languages_for({c["country"]: [s["platform"] for s in c["stores"]] for c in by_country})
     listings, note, raw_variations = _listing(provider, analysis, pairs, tags)
-    proof = evidence(list(seen_items.values()), analysis.market)
+    evidence_items, scope = _evidence_items(session, topic, list(seen_items.values()))
+    proof = evidence(evidence_items, analysis.market, scope)
     variations = (validate_variations(raw_variations, market=analysis.market, proof=proof)
                   or default_variations(market=analysis.market, proof=proof))
-    cover, cover_note = _cover(provider, analysis, list(seen_items.values()),
-                               COVER_QUOTA if note == NOTE_QUOTA else None)
+    cover, cover_note = _cover(provider, analysis, evidence_items, COVER_QUOTA if note == NOTE_QUOTA else None,
+                               scope)
     promotion = build_promotion(session, topic=topic, market=analysis.market, category=analysis.category,
                                 tags=tags)
 

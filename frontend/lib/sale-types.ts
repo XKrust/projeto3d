@@ -39,6 +39,7 @@ export type Cover = {
   checks: Record<string, CoverCheck>;
   vs_top: { reference: number; text: string; flagged: boolean }[];
   references: { title: string; url: string | null; thumb_url: string; likes: number | null }[];
+  scope?: "tema" | "parecidos";
 };
 
 export type Listing = {
