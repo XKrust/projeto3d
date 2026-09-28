@@ -1,0 +1,67 @@
+// Formato do `sale` de POST /api/analyses/{id}/sale (backend/app/sale/build.py, spec 3b §9).
+
+export type SalePrice = {
+  suggested: number;
+  low: number;
+  high: number;
+  launch: number;
+  net: number | null;
+  basis: string;
+};
+
+export type SaleChance = { value: number | null; label: "Alta" | "Média" | "Baixa" | null; why: string };
+
+export type SaleStore = {
+  platform: string;
+  name: string;
+  fee_pct: number | null;
+  fit: number;
+  why: string;
+  price: SalePrice | null;
+  price_note: string | null;
+  chance: SaleChance;
+};
+
+export type Listing = {
+  platform: string;
+  lang: "en" | "pt" | "ja";
+  title: string;
+  tags: string[];
+  description: string;
+  trimmed: boolean;
+  flagged: boolean;
+};
+
+export type Sale = {
+  countries: string[];
+  topic: { id: number; name: string; slug: string } | null;
+  by_country: { country: string; stores: SaleStore[] }[];
+  hours_to_cover: { sales: number; hours: number; hourly_rate_usd: number; price: number } | null;
+  listing: { listings: Listing[] } | null;
+  listing_note: string | null;
+  checklist: string[];
+  estimate: true;
+};
+
+export type SaleCountries = {
+  max: number;
+  defaults: string[];
+  countries: { code: string; name: string }[];
+};
+
+export const LANG_LABELS: Record<Listing["lang"], string> = {
+  en: "Inglês",
+  pt: "Português",
+  ja: "Japonês",
+};
+
+/** 7.99 → "US$ 7,99". */
+export function formatUsd(value: number): string {
+  return `US$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+/** Vendas para cobrir as horas ao valor/hora (mesma conta do backend). */
+export function salesToCover(hours: number, hourlyRate: number, price: number): number | null {
+  if (!hours || !price || !hourlyRate || hourlyRate <= 0) return null;
+  return Math.ceil((hours * hourlyRate) / price);
+}

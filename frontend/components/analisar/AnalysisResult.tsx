@@ -1,4 +1,5 @@
 import { FANART_NOTICE } from "@/components/analisar/AnalyzeForm";
+import { SaleSection } from "@/components/analisar/SaleSection";
 import { CRITERIA_LABELS, formatScore, type Analysis, type Improvement } from "@/lib/analyzer-types";
 
 function Flag({ flagged }: { flagged: boolean }) {
@@ -181,6 +182,8 @@ export function AnalysisResult({ analysis }: { analysis: Analysis }) {
           ))}
         </ul>
       </Section>
+
+      <SaleSection key={analysis.id} analysisId={analysis.id} initialSale={analysis.sale ?? null} />
     </section>
   );
 }

@@ -91,6 +91,7 @@ def analysis_to_dict(session: Session, row: Analysis) -> dict:
         "references_note": row.references_note,
         "result": json.loads(row.result_json),
         "previous": previous,
+        "sale": json.loads(row.sale_json) if row.sale_json else None,
     }
 
 

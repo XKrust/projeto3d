@@ -93,3 +93,25 @@ export async function apiPostForm<T>(path: string, form: FormData): Promise<T> {
   const detail = await parseErrorDetail(response);
   throw new ApiError(detail ?? `Erro inesperado (${response.status})`, response.status);
 }
+
+/** POST com corpo JSON. Qualquer 4xx com `detail` vira `ApiError(detail)`. */
+export async function apiPostJson<T>(path: string, body: unknown): Promise<T> {
+  let response: Response;
+  try {
+    response = await fetch(path, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+  } catch {
+    throw new BackendOfflineError();
+  }
+  if (response.ok) {
+    return (await response.json()) as T;
+  }
+  if (OFFLINE_STATUS.has(response.status)) {
+    throw new BackendOfflineError();
+  }
+  const detail = await parseErrorDetail(response);
+  throw new ApiError(detail ?? `Erro inesperado (${response.status})`, response.status);
+}

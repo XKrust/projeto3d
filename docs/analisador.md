@@ -1,7 +1,7 @@
-# Analisador de modelo (Etapa 3a: análise crítica)
+# Analisador de modelo (Etapa 3a: análise crítica · Etapa 3b: venda)
 
-Spec: `docs/superpowers/specs/2026-09-27-etapa3a-analisador-design.md`. A parte de venda
-(título, loja, preço, chance) é a Etapa 3b e reaproveita a análise salva.
+Specs: `docs/superpowers/specs/2026-09-27-etapa3a-analisador-design.md` (análise) e
+`docs/superpowers/specs/2026-09-28-etapa3b-venda-design.md` (venda, ver seção "Venda" abaixo).
 
 ## O que faz
 
@@ -54,3 +54,40 @@ Configurações".
 ## Custo
 
 2 chamadas ao Gemini por análise (grátis dentro da cota diária do free tier).
+
+## Venda (Etapa 3b, `backend/app/sale/`, rota `app/api/sale.py`)
+
+No resultado da análise, a seção **Venda** escolhe até 5 países (padrão: os 3 primeiros do
+ranking do dia entre os ativos, mais o BR) e chama `POST /api/analyses/{id}/sale`
+(`{countries}`; vazio = padrão). O resultado fica em `Analysis.sale_json` e volta no
+`GET /api/analyses/{id}` como `sale`. Gerar de novo sobrescreve.
+
+1. **Tema no radar** (`match.py`): personagem → tema → termo de busca, contra nome e aliases
+   dos tópicos (não candidatos); empate = maior oportunidade. Sem tópico, a venda segue.
+2. **Lojas** (`stores.py`): as que vendem e aceitam o mercado; `platform_fit` (a mesma do
+   radar); 3 por país, com o motivo ("Força de venda nos EUA: 0,8 · generalista").
+3. **Preço** (`pricing.py`, US$): anúncios com preço dos últimos 90 dias, 1 por item, na
+   primeira camada com ≥ 5: tópico na loja → tópico em qualquer loja que vende → categoria na
+   loja. `sugerido = mediana × (0.7 + 0.06·nota)`, faixa p25–p75, lançamento = 80%, líquido
+   só com `fee_pct` conhecido, tudo arredondado para `.99`. Sem dados → `price = null` e
+   `price_note` "sem dados suficientes para esta loja". "≈ N vendas para cobrir as horas"
+   usa `hourly_rate_usd` das configurações (padrão 10, editável na tela).
+4. **Chance** (`chance.py`): ver `score.md` ("Chance de venda no Analisador").
+5. **Anúncio** (`listing.py` + `validate.py` + `limits.py`): 3ª chamada ao Gemini, só texto,
+   com os pontos fortes da 3a e as 20 tags mais usadas pelos anúncios comparáveis mais
+   curtidos. Idiomas: EN sempre, PT nas lojas do BR, JA nas do JP e no BOOTH. O app descarta
+   pares não pedidos, corta título/tags no limite da loja (`trimmed`), normaliza tags,
+   põe "fan art" no título de fan-art e marca bajulação (`flagged`). Limites só entram em
+   `limits.py` confirmados na página oficial (hoje: Etsy); o resto usa 100 caracteres,
+   15 tags de 30.
+6. **Checklist** (`build.py`): onde publicar primeiro, preço de lançamento por 48 h, as
+   outras lojas e o pico previsto do tema.
+
+A IA nunca derruba a venda: sem chave, cota esgotada, JSON inválido duas vezes ou IA fora
+do ar → `listing = null` e `listing_note` com o motivo (200). Erros: 404 análise não
+encontrada; 422 "Escolha de 1 a 5 países" / "País inválido". `GET
+/api/analyses/{id}/sale/countries` alimenta o seletor.
+
+Tela: `frontend/components/analisar/SaleSection.tsx` (+ `StoreTable`, `ListingCard`,
+`LaunchChecklist`); tipos em `frontend/lib/sale-types.ts`. Custo: 1 chamada de texto ao
+Gemini por venda gerada.

@@ -26,6 +26,18 @@ COUNTRY_NAMES: dict[str, str] = {
     "NL": "Holanda",
 }
 
+# Preposição de cada país ("no Brasil", "nos EUA", "na Alemanha"), para frases da interface.
+_COUNTRY_PREPOSITIONS: dict[str, str] = {
+    "BR": "no", "US": "nos", "GB": "no", "DE": "na", "FR": "na", "ES": "na", "JP": "no",
+    "RU": "na", "BY": "na", "MX": "no", "IT": "na", "CA": "no", "AU": "na", "PL": "na", "NL": "na",
+}
+
+
+def in_country(code: str) -> str:
+    """ "BR" → "no Brasil"; "US" → "nos EUA"; "DE" → "na Alemanha"."""
+    return f"{_COUNTRY_PREPOSITIONS.get(code, 'em')} {COUNTRY_NAMES.get(code, code)}"
+
+
 CATEGORIES: list[str] = [
     "anime",
     "games",

@@ -254,3 +254,5 @@ class Analysis(SQLModel, table=True):
     references_note: str | None = None
     result_json: str
     overall: float | None = None
+    sale_json: str | None = None  # Etapa 3b: venda preparada (ver app/sale/build.py)
+    sale_at: datetime | None = None

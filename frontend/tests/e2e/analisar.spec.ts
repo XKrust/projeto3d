@@ -49,6 +49,9 @@ async function setup(page: Page, analyze: { status: number; body: unknown; delay
   await page.route("**/api/analyses/3", (route) => route.fulfill({ json: { ...analysis, id: 3, previous: null } }));
   await page.route("**/api/analyses/*/images/**", (route) => route.fulfill({ path: IMAGE, contentType: "image/png" }));
   await page.route("**/ref*.png", (route) => route.fulfill({ path: IMAGE, contentType: "image/png" }));
+  await page.route("**/api/analyses/*/sale/countries", (route) =>
+    route.fulfill({ json: { max: 5, defaults: ["BR"], countries: [{ code: "BR", name: "Brasil" }] } })
+  );
   await page.route("**/api/analyze", async (route) => {
     if (analyze.delayMs) await new Promise((resolve) => setTimeout(resolve, analyze.delayMs));
     await route.fulfill({ status: analyze.status, json: analyze.body });

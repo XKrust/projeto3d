@@ -36,3 +36,7 @@
 | 2026-09-27 | Público por país vem de dado manual mensal (Similarweb), não de coleta automática | Similarweb não tem API grátis e raspar o site fura a regra de coleta educada |
 | 2026-09-28 | Analisador: 2 chamadas (identificar, criticar) com referências do Sketchfab; honestidade no prompt + checagem no app; nota geral = média dos critérios | Pedido do usuário: análise real, sem inflar ego nem inventar defeito, comparada com grandes artistas |
 | 2026-09-28 | Resposta inválida da IA → 424 (não 502) e a tela reduz imagens para ≤ 1600 px antes de enviar | 502 é lido como "backend desligado"; o proxy do Next limita o corpo e imagem menor gasta menos cota |
+| 2026-09-28 | Venda (3b): lojas, preço e chance são cálculo local; só o anúncio usa IA, e a falha da IA devolve a venda sem anúncio (200) | O usuário precisa do preço e das lojas mesmo sem chave ou com a cota esgotada |
+| 2026-09-28 | Chance da 3b = oportunidade × qualidade, sem multiplicar de novo por (1 − saturação) | A saturação já está dentro da oportunidade; a fórmula da spec geral contava duas vezes |
+| 2026-09-28 | Preço da 3b em US$ (moeda das lojas); câmbio para moeda local fica para a 3c | O app não tem câmbio ainda e as lojas cobram em dólar/euro |
+| 2026-09-28 | Limite de título e tags por loja só com confirmação na página oficial (hoje só Etsy); resto usa o padrão do app | Mesma regra de `fee_pct`: não confiar em números de memória |

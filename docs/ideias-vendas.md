@@ -17,6 +17,13 @@ Nada aqui está aprovado para implementação. Cada ideia entra numa etapa só d
 6. **Ninguém fica sabendo.** Publica e não divulga onde o público está.
 7. **Sem aprender com as próprias vendas.** Não sabe o que funcionou.
 
+## Entregues
+
+- **#1 (em parte):** na Etapa 3b, a venda mostra "≈ N vendas para cobrir as horas" (não no
+  card do radar).
+- **#2 (versão enxuta):** Etapa 3b: título, tags e descrição por loja e idioma, preço de
+  lançamento de 48 h, ordem de publicação. Falta "onde divulgar" (Etapa 3c).
+
 ## Ideias priorizadas
 
 | # | Ideia | O que faz | Resolve | Etapa sugerida | Esforço |
