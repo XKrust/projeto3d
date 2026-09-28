@@ -40,10 +40,12 @@ namespace Radar3D
             Mutex mutex = new Mutex(true, MutexName, out created);
             if (!created)
             {
+                mutex.Dispose();  // senão esta cópia segura o "já estou aberto" da outra
                 if (sair)
                 {
                     SignalExit();
-                    Launcher.WaitPortsFree(20000);
+                    WaitOtherInstanceGone(30000);
+                    Launcher.WaitPortsFree(10000);
                     return 0;
                 }
                 Launcher.OpenBrowser();
@@ -63,6 +65,24 @@ namespace Radar3D
             Application.Run(launcher);
             GC.KeepAlive(mutex);
             return launcher.ExitCode;
+        }
+
+        // Espera o outro lançador terminar de fechar (o "já estou aberto" some quando ele sai),
+        // para o desinstalador não tentar apagar o .exe ainda em uso.
+        static void WaitOtherInstanceGone(int timeoutMs)
+        {
+            DateTime limit = DateTime.Now.AddMilliseconds(timeoutMs);
+            while (DateTime.Now < limit)
+            {
+                try
+                {
+                    Mutex other = Mutex.OpenExisting(MutexName);
+                    other.Dispose();
+                }
+                catch (WaitHandleCannotBeOpenedException) { return; }
+                catch (Exception) { return; }
+                Thread.Sleep(250);
+            }
         }
 
         static void SignalExit()
@@ -334,6 +354,7 @@ namespace Radar3D
             KillPorts();
             tray.Visible = false;
             tray.Dispose();
+            splash.AllowClose = true;
             splash.Close();
             ExitThread();
         }
@@ -514,6 +535,7 @@ namespace Radar3D
     {
         readonly Label status;
         readonly Label detail;
+        public bool AllowClose;
 
         public SplashForm(Icon icon)
         {
@@ -568,7 +590,7 @@ namespace Radar3D
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
             // Fechar a janelinha não fecha o Radar 3D: ele segue abrindo e fica perto do relógio.
-            if (e.CloseReason == CloseReason.UserClosing)
+            if (!AllowClose && e.CloseReason == CloseReason.UserClosing)
             {
                 e.Cancel = true;
                 Hide();
