@@ -26,6 +26,7 @@ O usuário **não programa**. Tudo precisa rodar com duplo clique em `iniciar.ba
 | Analisador de modelo (Gemini, rubrica, preço) | `docs/analisador.md` |
 | Tabela de plataformas (taxas, força por país) | `docs/plataformas.md` |
 | Instalar, rodar e testar | `docs/como-rodar.md` |
+| Instalador do Windows e Releases | `docs/instalador.md` |
 | Visual: cores, fontes, layout das telas (sistema travado) | `design.md` |
 | Histórico de decisões | `docs/decisoes.md` |
 | Ideias para vender mais (backlog priorizado) | `docs/ideias-vendas.md` |

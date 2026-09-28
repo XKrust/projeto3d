@@ -47,3 +47,4 @@
 
 | 2026-09-28 | Proxy do Next com `proxyTimeout` de 3 min | O padrão (30 s) cortava a análise (2 chamadas à IA + referências) e a venda (anúncio + capa) no meio |
 | 2026-09-28 | `.bat` sempre com CRLF (`.gitattributes`) | Com LF (ZIP do GitHub) o cmd pode errar `goto`/rótulos |
+| 2026-09-28 | Instalador Windows (Inno Setup, por usuário) montado e testado no GitHub Actions; Python baixado pelo uv na 1ª abertura; dados em %LOCALAPPDATA%\Radar3D | Quem não programa instala com 2 cliques, sem Node/Python; o teste instala, abre, usa e desinstala num Windows real a cada mudança |
