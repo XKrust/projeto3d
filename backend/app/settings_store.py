@@ -49,6 +49,8 @@ DEFAULTS: dict = {
     },
     "gemini_model": "gemini-2.5-flash",
     "top_n_saturation": 50,
+    # Etapa 3b: valor da hora do modelador, para "≈ N vendas para cobrir as horas".
+    "hourly_rate_usd": 10,
 }
 
 
@@ -119,6 +121,12 @@ def _validate(settings: dict) -> None:
         1 <= modeling_days <= 180
     ):
         raise ValueError("O tempo de modelagem deve estar entre 1 e 180 dias")
+
+    hourly_rate = settings.get("hourly_rate_usd")
+    if not isinstance(hourly_rate, (int, float)) or isinstance(hourly_rate, bool) or not (
+        1 <= hourly_rate <= 1000
+    ):
+        raise ValueError("O valor da hora deve estar entre US$ 1 e US$ 1000")
 
     countries = settings.get("countries")
     if (
