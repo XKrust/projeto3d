@@ -18,7 +18,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/radar", label: "Radar", curto: "Radar" },
   { href: "/sazonal", label: "Sazonal", curto: "Sazonal" },
   { href: "/hype", label: "Hype", curto: "Hype" },
-  { href: "/analisar", label: "Analisar modelo", curto: "Analisar", emBreve: true },
+  { href: "/analisar", label: "Analisar modelo", curto: "Analisar" },
   { href: "/config", label: "Configurações", curto: "Config" },
 ];
 

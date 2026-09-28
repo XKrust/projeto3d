@@ -64,3 +64,32 @@ export function apiPut<T>(path: string, body: unknown): Promise<T> {
 export function apiPost<T>(path: string): Promise<T> {
   return request<T>(path, { method: "POST" });
 }
+
+/** Erro de API com o status HTTP (ex.: 409 = sem chave do Gemini). */
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public status: number
+  ) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
+/** POST multipart (envio de arquivos). Qualquer 4xx com `detail` vira `ApiError(detail)`. */
+export async function apiPostForm<T>(path: string, form: FormData): Promise<T> {
+  let response: Response;
+  try {
+    response = await fetch(path, { method: "POST", body: form });
+  } catch {
+    throw new BackendOfflineError();
+  }
+  if (response.ok) {
+    return (await response.json()) as T;
+  }
+  if (OFFLINE_STATUS.has(response.status)) {
+    throw new BackendOfflineError();
+  }
+  const detail = await parseErrorDetail(response);
+  throw new ApiError(detail ?? `Erro inesperado (${response.status})`, response.status);
+}

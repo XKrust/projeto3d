@@ -1,0 +1,147 @@
+{
+  "id": 7,
+  "created_at": "2026-09-28T10:00:00-03:00",
+  "input": {
+    "authorship": "fanart",
+    "market": "print",
+    "hours": 12,
+    "images": [
+      "image-1.png",
+      "image-2.png"
+    ],
+    "wireframe": null
+  },
+  "image_urls": [
+    "/api/analyses/7/images/image-1.png",
+    "/api/analyses/7/images/image-2.png"
+  ],
+  "identified": {
+    "theme": "Busto da Frieren",
+    "category": "anime",
+    "style": "anime",
+    "character": "Frieren",
+    "search_query": "frieren bust"
+  },
+  "references": [
+    {
+      "name": "Frieren Bust",
+      "artist": "Artista Um",
+      "url": "https://sketchfab.com/3d-models/frieren-aaaa",
+      "thumb_url": "/ref1.png",
+      "likes": 900,
+      "source": "auto"
+    },
+    {
+      "name": "Elf Mage",
+      "artist": "Artista Dois",
+      "url": "https://sketchfab.com/3d-models/elf-bbbb",
+      "thumb_url": "/ref2.png",
+      "likes": 500,
+      "source": "auto"
+    },
+    {
+      "name": "Minha Ref",
+      "artist": "Artista Três",
+      "url": "https://sketchfab.com/3d-models/ref-cccc",
+      "thumb_url": "/ref3.png",
+      "likes": 10,
+      "source": "usuario"
+    }
+  ],
+  "references_note": null,
+  "result": {
+    "criteria": {
+      "anatomia": {
+        "score": 5,
+        "why": "Mãos com dedos do mesmo comprimento."
+      },
+      "silhueta": {
+        "score": 7,
+        "why": "Proporções coerentes com o estilo."
+      },
+      "detalhe": {
+        "score": 7,
+        "why": "Proporções coerentes com o estilo."
+      },
+      "pose": {
+        "score": 7,
+        "why": "Proporções coerentes com o estilo."
+      },
+      "materiais": {
+        "score": 7,
+        "why": "Proporções coerentes com o estilo."
+      },
+      "render": {
+        "score": 7,
+        "why": "Proporções coerentes com o estilo."
+      },
+      "apresentacao": {
+        "score": 7,
+        "why": "Proporções coerentes com o estilo."
+      },
+      "topologia": {
+        "score": null,
+        "why": "Sem wireframe: não dá para avaliar."
+      },
+      "imprimibilidade": {
+        "score": 7,
+        "why": "Proporções coerentes com o estilo."
+      }
+    },
+    "strengths": [
+      {
+        "text": "Cabelo com mechas separadas em camadas",
+        "image": 1,
+        "area": "cabelo",
+        "flagged": false
+      },
+      {
+        "text": "Rosto incrível e expressivo",
+        "image": 1,
+        "area": "rosto",
+        "flagged": true
+      }
+    ],
+    "improvements": [
+      {
+        "image": 2,
+        "area": "mão esquerda",
+        "problem": "Dedos do mesmo comprimento",
+        "fix": "No Blender, use o pincel Move com simetria desligada e encurte o mindinho.",
+        "gain": "Mão mais natural",
+        "confidence": "alta",
+        "criterion": "anatomia",
+        "flagged": false
+      }
+    ],
+    "to_check": [
+      {
+        "image": 1,
+        "area": "base",
+        "problem": "Base pode estar fina demais para impressão",
+        "fix": "Meça a espessura da base.",
+        "gain": "Evita quebra",
+        "confidence": "baixa",
+        "criterion": "imprimibilidade",
+        "flagged": false
+      }
+    ],
+    "reference_comparison": [
+      {
+        "reference": 1,
+        "text": "Na referência 1 o cabelo tem mechas em 3 níveis; no seu é um bloco só.",
+        "flagged": false
+      }
+    ],
+    "top_actions": [
+      "Corrigir os dedos da mão esquerda",
+      "Separar as mechas do cabelo",
+      "Melhorar a luz do render"
+    ],
+    "overall": 6.9
+  },
+  "previous": {
+    "id": 3,
+    "overall": 5.8
+  }
+}
