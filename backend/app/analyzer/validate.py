@@ -31,6 +31,18 @@ FORBIDDEN_WORDS: frozenset[str] = frozenset(
     ]
 )
 
+# Fotos que o app tira do arquivo 3D (tela Analisar): a luz, o fundo e os ângulos são do app, e
+# em "argila" o material também. Esses critérios não medem o trabalho do modelador.
+AUTO_RENDER_KINDS = ("clay", "materials")
+AUTO_RENDER_WHY = "Fotos tiradas pelo app a partir do arquivo 3D: não dá para avaliar. Envie seus renders para avaliar isto."
+
+
+def auto_render_skipped(auto_renders: str) -> frozenset[str]:
+    if auto_renders not in AUTO_RENDER_KINDS:
+        return frozenset()
+    return frozenset({"render", "apresentacao", "materiais"} if auto_renders == "clay" else {"render", "apresentacao"})
+
+
 MAX_STRENGTHS = 5
 MAX_IMPROVEMENTS = 5
 MAX_ACTIONS = 3
@@ -56,10 +68,13 @@ def _valid_image(value: object, n_images: int) -> bool:
     return isinstance(value, int) and not isinstance(value, bool) and 1 <= value <= n_images
 
 
-def _criteria(raw: object, *, has_wireframe: bool, market: str) -> dict[str, dict]:
+def _criteria(raw: object, *, has_wireframe: bool, market: str, skipped: frozenset[str]) -> dict[str, dict]:
     raw = raw if isinstance(raw, dict) else {}
     result = {}
     for slug in CRITERIA:
+        if slug in skipped:
+            result[slug] = {"score": None, "why": AUTO_RENDER_WHY}
+            continue
         item = raw.get(slug) if isinstance(raw.get(slug), dict) else {}
         score = item.get("score")
         valid = isinstance(score, (int, float)) and not isinstance(score, bool) and 0 <= score <= 10
@@ -69,11 +84,13 @@ def _criteria(raw: object, *, has_wireframe: bool, market: str) -> dict[str, dic
     return result
 
 
-def validate_result(raw: dict, *, n_images: int, n_references: int, has_wireframe: bool, market: str) -> dict:
+def validate_result(raw: dict, *, n_images: int, n_references: int, has_wireframe: bool, market: str,
+                    auto_renders: str = "") -> dict:
     """Resposta crua da IA → `{criteria, strengths, improvements, to_check,
     reference_comparison, top_actions, overall}` (spec 3a §5)."""
     raw = raw if isinstance(raw, dict) else {}
-    criteria = _criteria(raw.get("criteria"), has_wireframe=has_wireframe, market=market)
+    skipped = auto_render_skipped(auto_renders)
+    criteria = _criteria(raw.get("criteria"), has_wireframe=has_wireframe, market=market, skipped=skipped)
 
     strengths = []
     for s in _dicts(raw.get("strengths")):
@@ -88,6 +105,8 @@ def validate_result(raw: dict, *, n_images: int, n_references: int, has_wirefram
         if not (area and fix and problem and _valid_image(i.get("image"), n_images)):
             continue
         criterion = i.get("criterion") if i.get("criterion") in CRITERIA else None
+        if criterion in skipped:
+            continue  # "melhore a luz" das fotos que o app tirou não é trabalho do modelador
         item = {
             "image": i["image"], "area": area, "problem": problem, "fix": fix, "gain": _text(i.get("gain")),
             "confidence": i.get("confidence") if i.get("confidence") in ("alta", "media", "baixa") else "media",

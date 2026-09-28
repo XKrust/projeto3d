@@ -109,7 +109,11 @@ function fitDistance(points: THREE.Vector3[], direction: THREE.Vector3): number 
   return distance;
 }
 
-export async function renderModel(file: File): Promise<File[]> {
+// `clay`: o modelo saiu em "argila" (sem os materiais do arquivo). A análise avisa a IA para
+// não julgar luz, fundo, capa (e material, na argila): quem fez as fotos foi o app.
+export type RenderedModel = { files: File[]; clay: boolean };
+
+export async function renderModel(file: File): Promise<RenderedModel> {
   const ext = modelExtension(file);
   if (!ext) throw new ModelRenderError(MSG_OPEN);
   if (file.size > MAX_BYTES) {
@@ -134,7 +138,8 @@ export async function renderModel(file: File): Promise<File[]> {
 
   const pmrem = new THREE.PMREMGenerator(renderer);
   const environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-  const clay = new THREE.MeshStandardMaterial({ color: CLAY, roughness: 0.6, metalness: 0 });
+  // Dos dois lados: triângulo virado ao contrário (comum em STL) não vira buraco na foto.
+  const clay = new THREE.MeshStandardMaterial({ color: CLAY, roughness: 0.6, metalness: 0, side: THREE.DoubleSide });
   try {
     renderer.setPixelRatio(1);
     renderer.setSize(SIZE, SIZE, false);
@@ -144,12 +149,13 @@ export async function renderModel(file: File): Promise<File[]> {
     scene.background = new THREE.Color(BACKGROUND);
     scene.environment = environment;
 
-    if (!keepMaterials) {
-      object.traverse((child) => {
-        const mesh = child as THREE.Mesh;
-        if (mesh.isMesh) mesh.material = clay;
-      });
-    }
+    object.traverse((child) => {
+      const mesh = child as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      // Normais: OBJ e 3MF podem vir sem, e muito STL grava zeros (a peça sairia preta).
+      if (ext === "stl" || !mesh.geometry.attributes.normal) mesh.geometry.computeVertexNormals();
+      if (!keepMaterials) mesh.material = clay;
+    });
     if (zUp) object.rotation.x = -Math.PI / 2;
     object.updateMatrixWorld(true);
     const box = new THREE.Box3().setFromObject(object);
@@ -190,7 +196,7 @@ export async function renderModel(file: File): Promise<File[]> {
       if (!blob) throw new ModelRenderError(MSG_WEBGL);
       files.push(new File([blob], `${base}-${view.name}.png`, { type: "image/png" }));
     }
-    return files;
+    return { files, clay: !keepMaterials };
   } finally {
     dispose(object);
     clay.dispose();

@@ -13,6 +13,8 @@ export type AnalyzeInput = {
   market: "print" | "digital";
   hours: string;
   referenceUrls: string[];
+  // Fotos tiradas pelo app do arquivo 3D: "clay" (argila) ou "materials" (GLB com materiais).
+  autoRenders: "" | "clay" | "materials";
 };
 
 const MAX_IMAGES = 4;
@@ -44,6 +46,7 @@ export function AnalyzeForm({ busy, onSubmit }: { busy: boolean; onSubmit: (inpu
   const [rendering, setRendering] = useState<string | null>(null);
   const [fileNote, setFileNote] = useState<string | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
+  const [generated, setGenerated] = useState<{ files: File[]; kind: "clay" | "materials" } | null>(null);
   const imagesInput = useRef<HTMLInputElement>(null);
   const wireframeInput = useRef<HTMLInputElement>(null);
 
@@ -67,7 +70,9 @@ export function AnalyzeForm({ busy, onSubmit }: { busy: boolean; onSubmit: (inpu
     setRendering(model.name);
     try {
       const { renderModel } = await import("@/lib/render-model");
-      setImages(await renderModel(model));
+      const rendered = await renderModel(model);
+      setImages(rendered.files);
+      setGenerated({ files: rendered.files, kind: rendered.clay ? "clay" : "materials" });
       setFileNote(
         `Fotos tiradas de ${model.name}: capa em 3/4, frente, lado e costas. Pode trocar qualquer uma por um print seu.`,
       );
@@ -95,7 +100,8 @@ export function AnalyzeForm({ busy, onSubmit }: { busy: boolean; onSubmit: (inpu
       .split(/\s+/)
       .map((line) => line.trim())
       .filter(Boolean);
-    onSubmit({ images, wireframe, authorship, market, hours, referenceUrls });
+    const autoRenders = generated && images.some((file) => generated.files.includes(file)) ? generated.kind : "";
+    onSubmit({ images, wireframe, authorship, market, hours, referenceUrls, autoRenders });
   }
 
   return (

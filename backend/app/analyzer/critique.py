@@ -3,7 +3,7 @@
 
 from app.ai.provider import ImageInput, TextProvider
 from app.analyzer.errors import ask_json
-from app.analyzer.validate import CRITERIA
+from app.analyzer.validate import AUTO_RENDER_KINDS, CRITERIA
 
 RUBRIC = """Rubrica de 0 a 10 para cada critério (use as âncoras, não a sua simpatia):
 - 0–3: erro que qualquer comprador nota;
@@ -46,8 +46,19 @@ def _criteria_text(market: str, has_wireframe: bool) -> str:
     return "Critérios:\n" + "\n".join(lines) + "\n" + extra
 
 
+def _auto_render_text(auto_renders: str) -> str:
+    if auto_renders not in AUTO_RENDER_KINDS:
+        return ""
+    text = ("As imagens do usuário foram tiradas automaticamente pelo app a partir do arquivo 3D (luz, "
+            "fundo e ângulos padrão do app, não do usuário): dê score null para render e apresentacao e "
+            "não sugira melhorias de luz, fundo, ângulo ou capa.")
+    if auto_renders == "clay":
+        text += " O modelo aparece em argila cinza, sem os materiais do arquivo: materiais também null."
+    return text
+
+
 def build_prompt(*, identified: dict, market: str, authorship: str, has_wireframe: bool, n_images: int,
-                 n_references: int) -> str:
+                 n_references: int, auto_renders: str = "") -> str:
     who = "fan-art de " + identified["character"] if authorship == "fanart" and identified.get("character") else authorship
     if n_references:
         refs = (f"As imagens 1 a {n_images} são do usuário. As seguintes são as referências 1 a "
@@ -56,15 +67,17 @@ def build_prompt(*, identified: dict, market: str, authorship: str, has_wirefram
     else:
         refs = (f"As imagens 1 a {n_images} são do usuário. Não há referências desta vez: compare com o "
                 "padrão profissional do tema e diga isso na comparação.")
-    return "\n\n".join([
+    parts = [
         "Você é um artista 3D profissional revisando o trabalho de um colega que quer vender o modelo.",
         f"Modelo: {identified['theme']} ({identified.get('style') or 'estilo não identificado'}; {who}).",
-        refs, RUBRIC, _criteria_text(market, has_wireframe), RULES, OUTPUT,
-    ])
+        refs, _auto_render_text(auto_renders), RUBRIC, _criteria_text(market, has_wireframe), RULES, OUTPUT,
+    ]
+    return "\n\n".join(part for part in parts if part)
 
 
 def critique(provider: TextProvider, images: list[ImageInput], references: list[ImageInput], *,
-             identified: dict, market: str, authorship: str, has_wireframe: bool) -> dict:
+             identified: dict, market: str, authorship: str, has_wireframe: bool, auto_renders: str = "") -> dict:
     prompt = build_prompt(identified=identified, market=market, authorship=authorship,
-                          has_wireframe=has_wireframe, n_images=len(images), n_references=len(references))
+                          has_wireframe=has_wireframe, n_images=len(images), n_references=len(references),
+                          auto_renders=auto_renders)
     return ask_json(provider, prompt, [*images, *references], required="criteria")

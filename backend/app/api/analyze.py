@@ -17,7 +17,7 @@ from app.analyzer.errors import AIInvalidResponse
 from app.analyzer.identify import identify
 from app.analyzer.references import find_references, parse_reference_url
 from app.analyzer.store import analysis_to_dict, image_path, list_analyses, save_analysis
-from app.analyzer.validate import validate_result
+from app.analyzer.validate import AUTO_RENDER_KINDS, validate_result
 from app.db import get_session
 from app.http import make_client
 from app.models import Analysis
@@ -76,6 +76,7 @@ def analyze(
     market: str = Form(...),
     hours: float | None = Form(default=None),
     reference_urls: list[str] = Form(default=[]),
+    auto_renders: str = Form(default=""),
     session: Session = Depends(get_session),
     provider: TextProvider | None = Depends(get_analyzer_provider),
 ) -> dict:
@@ -85,6 +86,8 @@ def analyze(
         raise HTTPException(status_code=422, detail="Autoria inválida: use autoral ou fanart")
     if market not in MARKETS:
         raise HTTPException(status_code=422, detail="Mercado inválido: use print ou digital")
+    if auto_renders and auto_renders not in AUTO_RENDER_KINDS:
+        raise HTTPException(status_code=422, detail="Origem das fotos inválida: use clay ou materials")
     urls = [u.strip() for u in reference_urls if u and u.strip()]
     if len(urls) > MAX_REFERENCE_URLS or any(parse_reference_url(u) is None for u in urls):
         raise HTTPException(status_code=422, detail=MSG_LINK)
@@ -109,7 +112,7 @@ def analyze(
         with make_client() as http:
             references, ref_images, note = find_references(http, identified["search_query"], urls, token)
         raw = critique(provider, ai_images, ref_images, identified=identified, market=market,
-                       authorship=authorship, has_wireframe=has_wireframe)
+                       authorship=authorship, has_wireframe=has_wireframe, auto_renders=auto_renders)
     except AIQuotaError as exc:
         raise HTTPException(status_code=429, detail=MSG_QUOTA) from exc
     except AIKeyError as exc:
@@ -122,7 +125,7 @@ def analyze(
         raise HTTPException(status_code=424, detail=MSG_AI_DOWN) from exc
 
     result = validate_result(raw, n_images=len(ai_images), n_references=len(references),
-                             has_wireframe=has_wireframe, market=market)
+                             has_wireframe=has_wireframe, market=market, auto_renders=auto_renders)
     row = save_analysis(
         session,
         form={"authorship": authorship, "market": market, "hours": hours},
