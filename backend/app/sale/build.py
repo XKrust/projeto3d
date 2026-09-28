@@ -175,6 +175,7 @@ def build_sale(session: Session, analysis: Analysis, countries: list[str], provi
                   or default_variations(market=analysis.market, proof=proof))
     cover, cover_note = _cover(provider, analysis, evidence_items, COVER_QUOTA if note == NOTE_QUOTA else None,
                                scope)
+    peak = peak_for_topic(session, topic, countries[0])
     promotion = build_promotion(session, topic=topic, market=analysis.market, category=analysis.category,
                                 tags=tags)
 
@@ -191,6 +192,7 @@ def build_sale(session: Session, analysis: Analysis, countries: list[str], provi
         "cover_note": cover_note,
         "fanart_tip": (inspired_tip([s for c in by_country for s in c["stores"]])
                        if analysis.authorship == "fanart" else None),
-        "checklist": _checklist(by_country, peak_for_topic(session, topic, countries[0]), promotion["communities"]),
+        "checklist": _checklist(by_country, peak, promotion["communities"]),
+        "peak_day": peak.isoformat() if peak else None,
         "estimate": True,
     }

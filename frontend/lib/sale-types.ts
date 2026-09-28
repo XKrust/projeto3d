@@ -69,6 +69,7 @@ export type Sale = {
   cover_note?: string | null;
   fanart_tip?: string | null;
   checklist: string[];
+  peak_day?: string | null;
   estimate: true;
 };
 
@@ -98,4 +99,14 @@ export function salesToCover(hours: number, hourlyRate: number, price: number): 
 /** Converte um preço em US$ para a moeda do país: 7.99 × 5.43 → "R$ 43,39". */
 export function formatLocal(usd: number, fx: Fx): string {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: fx.currency }).format(usd * fx.rate);
+}
+
+// Preposição de cada país, igual a `in_country` do backend: "no Brasil", "nos EUA", "na Alemanha".
+const PREPOSITIONS: Record<string, string> = {
+  BR: "no", US: "nos", GB: "no", DE: "na", FR: "na", ES: "na", JP: "no",
+  RU: "na", BY: "na", MX: "no", IT: "na", CA: "no", AU: "na", PL: "na", NL: "na",
+};
+
+export function inCountry(code: string, name: string): string {
+  return `${PREPOSITIONS[code] ?? "em"} ${name}`;
 }
