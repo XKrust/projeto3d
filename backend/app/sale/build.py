@@ -15,12 +15,16 @@ from app.analyzer.errors import AIInvalidResponse
 from app.constants import in_country
 from app.fx import fx_for_country
 from app.models import Analysis
+from app.http import make_client
 from app.sale.chance import chance_for_store, peak_for_topic
+from app.sale.cover import cover_image, evaluate_cover, top_covers
+from app.sale.fanart import fanart_for_store, inspired_tip
 from app.sale.listing import generate_listing, languages_for, top_tags
 from app.sale.match import match_topic
 from app.sale.pricing import comparable_items, price_for_store, sales_to_cover
 from app.sale.promotion import build_promotion
 from app.sale.stores import rank_stores
+from app.sale.variations import default_variations, evidence, validate_variations
 from app.settings_store import get_settings
 
 logger = logging.getLogger(__name__)
@@ -30,6 +34,11 @@ NOTE_QUOTA = "A cota grátis da IA acabou por hoje: lojas, preço e chance estã
 NOTE_INVALID = "A IA devolveu uma resposta inválida para o anúncio. Tente gerar de novo."
 NOTE_DOWN = "A IA não respondeu agora. Lojas, preço e chance estão prontos; tente o anúncio de novo mais tarde."
 NOTE_NO_STORES = "Nenhuma loja do app vende este tipo de modelo nos países escolhidos."
+COVER_NO_KEY = "Configure a chave do Gemini em Configurações para avaliar a capa."
+COVER_QUOTA = "A cota grátis da IA acabou por hoje: a capa fica para depois."
+COVER_INVALID = "A IA devolveu uma resposta inválida para a capa. Tente gerar de novo."
+COVER_DOWN = "A IA não respondeu agora para a capa. Tente de novo mais tarde."
+COVER_NO_IMAGE = "A imagem da capa desta análise não foi encontrada."
 
 
 def _money(value: float) -> str:
@@ -64,26 +73,50 @@ def _checklist(by_country: list[dict], peak, communities: list[dict]) -> list[st
     return steps
 
 
-def _listing(provider: TextProvider | None, analysis: Analysis, pairs, tags) -> tuple[list[dict] | None, str | None]:
+def _listing(provider: TextProvider | None, analysis: Analysis, pairs, tags) -> tuple[list[dict] | None, str | None, object]:
+    """(anúncios, motivo quando não saiu, variações brutas da IA)."""
     if not pairs:
-        return None, NOTE_NO_STORES
+        return None, NOTE_NO_STORES, None
     if provider is None:
-        return None, NOTE_NO_KEY
+        return None, NOTE_NO_KEY, None
     result = json.loads(analysis.result_json)
     strengths = [s.get("text", "") for s in result.get("strengths", []) if isinstance(s, dict) and s.get("text")]
     identified = {"theme": analysis.theme, "character": analysis.character, "style": analysis.style,
                   "category": analysis.category}
     try:
-        listings = generate_listing(provider, identified=identified, market=analysis.market,
-                                    authorship=analysis.authorship, strengths=strengths, tags=tags, pairs=pairs)
+        listings, variations = generate_listing(provider, identified=identified, market=analysis.market,
+                                                authorship=analysis.authorship, strengths=strengths, tags=tags,
+                                                pairs=pairs)
     except AIQuotaError:
-        return None, NOTE_QUOTA
+        return None, NOTE_QUOTA, None
     except AIInvalidResponse:
-        return None, NOTE_INVALID
+        return None, NOTE_INVALID, None
     except Exception:  # noqa: BLE001 — erro do provedor (rede, 5xx do Gemini)
         logger.exception("Falha ao gerar o anúncio")
-        return None, NOTE_DOWN
-    return (listings, None) if listings else (None, NOTE_INVALID)
+        return None, NOTE_DOWN, None
+    return (listings, None, variations) if listings else (None, NOTE_INVALID, variations)
+
+
+def _cover(provider: TextProvider | None, analysis: Analysis, items: list, skip_note: str | None) -> tuple[dict | None, str | None]:
+    """Nota da capa (2ª chamada da venda). `skip_note`: a cota já acabou no anúncio."""
+    if provider is None:
+        return None, COVER_NO_KEY
+    if skip_note:
+        return None, skip_note
+    image = cover_image(analysis)
+    if image is None:
+        return None, COVER_NO_IMAGE
+    try:
+        with make_client() as http:
+            refs, ref_images = top_covers(http, items)
+        return evaluate_cover(provider, image, refs, ref_images, market=analysis.market), None
+    except AIQuotaError:
+        return None, COVER_QUOTA
+    except AIInvalidResponse:
+        return None, COVER_INVALID
+    except Exception:  # noqa: BLE001
+        logger.exception("Falha ao avaliar a capa")
+        return None, COVER_DOWN
 
 
 def build_sale(session: Session, analysis: Analysis, countries: list[str], provider: TextProvider | None) -> dict:
@@ -102,7 +135,9 @@ def build_sale(session: Session, analysis: Analysis, countries: list[str], provi
                                     fee_pct=store["fee_pct"], basis=basis)
             chance = chance_for_store(session, topic=topic, country=country, platform=slug,
                                       platform_name=store["name"], fit=store["fit"], overall=analysis.overall)
-            stores.append({**store, "price": price, "price_note": None if price else basis, "chance": chance})
+            fanart = fanart_for_store(slug) if analysis.authorship == "fanart" else None
+            stores.append({**store, "price": price, "price_note": None if price else basis, "chance": chance,
+                           "fanart": fanart})
         by_country.append({"country": country, "fx": fx_for_country(session, country), "stores": stores})
 
     first_price = next((s["price"] for c in by_country for s in c["stores"] if s["price"]), None)
@@ -117,7 +152,12 @@ def build_sale(session: Session, analysis: Analysis, countries: list[str], provi
     tags = top_tags([(json.loads(i.tags_json or "[]"), i.likes) for i in seen_items.values()],
                     aliases=[topic.name, *aliases] if topic else [])
     pairs = languages_for({c["country"]: [s["platform"] for s in c["stores"]] for c in by_country})
-    listings, note = _listing(provider, analysis, pairs, tags)
+    listings, note, raw_variations = _listing(provider, analysis, pairs, tags)
+    proof = evidence(list(seen_items.values()), analysis.market)
+    variations = (validate_variations(raw_variations, market=analysis.market, proof=proof)
+                  or default_variations(market=analysis.market, proof=proof))
+    cover, cover_note = _cover(provider, analysis, list(seen_items.values()),
+                               COVER_QUOTA if note == NOTE_QUOTA else None)
     promotion = build_promotion(session, topic=topic, market=analysis.market, category=analysis.category,
                                 tags=tags)
 
@@ -129,6 +169,11 @@ def build_sale(session: Session, analysis: Analysis, countries: list[str], provi
         "listing": {"listings": listings} if listings else None,
         "listing_note": note,
         "promotion": promotion,
+        "variations": variations,
+        "cover": cover,
+        "cover_note": cover_note,
+        "fanart_tip": (inspired_tip([s for c in by_country for s in c["stores"]])
+                       if analysis.authorship == "fanart" else None),
         "checklist": _checklist(by_country, peak_for_topic(session, topic, countries[0]), promotion["communities"]),
         "estimate": True,
     }

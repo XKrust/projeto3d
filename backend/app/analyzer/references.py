@@ -68,7 +68,7 @@ def _get_json(http: httpx.Client, url: str, headers: dict, **params) -> dict | N
         return None
 
 
-def _download(http: httpx.Client, url: str | None) -> ImageInput | None:
+def download_image(http: httpx.Client, url: str | None) -> ImageInput | None:
     if not url:
         return None
     try:
@@ -116,7 +116,7 @@ def find_references(
         if uid in seen or len(references) >= MAX_REFERENCES or not time_left():
             continue
         seen.add(uid)
-        image = _download(http, ref["thumb_url"])
+        image = download_image(http, ref["thumb_url"])
         if image is not None:
             references.append(ref)
             images.append(image)

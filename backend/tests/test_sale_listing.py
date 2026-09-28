@@ -119,8 +119,10 @@ class FakeProvider:
 
 def test_generate_listing_retries_invalid_json():
     provider = FakeProvider([ValueError("json"), {"listings": [_listing()]}])
-    result = generate_listing(provider, identified={"theme": "Busto", "character": None, "style": "",
+    result, variations = generate_listing(provider, identified={"theme": "Busto", "character": None, "style": "",
                                                     "category": "anime"},
                               market="print", authorship="autoral", strengths=[], tags=[], pairs=[("cults3d", "pt")])
     assert result[0]["title"] == "Busto Frieren para impressão 3D"
+    assert variations is None
     assert len(provider.prompts) == 2
+    assert '"presuportada"' in provider.prompts[0]
