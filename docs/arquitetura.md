@@ -18,6 +18,7 @@
 - `backend/app/sale/`: a venda da análise (Etapa 3b: tema no radar, lojas, preço, chance,
   anúncio, checklist; ver `docs/analisador.md`). Grava em `Analysis.sale_json`/`sale_at`
   (colunas acrescentadas por `ALTER TABLE` em `init_db`).
+- `backend/app/fx.py`: câmbio diário do dólar (tabela `FxRate`, ver `coletores.md`).
 - `backend/app/api/`: rotas REST.
 - `backend/app/seed/`: YAMLs editáveis (plataformas, eventos, entidades).
 - `frontend/`: as telas `/radar`, `/sazonal`, `/hype`, `/analisar` e `/config`.

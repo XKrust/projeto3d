@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { LANG_LABELS, type Listing } from "@/lib/sale-types";
 
-function CopyButton({ label, text }: { label: string; text: string }) {
+export function CopyButton({ label, text }: { label: string; text: string }) {
   const [copied, setCopied] = useState(false);
   async function copy() {
     try {

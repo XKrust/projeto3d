@@ -21,8 +21,8 @@ Nada aqui está aprovado para implementação. Cada ideia entra numa etapa só d
 
 - **#1 (em parte):** na Etapa 3b, a venda mostra "≈ N vendas para cobrir as horas" (não no
   card do radar).
-- **#2 (versão enxuta):** Etapa 3b: título, tags e descrição por loja e idioma, preço de
-  lançamento de 48 h, ordem de publicação. Falta "onde divulgar" (Etapa 3c).
+- **#2:** Etapa 3b: título, tags e descrição por loja e idioma, preço de lançamento de 48 h,
+  ordem de publicação. Etapa 3c: onde divulgar (subreddits e hashtags).
 
 ## Ideias priorizadas
 

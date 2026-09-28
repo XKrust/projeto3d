@@ -5,6 +5,7 @@ import { useState } from "react";
 import useSWR from "swr";
 import { LaunchChecklist } from "@/components/analisar/LaunchChecklist";
 import { ListingCard } from "@/components/analisar/ListingCard";
+import { PromotionBlock } from "@/components/analisar/PromotionBlock";
 import { StoreTable } from "@/components/analisar/StoreTable";
 import { Button } from "@/components/ui/button";
 import { ApiError, apiGet, apiPostJson, apiPut, BackendOfflineError } from "@/lib/api";
@@ -78,7 +79,8 @@ function SaleResult({ sale }: { sale: Sale }) {
         {sale.topic
           ? `Tema no radar: ${sale.topic.name}.`
           : "Este tema ainda não está no radar: o preço usa modelos da mesma categoria."}{" "}
-        Preço e chance são estimativas a partir do que o app coletou, em dólar (moeda das lojas).
+        Preço e chance são estimativas a partir do que o app coletou, em dólar (moeda das lojas), com a
+        conversão aproximada para a moeda do país quando há câmbio.
       </p>
 
       <Block title="Onde vender">
@@ -109,6 +111,12 @@ function SaleResult({ sale }: { sale: Sale }) {
           </div>
         )}
       </Block>
+
+      {sale.promotion && (
+        <Block title="Onde divulgar">
+          <PromotionBlock promotion={sale.promotion} />
+        </Block>
+      )}
 
       <Block title="Lançamento">
         <LaunchChecklist steps={sale.checklist} />

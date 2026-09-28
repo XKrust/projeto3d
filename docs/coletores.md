@@ -681,3 +681,15 @@ implementada**. Revisitar se o MakerWorld publicar uma API pública.
    comportamento inesperado do robots.txt etc.).
 
 - **Google Trends por país:** falha no feed de um país pula só aquele país; só falha a coleta inteira se todos falharem.
+
+## Câmbio (Frankfurter, `app/fx.py`)
+
+Não é um coletor de tendência: baixa 1x por dia (`claim_daily("fx")`, no fim do ciclo, em
+`pipeline.run_after_cycle`) quanto vale 1 US$ em BRL, GBP, EUR, JPY, MXN, CAD, AUD e PLN, de
+`https://api.frankfurter.dev/v1/latest?base=USD&symbols=...` (grátis, sem chave, taxas de
+referência do BCE). Grava em `FxRate(day, currency, rate)` com a data das taxas. Falha de rede
+ou resposta estranha vai para o log e nunca derruba o ciclo; tenta de novo no dia seguinte.
+RUB e BYN não existem no BCE desde 2022: Rússia e Bielorrússia ficam só em US$. Teste:
+`tests/test_fx.py` com `tests/fixtures/frankfurter/latest_usd.json` (montada no formato
+documentado da API, porque o ambiente de desenvolvimento não alcança o site).
+
