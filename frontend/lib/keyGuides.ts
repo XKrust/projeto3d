@@ -109,7 +109,7 @@ export const KEY_GUIDES: Record<string, KeyGuide> = {
       "É gratuito. É o que liga a tela Analisar modelo, e também explica as tendências do radar.",
       "Acesse aistudio.google.com/app/apikey com sua conta do Google.",
       "Clique em “Create API key”. Se pedir um projeto, escolha o que aparecer ou crie um.",
-      "Copie a chave (começa com AIza…), cole aqui e clique em Salvar.",
+      "Copie a chave (começa com AQ. ou AIza…), cole aqui e clique em Salvar.",
     ],
     url: "https://aistudio.google.com/app/apikey",
   },

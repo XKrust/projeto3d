@@ -83,7 +83,7 @@ def test_gemini_provider_parses_json_response(monkeypatch):
             return SimpleNamespace(text=json.dumps({"ok": True}))
 
     class FakeClient:
-        def __init__(self, api_key):
+        def __init__(self, api_key, **kwargs):
             captured["api_key"] = api_key
             self.models = FakeModels()
 
@@ -108,7 +108,7 @@ def test_gemini_provider_maps_429_resource_exhausted_to_ai_quota_error(monkeypat
             raise ClientError(429, {"error": {"status": "RESOURCE_EXHAUSTED", "message": "cota excedida"}})
 
     class FakeClient:
-        def __init__(self, api_key):
+        def __init__(self, api_key, **kwargs):
             self.models = FakeModels()
 
     monkeypatch.setattr(provider_module, "Client", FakeClient)
@@ -127,7 +127,7 @@ def test_gemini_provider_reraises_other_api_errors(monkeypatch):
             raise ClientError(400, {"error": {"status": "INVALID_ARGUMENT", "message": "prompt invalido"}})
 
     class FakeClient:
-        def __init__(self, api_key):
+        def __init__(self, api_key, **kwargs):
             self.models = FakeModels()
 
     monkeypatch.setattr(provider_module, "Client", FakeClient)
