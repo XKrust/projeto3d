@@ -15,7 +15,7 @@ export const KEY_GUIDES: Record<string, KeyGuide> = {
       "Acesse o Google Cloud Console e crie um projeto (ou use um já existente).",
       "No menu, vá em “APIs e serviços” → “Biblioteca”, procure por “YouTube Data API v3” e clique em “Ativar”.",
       "Vá em “Credenciais” → “Criar credenciais” → “Chave de API”.",
-      "Copie a chave gerada e cole aqui.",
+      "Copie a chave (começa com AIza…), cole aqui e clique em Salvar.",
     ],
     url: "https://console.cloud.google.com/apis/credentials",
   },
@@ -106,10 +106,10 @@ export const KEY_GUIDES: Record<string, KeyGuide> = {
   gemini: {
     titulo: "Gemini",
     passos: [
-      "É gratuito. Usado para explicar as tendências do radar e, mais adiante, para analisar modelos 3D.",
+      "É gratuito. É o que liga a tela Analisar modelo, e também explica as tendências do radar.",
       "Acesse aistudio.google.com/app/apikey com sua conta do Google.",
-      "Clique em “Create API key” e escolha um projeto.",
-      "Copie a chave gerada e cole aqui.",
+      "Clique em “Create API key”. Se pedir um projeto, escolha o que aparecer ou crie um.",
+      "Copie a chave (começa com AIza…), cole aqui e clique em Salvar.",
     ],
     url: "https://aistudio.google.com/app/apikey",
   },
