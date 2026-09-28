@@ -115,9 +115,12 @@ jobs:
           RADAR_NO_BROWSER: "1"
         run: |
           $app = "$env:LOCALAPPDATA\Programs\Radar3D"
-          $t = Measure-Command { & cmd /c "`"$app\Radar3D.cmd`"" }
+          # Sem Measure-Command: ele captura a saída e esperaria o backend/telas (que herdam o
+          # pipe e continuam rodando) fecharem.
+          $t = [Diagnostics.Stopwatch]::StartNew()
+          & cmd /c "`"$app\Radar3D.cmd`""
           if ($LASTEXITCODE -ne 0) { throw "Reabrir falhou" }
-          Write-Host "::notice::Reabriu em $([int]$t.TotalSeconds) s"
+          Write-Host "::notice::Reabriu em $([int]$t.Elapsed.TotalSeconds) s"
           if ((Invoke-WebRequest "http://127.0.0.1:3000/api/health" -UseBasicParsing -TimeoutSec 30).StatusCode -ne 200) { throw "Reaberto não responde" }
 
       - name: Teste - desinstalar
