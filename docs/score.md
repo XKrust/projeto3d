@@ -67,7 +67,7 @@ Função: `backend/app/pipeline.py:compute_scores(session, day)`.
   (a tela diz "ainda medindo"). É o que mexe no ranking no dia a dia.
 - **Fusão automática:** tópico antigo cujo nome virou apelido de uma entidade é fundido
   nela ao fim de `extract_topics` (ex.: "Dungeon Meshi" → "Delicious in Dungeon").
-- **pagamento**: 1; Rússia e Bielorrússia 0,3 (cartão/PayPal/Stripe bloqueados por sanções).
+- **pagamento**: 1; Rússia e Bielorrússia 0,5 (cartão/PayPal/Stripe bloqueados por sanções; compram por meio indireto).
 
 `GET /api/countries` → ordenado pelo ranking (inativos no fim), cada item `{code, name,
 active, top_topics (3), stores (3 lojas mais fortes), topics, rank}`; `rank` =

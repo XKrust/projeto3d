@@ -45,6 +45,8 @@ sites:
 # bloqueados pelas sanções; o comprador precisa de meio indireto. Fontes:
 # https://support.stripe.com/questions/sanctions-on-russia-and-belarus
 # https://dtf.ru/howto/3446468-kak-oplatit-cults-3d-rossii-i-belarusi-poshagovoe-rukovodstvo
+# 0.5 = metade da facilidade: há compra por meio indireto (o guia do DTF é só para o
+# Cults3D), mas parte dos compradores desiste no pagamento.
 payment:
-  RU: 0.3
-  BY: 0.3
+  RU: 0.5
+  BY: 0.5

@@ -49,8 +49,8 @@ def test_audience_index_uses_real_marketplace_audience():
 
 
 def test_payment_is_harder_in_sanctioned_countries():
-    assert payment_factor("RU") == 0.3
-    assert payment_factor("BY") == 0.3
+    assert payment_factor("RU") == 0.5
+    assert payment_factor("BY") == 0.5
     assert payment_factor("BR") == 1.0
 
 
