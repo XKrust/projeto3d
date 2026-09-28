@@ -5,7 +5,7 @@ test.describe("esqueleto do frontend", () => {
     await page.route("**/api/**", (route) => route.abort());
     await page.goto("/analisar");
     await expect(
-      page.getByText("Não consegui falar com o backend. Ele está ligado? Rode o iniciar.bat.")
+      page.getByText("Não consegui falar com o backend. Feche e abra o Radar 3D de novo pelo menu Iniciar (ou pelo atalho da área de trabalho).")
     ).toBeVisible();
   });
 
@@ -16,7 +16,7 @@ test.describe("esqueleto do frontend", () => {
     await page.goto("/radar");
     await expect(
       page.getByText(
-        "Não consegui falar com o backend. Ele está ligado? Rode o iniciar.bat."
+        "Não consegui falar com o backend. Feche e abra o Radar 3D de novo pelo menu Iniciar (ou pelo atalho da área de trabalho)."
       )
     ).toBeVisible();
   });
@@ -28,7 +28,7 @@ test.describe("esqueleto do frontend", () => {
     await page.goto("/config");
     await expect(
       page.getByText(
-        "Não consegui falar com o backend. Ele está ligado? Rode o iniciar.bat."
+        "Não consegui falar com o backend. Feche e abra o Radar 3D de novo pelo menu Iniciar (ou pelo atalho da área de trabalho)."
       )
     ).toBeVisible();
   });

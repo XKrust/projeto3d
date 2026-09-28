@@ -1,6 +1,7 @@
 @echo off
 chcp 65001 >nul
-cd /d "%~dp0"
+rem Roda a partir da raiz do repositório (este arquivo fica em ferramentas-dev\).
+cd /d "%~dp0.."
 
 rem 1. Se a porta 3000 ja estiver em uso, o Radar 3D ja esta rodando: so abre o navegador.
 netstat -ano | findstr /r /c:":3000 .*LISTENING" >nul

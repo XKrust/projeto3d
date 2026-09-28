@@ -49,3 +49,4 @@
 | 2026-09-28 | `.bat` sempre com CRLF (`.gitattributes`) | Com LF (ZIP do GitHub) o cmd pode errar `goto`/rótulos |
 | 2026-09-28 | Instalador Windows (Inno Setup, por usuário) montado e testado no GitHub Actions; Python baixado pelo uv na 1ª abertura; dados em %LOCALAPPDATA%\Radar3D | Quem não programa instala com 2 cliques, sem Node/Python; o teste instala, abre, usa e desinstala num Windows real a cada mudança |
 | 2026-09-28 | Seção Venda com resumo + anúncio visíveis e o resto recolhido | 8 blocos abertos eram demais para quem não é técnico; a decisão (onde, quanto, quando) cabe em 4 linhas |
+| 2026-09-28 | `Radar3D-Setup.exe` na raiz (gravado pelo CI só em tag) e `.bat` movidos para `ferramentas-dev/` | Pedido do usuário: quem baixa o ZIP acha o instalador na hora, e arquivos .bat na raiz passam desconfiança |
