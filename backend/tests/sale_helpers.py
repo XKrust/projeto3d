@@ -3,6 +3,8 @@
 import json
 from datetime import date
 
+from sqlmodel import select
+
 from app import clock
 from app.models import Analysis, Platform, RawItem, Topic, TopicItem, TopicScore
 
@@ -52,7 +54,7 @@ def add_platform(session, slug, *, markets=("print",), strength=None, categories
 def add_items(session, topic, source, prices, *, day=None, tags=(), likes=None, country="BR"):
     """Um RawItem por preço, ligado ao tópico (se houver)."""
     day = day or clock.today()
-    start = session.query(RawItem).count()
+    start = len(session.exec(select(RawItem.id)).all())
     for number, price in enumerate(prices):
         item = RawItem(source=source, external_id=f"{source}-{start + number}", country=country, day=day,
                        title=f"item {number}", tags_json=json.dumps(list(tags)), price_usd=price,
