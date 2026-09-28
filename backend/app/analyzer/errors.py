@@ -1,6 +1,6 @@
 """Erros do analisador e a chamada à IA com uma nova tentativa."""
 
-from app.ai.provider import AIQuotaError, ImageInput, TextProvider
+from app.ai.provider import AIKeyError, AIQuotaError, ImageInput, TextProvider
 
 ATTEMPTS = 2
 
@@ -15,7 +15,7 @@ def ask_json(provider: TextProvider, prompt: str, images: list[ImageInput], requ
     for _ in range(ATTEMPTS):
         try:
             result = provider.generate_json_with_images(prompt, images)
-        except AIQuotaError:
+        except (AIQuotaError, AIKeyError):
             raise
         except ValueError:  # JSON quebrado
             continue

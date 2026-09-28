@@ -10,7 +10,7 @@ import logging
 from sqlmodel import Session, select
 
 from app import clock
-from app.ai.provider import AIQuotaError, TextProvider
+from app.ai.provider import AIKeyError, AIQuotaError, TextProvider
 from app.analyzer.errors import AIInvalidResponse
 from app.constants import in_country
 from app.fx import fx_for_country
@@ -30,6 +30,7 @@ from app.settings_store import get_settings
 logger = logging.getLogger(__name__)
 
 NOTE_NO_KEY = "Configure a chave do Gemini em Configurações para gerar o anúncio."
+NOTE_BAD_KEY = "A chave do Gemini não é válida: copie de novo em aistudio.google.com e cole em Configurações."
 NOTE_QUOTA = "A cota grátis da IA acabou por hoje: lojas, preço e chance estão prontos; o anúncio fica para depois."
 NOTE_INVALID = "A IA devolveu uma resposta inválida para o anúncio. Tente gerar de novo."
 NOTE_DOWN = "A IA não respondeu agora. Lojas, preço e chance estão prontos; tente o anúncio de novo mais tarde."
@@ -90,6 +91,8 @@ def _listing(provider: TextProvider | None, analysis: Analysis, pairs, tags) -> 
                                                 pairs=pairs)
     except AIQuotaError:
         return None, NOTE_QUOTA, None
+    except AIKeyError:
+        return None, NOTE_BAD_KEY, None
     except AIInvalidResponse:
         return None, NOTE_INVALID, None
     except Exception:  # noqa: BLE001 — erro do provedor (rede, 5xx do Gemini)
@@ -114,6 +117,8 @@ def _cover(provider: TextProvider | None, analysis: Analysis, items: list, skip_
         return evaluate_cover(provider, image, refs, ref_images, market=analysis.market, scope=scope), None
     except AIQuotaError:
         return None, COVER_QUOTA
+    except AIKeyError:
+        return None, NOTE_BAD_KEY
     except AIInvalidResponse:
         return None, COVER_INVALID
     except Exception:  # noqa: BLE001
@@ -173,8 +178,9 @@ def build_sale(session: Session, analysis: Analysis, countries: list[str], provi
     proof = evidence(evidence_items, analysis.market, scope)
     variations = (validate_variations(raw_variations, market=analysis.market, proof=proof)
                   or default_variations(market=analysis.market, proof=proof))
-    cover, cover_note = _cover(provider, analysis, evidence_items, COVER_QUOTA if note == NOTE_QUOTA else None,
-                               scope)
+    # Cota esgotada ou chave inválida no anúncio: nem tenta a capa (daria o mesmo erro).
+    skip = {NOTE_QUOTA: COVER_QUOTA, NOTE_BAD_KEY: NOTE_BAD_KEY}.get(note)
+    cover, cover_note = _cover(provider, analysis, evidence_items, skip, scope)
     peak = peak_for_topic(session, topic, countries[0])
     promotion = build_promotion(session, topic=topic, market=analysis.market, category=analysis.category,
                                 tags=tags)

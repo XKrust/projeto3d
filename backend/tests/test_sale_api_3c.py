@@ -133,3 +133,15 @@ def test_missing_image(client, engine, tmp_path):
     sale = client.post(f"/api/analyses/{analysis_id}/sale", json={"countries": ["BR"]}).json()
     assert sale["cover_note"] == COVER_NO_IMAGE
     assert sale["listing"] is not None
+
+
+def test_bad_key_on_listing_skips_cover(client, engine, tmp_path):
+    from app.ai.provider import AIKeyError
+    from app.sale.build import NOTE_BAD_KEY
+
+    analysis_id = _world(engine, tmp_path)
+    provider = _use(client, FakeProvider([AIKeyError("bad")]))
+    sale = client.post(f"/api/analyses/{analysis_id}/sale", json={"countries": ["BR"]}).json()
+    assert provider.images == [0]
+    assert sale["listing_note"] == NOTE_BAD_KEY
+    assert sale["cover_note"] == NOTE_BAD_KEY

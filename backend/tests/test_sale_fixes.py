@@ -44,3 +44,39 @@ def test_top_covers_respects_attempts_and_time_budget(monkeypatch):
     ticks = iter([0.0, 0.0, 10.0, 25.0, 30.0])
     cover.top_covers(None, items, monotonic=lambda: next(ticks))
     assert len(calls) == 2  # parou quando passou de 20 s
+
+
+def test_invalid_gemini_key_is_reported(client, monkeypatch):
+    """Chave errada não pode virar "a IA não respondeu, tente de novo"."""
+    from google.genai.errors import ClientError
+
+    from app.ai.provider import AIKeyError, GeminiTextProvider
+
+    class FakeModels:
+        def generate_content(self, **kwargs):
+            raise ClientError(400, {"error": {"code": 400, "message": "API key not valid. Please pass a valid API key.",
+                                              "status": "INVALID_ARGUMENT"}}, None)
+
+    class FakeClient:
+        def __init__(self, api_key):
+            self.models = FakeModels()
+
+    monkeypatch.setattr("app.ai.provider.Client", FakeClient)
+    with pytest.raises(AIKeyError):
+        GeminiTextProvider("errada", "gemini-2.5-flash").generate_json("oi")
+
+
+def test_analyze_with_bad_key_returns_409(client):
+    from app.ai.provider import AIKeyError
+    from app.api.analyze import MSG_BAD_KEY, get_analyzer_provider
+
+    class Provider:
+        def generate_json_with_images(self, prompt, images):
+            raise AIKeyError("bad")
+
+    client.app.dependency_overrides[get_analyzer_provider] = lambda: Provider()
+    png = b"\x89PNG\r\n\x1a\n" + b"\x00" * 16
+    response = client.post("/api/analyze", data={"authorship": "autoral", "market": "print"},
+                           files=[("images", ("a.png", png, "image/png"))])
+    assert response.status_code == 409
+    assert response.json()["detail"] == MSG_BAD_KEY

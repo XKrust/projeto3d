@@ -32,6 +32,15 @@ class TextProvider(Protocol):
     def generate_json_with_images(self, prompt: str, images: list[ImageInput]) -> dict: ...
 
 
+class AIKeyError(Exception):
+    """Chave do provedor de IA inválida ou sem permissão (HTTP 400 API_KEY_INVALID, 401 ou 403)."""
+
+
+def _is_key_error(exc: APIError) -> bool:
+    text = str(exc)
+    return exc.code in (401, 403) or "API_KEY_INVALID" in text or "API key not valid" in text
+
+
 class AIQuotaError(Exception):
     """Cota do provedor de IA excedida (HTTP 429 / status `RESOURCE_EXHAUSTED`)."""
 
@@ -62,6 +71,8 @@ class GeminiTextProvider:
         except APIError as exc:
             if exc.code == 429 or exc.status == "RESOURCE_EXHAUSTED":
                 raise AIQuotaError(str(exc)) from exc
+            if _is_key_error(exc):
+                raise AIKeyError(str(exc)) from exc
             raise
         return json.loads(response.text)
 
