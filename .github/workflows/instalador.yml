@@ -8,6 +8,7 @@ on:
     branches: ["**"]
     paths:
       - "backend/**"
+      - "ferramentas-dev/**"
       - "frontend/**"
       - "installer/**"
       - ".github/workflows/instalador.yml"
@@ -163,3 +164,19 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: dist/Radar3D-Setup-*.exe
+
+      # A página inicial do repositório (e o "Download ZIP") traz o instalador testado da
+      # última versão publicada. Só em tag, para não pôr 40 MB no histórico a cada commit.
+      - name: Instalador na raiz da main
+        if: github.ref_type == 'tag'
+        shell: pwsh
+        run: |
+          $exe = (Get-ChildItem dist\Radar3D-Setup-*.exe | Select-Object -First 1).FullName
+          git fetch --depth 1 origin main
+          git checkout -B main origin/main
+          Copy-Item $exe Radar3D-Setup.exe -Force
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Radar3D-Setup.exe
+          git commit -m "chore: instalador ${{ github.ref_name }} na raiz"
+          git push origin main

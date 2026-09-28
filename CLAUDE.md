@@ -6,7 +6,7 @@ Ferramenta local (localhost) para modeladores 3D:
 - hype antecipado (anime, filmes, jogos);
 - analisador de modelo com IA (nota, título, plataforma, preço).
 
-O usuário **não programa**. Tudo precisa rodar com duplo clique em `iniciar.bat`, e as mensagens de interface são em português.
+O usuário **não programa**. Quem usa instala pelo `Radar3D-Setup.exe` (raiz do repositório, ver `docs/instalador.md`); as mensagens de interface são em português.
 
 ## Regra de ouro para economizar contexto
 
@@ -41,7 +41,7 @@ O usuário **não programa**. Tudo precisa rodar com duplo clique em `iniciar.ba
 
 ## Comandos
 
-- **Rodar tudo:** `iniciar.bat` (parar com `parar.bat`).
+- **Rodar pelo código:** `ferramentas-dev\iniciar.bat` (parar com `ferramentas-dev\parar.bat`).
 - **Testes do backend:** `cd backend && uv run pytest`.
 - **Frontend (dev):** `cd frontend && npm run dev`.
 

@@ -41,7 +41,13 @@ Windows do GitHub:
    (não duplica), desliga com `Parar.cmd`, reabre sem baixar nada e desinstala (dados
    ficam, venv sai). Falha mostra o fim dos logs como anotação do job.
 4. O `.exe` fica como artefato do job. **Tag `v*`** (ex.: `git tag v1.0.0 && git push
-   origin v1.0.0`) publica o instalador na Release da tag.
+   origin v1.0.0`) publica o instalador na Release da tag **e** o grava como
+   `Radar3D-Setup.exe` na raiz da `main` (commit do `github-actions[bot]`). É esse arquivo que
+   aparece na página inicial do repositório e vem no "Download ZIP".
+   Só em tag: cada `.exe` (~40 MB) fica para sempre no histórico do Git.
+
+Os scripts de desenvolvimento (`iniciar.bat`/`parar.bat`) ficam em `ferramentas-dev/`, fora
+da raiz, para quem baixa o ZIP ver só o instalador.
 
 O `.exe` não é assinado digitalmente: o Windows SmartScreen avisa "editor desconhecido" até
 existir um certificado de assinatura de código (decisão para quando o app virar produto).

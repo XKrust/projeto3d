@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 /**
  * Smoke test de ponta a ponta: roda contra o backend e o frontend REAIS
  * (não usa `page.route` para mockar a API), então precisa dos dois
- * servidores rodando de verdade — por exemplo via `iniciar.bat`.
+ * servidores rodando de verdade — por exemplo via `ferramentas-dev/iniciar.bat`.
  *
  * Fica fora da suíte padrão (`npx playwright test`), que continua
  * funcionando sem backend: só roda com a variável de ambiente
