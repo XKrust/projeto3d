@@ -1,4 +1,4 @@
-import { ImageOff } from "lucide-react";
+import { TopicThumb } from "@/components/radar/TopicThumb";
 import { SaleChance } from "@/components/radar/SaleChance";
 import { Sparkline } from "@/components/radar/Sparkline";
 import { ARROW_LABELS, ARROW_SYMBOLS, CATEGORY_LABELS, formatMedianPrice, formatPeakLabel, formatWhereToSell } from "@/lib/radar-labels";
@@ -17,18 +17,7 @@ export function TopicCard({ topic, rank }: { topic: Topic; rank: number }) {
         {String(rank).padStart(2, "0")}
       </span>
 
-      {topic.image_url ? (
-        // eslint-disable-next-line @next/next/no-img-element -- miniaturas vêm de domínios arbitrários
-        <img
-          src={topic.image_url}
-          alt=""
-          className="size-12 rounded-lg object-cover lg:size-13"
-        />
-      ) : (
-        <div className="flex size-12 items-center justify-center rounded-lg bg-muted lg:size-13">
-          <ImageOff className="size-5 text-muted-foreground" aria-hidden="true" />
-        </div>
-      )}
+      <TopicThumb name={topic.name} src={topic.image_url} className="size-12 rounded-lg text-base lg:size-13" />
 
       <div className="flex min-w-0 flex-col gap-1">
         <h3 className="text-[length:var(--text-md)] font-semibold tracking-[-0.015em] text-foreground">

@@ -95,8 +95,9 @@ function HypeContent() {
         <section className="flex flex-col gap-4 py-8">
           <h1 className="text-[length:var(--text-display)] font-bold">Nenhuma estreia ainda.</h1>
           <p className="max-w-[62ch] text-[length:var(--text-md)] text-muted-foreground">
-            O AniList não precisa de chave: clique em “Coletar agora” no Radar. Para filmes,
-            séries e jogos, cole as chaves do TMDB e do IGDB em Configurações.
+            Os animes que vão estrear aparecem depois da primeira coleta, que começa sozinha logo
+            depois de abrir o app. Para filmes, séries e jogos, cole as chaves do TMDB e do IGDB em
+            Configurações.
           </p>
         </section>
       )}

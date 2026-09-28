@@ -1,4 +1,4 @@
-import { ImageOff } from "lucide-react";
+import { TopicThumb } from "@/components/radar/TopicThumb";
 import { CountUp } from "@/components/radar/CountUp";
 import { SaleChance } from "@/components/radar/SaleChance";
 import { Sparkline } from "@/components/radar/Sparkline";
@@ -62,18 +62,7 @@ export function RadarHero({ topic, country }: { topic: Topic; country: string })
 
       <figure className="flex min-w-0 flex-col gap-4 rounded-[var(--radius-card)] bg-card p-4 sm:p-5">
         <div className="flex items-center gap-4">
-          {topic.image_url ? (
-            // eslint-disable-next-line @next/next/no-img-element -- miniaturas vêm de domínios arbitrários
-            <img
-              src={topic.image_url}
-              alt=""
-              className="size-20 shrink-0 rounded-xl object-cover sm:size-24"
-            />
-          ) : (
-            <div className="flex size-20 shrink-0 items-center justify-center rounded-xl bg-muted sm:size-24">
-              <ImageOff className="size-6 text-muted-foreground" aria-hidden="true" />
-            </div>
-          )}
+          <TopicThumb name={topic.name} src={topic.image_url} className="size-20 shrink-0 rounded-xl text-2xl sm:size-24" />
           <div className="flex min-w-0 flex-col gap-1">
             <span className="text-sm text-muted-foreground">{categoryLabel}</span>
             <span className="text-sm text-muted-foreground">

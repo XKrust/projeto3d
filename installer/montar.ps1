@@ -49,9 +49,16 @@ Copy-Item (Join-Path $tmp "uv\uv.exe") (Join-Path $dist "runtime\uv.exe")
 
 # 4. Lançador sem janelas (Radar3D.exe, C# no csc do .NET Framework), versão e leia-me.
 $csc = Join-Path $env:WINDIR "Microsoft.NET\Framework64\v4.0.30319\csc.exe"
-& $csc /nologo /target:winexe /optimize+ /langversion:5 /win32icon:(Join-Path $PSScriptRoot "radar3d.ico") `
-    /r:System.Windows.Forms.dll /r:System.Drawing.dll /out:(Join-Path $dist "Radar3D.exe") (Join-Path $PSScriptRoot "lancador\Radar3D.cs")
-if ($LASTEXITCODE -ne 0) { throw "csc falhou ao compilar o lançador" }
+$icone = Join-Path $PSScriptRoot "radar3d.ico"
+$saida = Join-Path $dist "Radar3D.exe"
+$fonte = Join-Path $PSScriptRoot "lancador\Radar3D.cs"
+$args = @("/nologo", "/target:winexe", "/optimize+", "/langversion:5", "/win32icon:$icone",
+          "/r:System.Windows.Forms.dll", "/r:System.Drawing.dll", "/out:$saida", $fonte)
+$log = & $csc @args 2>&1
+if ($LASTEXITCODE -ne 0 -or -not (Test-Path $saida)) {
+    Write-Host "::error title=csc::$(($log | Out-String) -replace "`r?`n", '%0A')"
+    throw "csc falhou ao compilar o lançador"
+}
 Copy-Item (Join-Path $PSScriptRoot "Parar.cmd"), (Join-Path $PSScriptRoot "radar3d.ico") $dist
 Set-Content -Path (Join-Path $dist "VERSION") -Value $Versao -NoNewline -Encoding ascii
 Copy-Item (Join-Path $PSScriptRoot "LEIA-ME.txt") $dist
