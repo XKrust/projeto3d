@@ -16,6 +16,14 @@ O score é calculado por (tópico, país, plataforma, dia). Os pesos ficam em `c
 
 ## Como o cálculo roda
 
+**Ordem no fim de cada ciclo** (`app/pipeline.py:run_pipeline`): temas → procura sazonal →
+**notas e ranking de países** → fase "concorrência" (contagem de anúncios nas lojas, 1x por dia,
+centenas de buscas com 3–5 s de pausa) → notas e ranking **de novo** se algo foi medido →
+enriquecimento por IA. As notas vêm antes da concorrência para o radar ficar pronto em segundos
+na primeira vez (antes ficava vazio por mais de 10 minutos). O progresso aparece em
+`GET /api/collect/status` (`running`, `phase` = coleta/notas/concorrencia, `done`/`total` só das
+fontes no horário, `quiet` quando nenhuma fonte roda) e na faixa das telas (`CollectBanner`).
+
 Função: `backend/app/pipeline.py:compute_scores(session, day)`.
 
 - **Sinais do país:** para o país `c`, entram os sinais de `c` e os de `GLOBAL`. Um tópico sem

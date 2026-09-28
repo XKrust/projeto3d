@@ -31,7 +31,7 @@ concurrency:
 jobs:
   instalador:
     runs-on: windows-latest
-    timeout-minutes: 60
+    timeout-minutes: 75
     steps:
       - uses: actions/checkout@v4
 
@@ -139,17 +139,19 @@ jobs:
           if (-not (Test-Path "$env:LOCALAPPDATA\Radar3D\data\radar.db")) { throw "Banco não foi criado em LOCALAPPDATA" }
 
       - name: Teste - coleta real sem perder a conexão
-        timeout-minutes: 16
+        timeout-minutes: 24
         shell: pwsh
         run: |
           # Coleta de verdade (internet real) enquanto a tela consulta a API sem parar, como o
-          # navegador faz. Qualquer consulta que falhe durante a coleta reprova o teste.
+          # navegador faz. Qualquer consulta que falhe reprova. Mede em quanto tempo o radar
+          # fica pronto (notas calculadas) — é o que quem instala espera na primeira vez.
           $base = "http://127.0.0.1:3000"
+          function Temas { (Invoke-WebRequest "$base/api/radar?country=BR" -UseBasicParsing -TimeoutSec 30).Content | ConvertFrom-Json | Measure-Object | Select-Object -ExpandProperty Count }
           $r = Invoke-RestMethod -Method Post "$base/api/collect"
           Write-Host "::notice::Coletar agora: $($r.message)"
           $t = [Diagnostics.Stopwatch]::StartNew()
-          $falhas = 0; $consultas = 0; $viuRodando = $false; $ultimo = ""
-          while ($t.Elapsed.TotalMinutes -lt 13) {
+          $falhas = 0; $consultas = 0; $viuRodando = $false; $fases = [ordered]@{}; $radarPronto = $null
+          while ($t.Elapsed.TotalMinutes -lt 20) {
             foreach ($u in "/api/health", "/api/sources", "/api/radar/meta", "/api/radar?country=BR", "/") {
               $consultas++
               try {
@@ -158,19 +160,23 @@ jobs:
               } catch { $falhas++; Write-Host "::warning::$u falhou: $($_.Exception.Message)" }
             }
             $st = Invoke-RestMethod "$base/api/collect/status"
-            if ($st.running) { $viuRodando = $true; $ultimo = "$($st.phase) $($st.done)/$($st.total) $($st.current)" }
-            elseif ($viuRodando -or $st.finished_at) { break }
+            if ($st.running) {
+              $viuRodando = $true
+              if (-not $fases.Contains("$($st.phase)")) { $fases["$($st.phase)"] = [int]$t.Elapsed.TotalSeconds }
+            }
+            if (-not $radarPronto -and (Temas) -gt 0) { $radarPronto = [int]$t.Elapsed.TotalSeconds }
+            if (-not $st.running -and ($viuRodando -or $st.finished_at)) { break }
             Start-Sleep 2
           }
-          Write-Host "::notice::Coleta: $([int]$t.Elapsed.TotalSeconds) s, $consultas consultas, $falhas falhas (último estado: $ultimo)"
+          $fasesTxt = ($fases.GetEnumerator() | ForEach-Object { "$($_.Key) aos $($_.Value) s" }) -join ", "
+          Write-Host "::notice::Radar com temas aos $radarPronto s. Fases: $fasesTxt. Total $([int]$t.Elapsed.TotalSeconds) s, $consultas consultas, $falhas falhas."
           $fontes = Invoke-RestMethod "$base/api/sources"
           Write-Host "::notice::Fontes: $(($fontes | ForEach-Object { "$($_.name)=$($_.status)/$($_.items_last_run)" }) -join ', ')"
-          $radar = @(Invoke-RestMethod "$base/api/radar?country=BR")
-          Write-Host "::notice::Temas no radar (BR) depois da coleta: $($radar.Count)"
+          Write-Host "::notice::Temas no radar (BR): $(Temas)"
           $log = "$env:LOCALAPPDATA\Radar3D\data\lancador.log"
           if ((Test-Path $log) -and (Select-String -Path $log -Pattern "parou" -Quiet)) { throw "Uma parte do app caiu durante a coleta: $(Get-Content $log -Raw)" }
           if ($falhas -gt 0) { throw "$falhas consultas falharam durante a coleta" }
-          if ((Invoke-RestMethod "$base/api/collect/status").running) { throw "A coleta não terminou em 13 minutos" }
+          if (-not $radarPronto) { throw "O radar não ganhou nenhum tema em 20 minutos" }
 
       - name: Teste - fechar pelo atalho
         timeout-minutes: 3

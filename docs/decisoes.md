@@ -54,3 +54,4 @@
 | 2026-09-28 | Toda mudança de código na `main` publica uma versão (1.0.N) e atualiza o `.exe` da raiz, só depois de passar no teste do Windows | Pedido do usuário: o instalador da página inicial sempre atual; custo de ~40 MB por versão no histórico aceito |
 | 2026-09-28 | Lançador `Radar3D.exe` (C#, sem console) no lugar do `Radar3D.cmd`; ícone próprio; faixa de progresso da coleta | Usuário real viu várias janelas de cmd ("parece vírus"), fechou uma e o app caiu no meio da coleta; tela vazia sem aviso parecia quebrada |
 | 2026-09-28 | Gemini: `gemini-flash-latest` + reservas em 404/429/503 | O `gemini-2.5-flash` saiu para chaves novas e toda análise falhava |
+| 2026-09-28 | Notas calculadas antes da contagem de anúncios; faixa de progresso por fase | No Windows real, a primeira coleta levava mais de 13 min até existir qualquer nota, por causa da contagem educada de anúncios |

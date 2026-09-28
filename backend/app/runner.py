@@ -113,7 +113,7 @@ def _upsert_release(session: Session, *, source_name: str, day, release: Release
 # Progresso da coleta em andamento, para a tela mostrar "Coletando: 4 de 15 fontes".
 _progress_lock = threading.Lock()
 _progress: dict = {"running": False, "phase": None, "current": None, "done": 0, "total": 0,
-                   "started_at": None, "finished_at": None}
+                   "quiet": True, "started_at": None, "finished_at": None}
 
 
 def collect_progress() -> dict:
@@ -124,6 +124,22 @@ def collect_progress() -> dict:
 def _set_progress(**changes) -> None:
     with _progress_lock:
         _progress.update(changes)
+
+
+def set_collect_phase(phase: str) -> None:
+    """Fase atual do ciclo, para a tela: "coleta", "notas" ou "concorrencia"."""
+    _set_progress(phase=phase)
+
+
+def _is_due(session: Session, cls: type[Collector], settings: dict, force: bool) -> bool:
+    """A fonte vai rodar neste ciclo: tem as chaves e passou o intervalo dela (ou `force`)."""
+    api_keys = settings.get("api_keys", {})
+    if any(not api_keys.get(key) for key in cls.needs_key):
+        return False
+    row = session.get(Source, cls.name)
+    if force or row is None or row.last_run is None:
+        return True
+    return now() - row.last_run >= timedelta(minutes=cls.interval_minutes)
 
 
 def run_cycle(
@@ -151,10 +167,14 @@ def run_cycle(
     owns_http = http is None
     client = http if http is not None else make_client()
     selected = [cls for cls in collector_classes if only is None or cls.name == only]
-    _set_progress(phase="coleta", current=None, done=0, total=len(selected))
+    due = [cls for cls in selected if _is_due(session, cls, settings, force)]
+    # `quiet`: nenhuma fonte no horário (ciclo de 10 em 10 min só recalculando); a tela não
+    # mostra a faixa de coleta nesse caso.
+    _set_progress(phase="coleta", current=None, done=0, total=len(due), quiet=not due)
     try:
         for cls in selected:
-            _set_progress(current=cls.label, done=selected.index(cls))
+            if cls in due:
+                _set_progress(current=cls.label, done=due.index(cls))
 
             source_row = _get_or_create_source(session, cls.name)
 
@@ -208,7 +228,7 @@ def run_cycle(
     finally:
         if owns_http:
             client.close()
-    _set_progress(done=len(selected), current=None)
+    _set_progress(done=len(due), current=None)
 
     if after is not None:
         _set_progress(phase="notas")
@@ -228,7 +248,7 @@ def start_cycle_in_background(session_factory, **kwargs) -> bool:
     """
     if not _cycle_lock.acquire(blocking=False):
         return False
-    _set_progress(running=True, phase="coleta", current=None, done=0, total=0,
+    _set_progress(running=True, phase="coleta", current=None, done=0, total=0, quiet=True,
                   started_at=now().isoformat(), finished_at=None)
 
     def _run() -> None:
