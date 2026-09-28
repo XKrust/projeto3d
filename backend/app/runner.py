@@ -7,6 +7,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import timedelta
 
+import httpx
 from sqlmodel import Session, select
 
 import app.collectors as collectors_pkg
@@ -175,6 +176,11 @@ def run_cycle(
             except CollectorError as exc:
                 message = str(exc)
                 logger.error("Coletor %s falhou: %s", cls.name, message)
+                result.failed[cls.name] = message
+                _mark_error(session, cls.name, message)
+            except httpx.TransportError as exc:  # sem internet, proxy, DNS, tempo esgotado
+                message = "Sem conexão com o site (confira a internet); tenta de novo na próxima coleta"
+                logger.warning("Coletor %s sem conexão: %s", cls.name, exc)
                 result.failed[cls.name] = message
                 _mark_error(session, cls.name, message)
             except Exception as exc:  # nunca deixar um coletor derrubar o ciclo

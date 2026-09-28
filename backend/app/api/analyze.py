@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 from sqlmodel import Session
 
-from app.ai.provider import AIQuotaError, ImageInput, TextProvider, get_text_provider
+from app.ai.provider import AIKeyError, AIQuotaError, ImageInput, TextProvider, get_text_provider
 from app.analyzer.critique import critique
 from app.analyzer.errors import AIInvalidResponse
 from app.analyzer.identify import identify
@@ -37,6 +37,7 @@ MSG_SIZE = "Imagem maior que 10 MB"
 MSG_FORMAT = "Formato não aceito: use JPG, PNG ou WEBP"
 MSG_LINK = "Link de referência inválido: use um link de modelo do Sketchfab"
 MSG_NO_KEY = "Configure a chave do Gemini em Configurações para analisar modelos"
+MSG_BAD_KEY = "A chave do Gemini não é válida. Copie de novo em aistudio.google.com e cole em Configurações."
 MSG_QUOTA = "A cota grátis da IA acabou por hoje. Tente de novo mais tarde."
 MSG_INVALID = "A IA devolveu uma resposta inválida. Tente de novo."
 MSG_AI_DOWN = "A IA não respondeu agora. Tente de novo em alguns minutos."
@@ -111,6 +112,9 @@ def analyze(
                        authorship=authorship, has_wireframe=has_wireframe)
     except AIQuotaError as exc:
         raise HTTPException(status_code=429, detail=MSG_QUOTA) from exc
+    except AIKeyError as exc:
+        # 409 como "sem chave": a tela mostra o link para Configurações.
+        raise HTTPException(status_code=409, detail=MSG_BAD_KEY) from exc
     except AIInvalidResponse as exc:
         raise HTTPException(status_code=424, detail=MSG_INVALID) from exc
     except Exception as exc:  # noqa: BLE001 — erro do provedor (rede, 5xx do Gemini)

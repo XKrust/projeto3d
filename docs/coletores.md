@@ -63,6 +63,12 @@ Coletores de estreias (AniList, TMDB, IGDB) seguem a mesma interface e, além do
   - É uma tabela nova: o `create_all` do startup a cria em bancos antigos sem migração.
 - `Collector.releases()` devolve `[]` por padrão, então os coletores comuns não mudam.
 
+## Mensagens de erro das fontes
+
+Falha de conexão (sem internet, proxy, DNS, tempo esgotado: `httpx.TransportError`) aparece em
+Configurações como "Sem conexão com o site (confira a internet); tenta de novo na próxima
+coleta", em vez de "Erro inesperado". `CollectorError` mostra a própria mensagem.
+
 ## Rotas
 
 - `GET /api/sources` → uma linha por classe em `ALL_COLLECTORS` (mesmo que nunca tenha

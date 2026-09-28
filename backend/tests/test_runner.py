@@ -273,3 +273,23 @@ def test_runner_upserts_release_same_external_id(session, monkeypatch):
     rows = session.exec(select(HypeRelease).where(HypeRelease.external_id == "a1")).all()
     assert len(rows) == 1
     assert rows[0].title == "Frieren (2ª temporada)"
+
+
+class FakeOfflineCollector(Collector):
+    name = "fake_offline"
+    label = "Fake sem internet"
+    kind = "api"
+    needs_key = ()
+    interval_minutes = 60
+
+    def collect(self) -> list[CollectedItem]:
+        import httpx
+
+        raise httpx.ConnectError("sem rede")
+
+
+def test_connection_error_has_friendly_message(session):
+    result = run_cycle(session, collectors=[FakeOfflineCollector, FakeOkCollector], http=object())
+    assert result.ran == ["fake_ok"]
+    assert result.failed["fake_offline"].startswith("Sem conexão com o site")
+    assert session.get(Source, "fake_offline").status == "error"

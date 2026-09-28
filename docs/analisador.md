@@ -40,7 +40,7 @@ JSON inválido da IA ganha 1 nova tentativa (`errors.ask_json`).
   `reference_urls` repetido) → 201 com a análise.
 - `GET /api/analyses` (até 50, mais nova primeiro), `GET /api/analyses/{id}` (com `previous`
   = análise anterior do mesmo tema), `GET /api/analyses/{id}/images/{nome}`.
-- Erros: 422 (validação, mensagens em PT), 409 sem chave do Gemini, 429 cota esgotada,
+- Erros: 422 (validação, mensagens em PT), 409 sem chave do Gemini ou chave inválida (`AIKeyError`: 400 API_KEY_INVALID/401/403 do Gemini), 429 cota esgotada,
   424 resposta inválida da IA ou IA fora do ar (não 502: a tela trata 502 como backend
   desligado), 404 análise não encontrada.
 
